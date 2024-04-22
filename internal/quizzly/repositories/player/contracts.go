@@ -10,7 +10,7 @@ import (
 
 type (
 	Repository interface {
-		Create(ctx context.Context, tx transactional.Tx, data model.Player) error
+		Insert(ctx context.Context, tx transactional.Tx, in *model.Player) error
 		Get(ctx context.Context, id uuid.UUID) (*model.Player, error)
 	}
 )

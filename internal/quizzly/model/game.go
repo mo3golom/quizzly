@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 const (
 	GameStatusCreated  GameStatus = "created"
@@ -9,9 +13,12 @@ const (
 )
 
 const (
-	GameTypeAsync     GameType = "async"
-	GameTypeOnline    GameType = "online"
-	GameTypeLocalQuiz GameType = "local_quiz"
+	GameTypeAsync GameType = "async"
+)
+
+const (
+	SessionStatusStarted  SessionStatus = "started"
+	SessionStatusFinished SessionStatus = "finished"
 )
 
 type (
@@ -26,16 +33,26 @@ type (
 	}
 
 	GameSettings struct {
-		LoginRequired    bool
+		IsPrivate        bool
 		ShuffleQuestions bool
 		ShuffleAnswers   bool
 	}
 
-	PlayerGameStatus string
+	SessionStatus string
 
-	PlayerGame struct {
-		ID     uuid.UUID
-		GameID uuid.UUID
-		Status PlayerGameStatus
+	Session struct {
+		ID       int64
+		PlayerID uuid.UUID
+		GameID   uuid.UUID
+		Status   SessionStatus
+	}
+
+	SessionItem struct {
+		ID         int64
+		SessionID  int64
+		QuestionID uuid.UUID
+		Answers    []string
+		IsCorrect  *bool
+		AnsweredAt *time.Time
 	}
 )

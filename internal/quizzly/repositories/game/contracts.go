@@ -1,0 +1,25 @@
+package game
+
+import (
+	"context"
+	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/transactional"
+
+	"github.com/google/uuid"
+)
+
+type (
+	Spec struct {
+		GameID             uuid.UUID
+		ExcludeQuestionIDs []uuid.UUID
+	}
+
+	Repository interface {
+		Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error
+		Update(ctx context.Context, tx transactional.Tx, in *model.Game) error
+		GetWithTx(ctx context.Context, tx transactional.Tx, id uuid.UUID) (*model.Game, error)
+
+		InsertGameQuestion(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionID uuid.UUID) error
+		GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *Spec) ([]uuid.UUID, error)
+	}
+)

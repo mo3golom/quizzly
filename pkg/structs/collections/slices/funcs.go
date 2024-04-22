@@ -82,3 +82,24 @@ func UniqueByProperty[T any, K comparable](in []T, extractor func(T) K) []T {
 
 	return results
 }
+
+func Map[I, O any](in []I, function func(I) (O, error)) ([]O, error) {
+	var err error
+	results := SafeMap(in, func(i I) O {
+		var o O
+		o, err = function(i)
+		return o
+	})
+
+	return results, err
+}
+
+func SafeMap[I, O any](in []I, function func(I) O) []O {
+	results := make([]O, 0, len(in))
+
+	for _, element := range in {
+		results = append(results, function(element))
+	}
+
+	return results
+}

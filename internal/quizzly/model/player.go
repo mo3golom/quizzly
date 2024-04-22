@@ -4,7 +4,8 @@ import "github.com/google/uuid"
 
 type (
 	Player struct {
-		ID   uuid.UUID
-		Name string
+		ID     uuid.UUID
+		Name   string
+		UserID *uuid.UUID
 	}
 )
