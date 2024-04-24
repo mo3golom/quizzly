@@ -2,6 +2,8 @@ package player
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
 
@@ -46,6 +48,10 @@ func (r *DefaultRepository) Get(ctx context.Context, id uuid.UUID) (*model.Playe
 
 	var result sqlxPlayer
 	if err := r.db.GetContext(ctx, &result, query, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 

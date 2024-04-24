@@ -13,6 +13,7 @@ import (
 	"quizzly/pkg/transactional"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 	)
 
 	if err := run(ctx, quizzlyConfig); err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 }

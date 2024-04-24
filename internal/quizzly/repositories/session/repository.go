@@ -38,10 +38,10 @@ func NewRepository() Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Session) error {
 	const query = `
-		insert into player_session (game_id, player_id, status) value ($1, $2, $3)
+		insert into player_session (game_id, player_id, status) values ($1, $2, $3)
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.GameID, in.PlayerID, in.Status)
+	_, err := tx.ExecContext(ctx, query, in.GameID, in.PlayerID, in.Status)
 	return err
 }
 
@@ -80,7 +80,7 @@ func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactiona
 
 func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error {
 	const query = `
-		insert into player_session_item (session_id, question_id) value ($1, $2)
+		insert into player_session_item (session_id, question_id) values ($1, $2)
 	`
 
 	_, err := tx.ExecContext(ctx, query, in.SessionID, in.QuestionID)
@@ -89,7 +89,7 @@ func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactio
 
 func (r *DefaultRepository) UpdateSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error {
 	const query = `
-		update player_session set 
+		update player_session_item set 
 			answers = $2,
 			is_correct = $3,
 			answered_at = $4,
@@ -113,7 +113,7 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 		inner join player_session as ps on ps.id = psi.session_id
 		where ps.player_id = $1 
 	      and ps.game_id = $2
-	      and ($3 is null or psi.question_id = $3)
+	      and ($3::UUID is null or psi.question_id = $3::UUID)
 	`
 
 	var result []sqlxSessionItem
@@ -132,8 +132,10 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 
 func convertSessionItem(in *sqlxSessionItem) (*model.SessionItem, error) {
 	var answers []string
-	if err := json.Unmarshal(in.Answers, &answers); err != nil {
-		return nil, err
+	if in.Answers != nil {
+		if err := json.Unmarshal(in.Answers, &answers); err != nil {
+			return nil, err
+		}
 	}
 
 	return &model.SessionItem{

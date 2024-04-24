@@ -41,6 +41,7 @@ func NewConfiguration(
 				repos.Session.MustGet(),
 				repos.Game.MustGet(),
 				repos.Question.MustGet(),
+				repos.Player.MustGet(),
 				template,
 			), nil
 		}),

@@ -2,6 +2,7 @@ package question
 
 import (
 	"context"
+	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
 
@@ -51,7 +52,7 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		isCorrect = append(isCorrect, item.IsCorrect)
 	}
 
-	_, err = tx.ExecContext(ctx, answerOptionsQuery, in.ID, answer, isCorrect)
+	_, err = tx.ExecContext(ctx, answerOptionsQuery, in.ID, pq.Array(answer), pq.Array(isCorrect))
 	return err
 }
 

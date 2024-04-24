@@ -29,12 +29,14 @@ func NewUsecase(
 	sessions session.Repository,
 	games game.Repository,
 	questions question.Repository,
+	players player.Repository,
 	template transactional.Template,
 ) contracts.SessionUsecase {
 	return &Usecase{
 		sessions:  sessions,
 		games:     games,
 		questions: questions,
+		players:   players,
 		template:  template,
 	}
 }
@@ -182,6 +184,9 @@ func (u *Usecase) NextQuestion(ctx context.Context, gameID uuid.UUID, playerID u
 			},
 		)
 
+		if err != nil {
+			return err
+		}
 		if len(unansweredQuestions) == 0 {
 			return contracts.ErrQuestionQueueIsEmpty
 		}

@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
 
@@ -28,8 +29,8 @@ func NewRepository() Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error {
 	const query = `
-		insert into game (id, status, "type") value ($1, $2, $3)
-		on conflict (id) don nothing
+		insert into game (id, status, "type") values ($1, $2, $3)
+		on conflict (id) do nothing
 	`
 
 	_, err := tx.ExecContext(ctx, query, in.ID, in.Type, in.Status)
@@ -38,12 +39,12 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 	}
 
 	const settingsQuery = `
-		insert into game_setting (
+		insert into game_settings (
 	    	game_id,
 			is_private,
 		    shuffle_questions, 
 		    shuffle_answers
-		) value ($1, $2, $3, $4) 
+		) values ($1, $2, $3, $4) 
 		on conflict (game_id) do nothing
 	`
 
@@ -103,7 +104,7 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 
 func (r *DefaultRepository) InsertGameQuestion(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionID uuid.UUID) error {
 	const query = `
-		insert into game_question (game_id, question_id) value ($1, $2)
+		insert into game_question (game_id, question_id) values ($1, $2)
 		on conflict (game_id, question_id) do nothing
 	`
 
@@ -116,11 +117,11 @@ func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transac
 		select question_id
 		from game_question
 		where game_id = $1
-		and ($2 is null or cardinality($2::UUID[]) = 0 or question_id != ANY($2))
+		and ($2::UUID[] is null or cardinality($2::UUID[]) = 0 or question_id != ANY($2::UUID[]))
 	`
 
 	var result []uuid.UUID
-	if err := tx.GetContext(ctx, &result, query, spec.GameID, spec.ExcludeQuestionIDs); err != nil {
+	if err := tx.SelectContext(ctx, &result, query, spec.GameID, pq.Array(spec.ExcludeQuestionIDs)); err != nil {
 		return nil, err
 	}
 

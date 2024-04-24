@@ -1,4 +1,4 @@
-FROM golang:1.19.6-alpine AS builder
+FROM golang:1.22.2-alpine AS builder
 
 ENV APP_HOME /go/src/app
 
@@ -9,7 +9,7 @@ RUN go mod download
 RUN go mod verify
 RUN go build -o app  ./cmd/main.go
 
-FROM golang:1.19.6-alpine
+FROM golang:1.22.2-alpine
 
 ENV APP_HOME /go/src/app
 RUN mkdir -p "$APP_HOME"
