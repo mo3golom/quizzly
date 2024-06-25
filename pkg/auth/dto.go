@@ -21,4 +21,9 @@ type (
 		userID uuid.UUID
 		code   LoginCode
 	}
+
+	user struct {
+		id    uuid.UUID
+		email Email
+	}
 )
