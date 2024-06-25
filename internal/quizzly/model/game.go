@@ -38,6 +38,12 @@ type (
 		ShuffleAnswers   bool
 	}
 
+	GameStatistics struct {
+		QuestionsCount    int64
+		ParticipantsCount int64
+		CompletionRate    int64
+	}
+
 	SessionStatus string
 
 	Session struct {
@@ -45,6 +51,11 @@ type (
 		PlayerID uuid.UUID
 		GameID   uuid.UUID
 		Status   SessionStatus
+	}
+
+	SessionExtended struct {
+		Session
+		Items []SessionItem
 	}
 
 	SessionItem struct {
@@ -55,4 +66,27 @@ type (
 		IsCorrect  *bool
 		AnsweredAt *time.Time
 	}
+
+	SessionStatistics struct {
+		QuestionsCount      int64
+		CorrectAnswersCount int64
+	}
 )
+
+func (s *SessionExtended) CompletionRate() int64 {
+	if len(s.Items) == 0 {
+		return 0
+	}
+
+	total := int64(len(s.Items))
+	correctAnswers := int64(0)
+	for _, item := range s.Items {
+		if item.IsCorrect == nil || !*item.IsCorrect {
+			continue
+		}
+
+		correctAnswers++
+	}
+
+	return (correctAnswers * 100) / total
+}

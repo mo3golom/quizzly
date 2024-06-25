@@ -1,0 +1,7 @@
+package frontend_components
+
+templ Composition(components ...templ.Component) {
+     for _, component := range components {
+        @component
+     }
+}

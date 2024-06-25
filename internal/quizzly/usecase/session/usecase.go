@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -17,13 +18,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type Usecase struct {
-	sessions  session.Repository
-	games     game.Repository
-	questions question.Repository
-	players   player.Repository
-	template  transactional.Template
-}
+type (
+	unansweredQuestion struct {
+		ID    uuid.UUID
+		IsNew bool
+	}
+
+	Usecase struct {
+		sessions  session.Repository
+		games     game.Repository
+		questions question.Repository
+		players   player.Repository
+		template  transactional.Template
+	}
+)
 
 func NewUsecase(
 	sessions session.Repository,
@@ -99,8 +107,12 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 			return err
 		}
 
-		if _, err := u.getActiveSession(ctx, tx, in.PlayerID, in.GameID); err != nil {
+		specificSession, err := u.getSession(ctx, tx, in.PlayerID, in.GameID)
+		if err != nil {
 			return err
+		}
+		if specificSession.Status != model.SessionStatusStarted {
+			return contracts.ErrNotActiveSessionNotFound
 		}
 
 		specificPlayerSessionItems, err := u.sessions.GetSessionBySpecWithTx(ctx, tx, &session.ItemSpec{
@@ -120,12 +132,17 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 			return errors.New("question is already answered")
 		}
 
-		specificQuestion, err := u.questions.Get(ctx, in.QuestionID)
+		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
+			IDs: []uuid.UUID{in.QuestionID},
+		})
 		if err != nil {
 			return err
 		}
+		if len(specificQuestions) == 0 {
+			return errors.New("question not found")
+		}
 
-		result, err = checkAnswers(specificQuestion, in.Answers)
+		result, err = checkAnswers(&specificQuestions[0], in.Answers)
 		if err != nil {
 			return err
 		}
@@ -141,14 +158,31 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 	})
 }
 
-func (u *Usecase) NextQuestion(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.Question, error) {
-	var result *model.Question
+func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*contracts.SessionState, error) {
+	var result *contracts.SessionState
 	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
 		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
 			return err
 		}
 
-		specificSession, err := u.getActiveSession(ctx, tx, playerID, gameID)
+		specificSession, err := u.getSession(ctx, tx, playerID, gameID)
+		if err != nil {
+			return err
+		}
+		if specificSession.Status == model.SessionStatusFinished {
+			result = &contracts.SessionState{
+				Status: specificSession.Status,
+			}
+			return nil
+		}
+
+		gameQuestions, err := u.games.GetQuestionIDsBySpec(
+			ctx,
+			tx,
+			&game.Spec{
+				GameID: gameID,
+			},
+		)
 		if err != nil {
 			return err
 		}
@@ -164,43 +198,87 @@ func (u *Usecase) NextQuestion(ctx context.Context, gameID uuid.UUID, playerID u
 		if err != nil {
 			return err
 		}
-		if slices.Contains(sessionItems, func(item model.SessionItem) bool {
-			return item.AnsweredAt == nil
-		}) {
-			return contracts.ErrUnansweredQuestionExists
+
+		specificUnansweredQuestion, err := getUnansweredQuestionID(gameQuestions, sessionItems)
+		if err != nil {
+			return err
 		}
 
-		answeredQuestions := slices.Filter(sessionItems, func(item model.SessionItem) bool {
-			return item.AnsweredAt != nil
+		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
+			IDs: []uuid.UUID{specificUnansweredQuestion.ID},
 		})
-		unansweredQuestions, err := u.games.GetQuestionIDsBySpec(
-			ctx,
-			tx,
-			&game.Spec{
-				GameID: gameID,
-				ExcludeQuestionIDs: slices.SafeMap(answeredQuestions, func(i model.SessionItem) uuid.UUID {
-					return i.QuestionID
-				}),
+		if err != nil {
+			return err
+		}
+		if len(specificQuestions) == 0 {
+			return errors.New("question not found")
+		}
+
+		result = &contracts.SessionState{
+			CurrentQuestion: &specificQuestions[0],
+			Progress: contracts.Progress{
+				Total: int64(len(gameQuestions)),
+				Answered: int64(len(
+					slices.Filter(sessionItems, func(item model.SessionItem) bool {
+						return item.AnsweredAt != nil
+					}),
+				)),
 			},
-		)
-
-		if err != nil {
-			return err
-		}
-		if len(unansweredQuestions) == 0 {
-			return contracts.ErrQuestionQueueIsEmpty
 		}
 
-		result, err = u.questions.Get(ctx, unansweredQuestions[0])
-		if err != nil {
-			return err
+		if !specificUnansweredQuestion.IsNew {
+			return nil
 		}
-
 		return u.sessions.InsertSessionItem(ctx, tx, &model.SessionItem{
 			SessionID:  specificSession.ID,
-			QuestionID: result.ID,
+			QuestionID: result.CurrentQuestion.ID,
 		})
 	})
+}
+
+func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error) {
+	var result *model.SessionStatistics
+	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
+		sessionItems, err := u.sessions.GetSessionBySpecWithTx(
+			ctx,
+			tx,
+			&session.ItemSpec{
+				PlayerID: playerID,
+				GameID:   gameID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		if len(sessionItems) == 0 {
+			return contracts.ErrSessionNotFound
+		}
+
+		totalQuestions := int64(len(sessionItems))
+		correctAnswers := int64(0)
+		for _, item := range sessionItems {
+			if item.IsCorrect == nil || !*item.IsCorrect {
+				continue
+			}
+
+			correctAnswers++
+		}
+
+		result = &model.SessionStatistics{
+			QuestionsCount:      totalQuestions,
+			CorrectAnswersCount: correctAnswers,
+		}
+		return nil
+	})
+}
+
+func (u *Usecase) GetSessions(ctx context.Context, gameID uuid.UUID) ([]model.SessionExtended, error) {
+	sessions, err := u.sessions.GetSessionsByGameID(ctx, gameID)
+	if err != nil {
+		return nil, err
+	}
+
+	return sessions, nil
 }
 
 func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID uuid.UUID) (*model.Game, error) {
@@ -215,17 +293,56 @@ func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID
 	return specificGame, nil
 }
 
-func (u *Usecase) getActiveSession(ctx context.Context, tx transactional.Tx, playerID uuid.UUID, gameID uuid.UUID) (*model.Session, error) {
+func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID uuid.UUID, gameID uuid.UUID) (*model.Session, error) {
 	specificSession, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
 		PlayerID: playerID,
 		GameID:   gameID,
 	})
+	if errors.Is(err, sql.ErrNoRows) {
+		err := u.Start(ctx, gameID, playerID)
+		if err != nil {
+			return nil, err
+		}
+
+		return u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+			PlayerID: playerID,
+			GameID:   gameID,
+		})
+
+	}
 	if err != nil {
 		return nil, err
 	}
-	if specificSession.Status != model.SessionStatusStarted {
-		return nil, errors.New("player session isn't active")
-	}
 
 	return specificSession, nil
+}
+
+func getUnansweredQuestionID(gameQuestions []uuid.UUID, sessionItems []model.SessionItem) (*unansweredQuestion, error) {
+	unAnsweredSessionItems := slices.Filter(sessionItems, func(item model.SessionItem) bool {
+		return item.AnsweredAt == nil
+	})
+	if len(unAnsweredSessionItems) > 0 {
+		return &unansweredQuestion{
+			ID:    unAnsweredSessionItems[0].QuestionID,
+			IsNew: false,
+		}, nil
+	}
+
+	answeredSessionItemsMap := make(map[uuid.UUID]struct{}, len(sessionItems))
+	for _, item := range sessionItems {
+		answeredSessionItemsMap[item.QuestionID] = struct{}{}
+	}
+
+	unansweredQuestionIDs := slices.Filter(gameQuestions, func(questionID uuid.UUID) bool {
+		_, ok := answeredSessionItemsMap[questionID]
+		return !ok
+	})
+	if len(unansweredQuestionIDs) == 0 {
+		return nil, contracts.ErrQuestionQueueIsEmpty
+	}
+
+	return &unansweredQuestion{
+		ID:    unansweredQuestionIDs[0],
+		IsNew: true,
+	}, nil
 }

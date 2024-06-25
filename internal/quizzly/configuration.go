@@ -33,6 +33,7 @@ func NewConfiguration(
 			return game.NewUsecase(
 				repos.Game.MustGet(),
 				repos.Question.MustGet(),
+				repos.Session.MustGet(),
 				template,
 			), nil
 		}),

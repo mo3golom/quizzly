@@ -1,0 +1,25 @@
+package frontend_components
+
+import 	"github.com/google/uuid"
+
+type Tab struct {
+    Name string
+    Content templ.Component
+}
+
+templ Tabs(id uuid.UUID, tabs ...Tab) {
+     <div role="tablist" class="tabs tabs-bordered tabs-lg">
+        for i, tab := range tabs {
+            if i == 0 {
+                <input type="radio" name={id.String()} role="tab" class="tab" aria-label={tab.Name} checked/>
+            } else {
+                <input type="radio" name={id.String()} role="tab" class="tab" aria-label={tab.Name}/>
+            }
+            <div role="tabpanel" class="tab-content pt-4">
+            if tab.Content != nil {
+                @tab.Content
+            }
+            </div>
+        }
+     </div>
+}

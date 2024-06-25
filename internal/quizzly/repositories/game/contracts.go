@@ -19,7 +19,7 @@ type (
 		Update(ctx context.Context, tx transactional.Tx, in *model.Game) error
 		GetWithTx(ctx context.Context, tx transactional.Tx, id uuid.UUID) (*model.Game, error)
 
-		InsertGameQuestion(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionID uuid.UUID) error
+		InsertGameQuestions(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionIDs []uuid.UUID) error
 		GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *Spec) ([]uuid.UUID, error)
 	}
 )

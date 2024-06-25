@@ -1,0 +1,51 @@
+package frontend_question
+
+import "github.com/google/uuid"
+
+type Options struct {
+  WithSelect bool
+}
+
+
+templ QuestionListItem(id uuid.UUID, text string, answerOptions []templ.Component, options Options) {
+       <div class="card card-bordered mb-4 bg-white border-base-200 border-4">
+            <div class="p-4 flex justify-start items-center">
+                 if options.WithSelect {
+                     <label class="cursor-pointer mr-2">
+                         <input
+                            value={ id.String() }
+                            name="question"
+                            type="checkbox"
+                            class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
+                        />
+                       </label>
+                 }
+                 <span class="text-xl font-medium">{ text }</span>
+            </div>
+            <div class="collapse collapse-arrow bg-base-200 rounded-none">
+              <input type="checkbox" />
+              <div class="collapse-title">Варианты ответов</div>
+              <div class="collapse-content">
+                <div class="grid gap-4 grid-cols-3">
+                for _, answerOption := range answerOptions {
+                    @answerOption
+                }
+                </div>
+              </div>
+            </div>
+       </div>
+}
+
+templ QuestionListItemAnswerOption(text string, isCorrect bool) {
+    if isCorrect {
+         <div class="tooltip" data-tip="Это правильный ответ">
+            <div class="bg-white rounded-md p-2 text-left outline outline-2 outline-green-500">
+                { text }
+            </div>
+         </div>
+    } else {
+         <div class="bg-white rounded-md p-2 text-left outline outline-2 outline-red-500">
+            { text }
+         </div>
+    }
+}

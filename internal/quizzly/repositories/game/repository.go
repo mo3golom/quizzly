@@ -33,7 +33,7 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Type, in.Status)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type)
 	if err != nil {
 		return err
 	}
@@ -83,6 +83,7 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
 		where g.id = $1
+		limit 1
 	`
 
 	var result sqlxGame
@@ -102,13 +103,13 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 	}, nil
 }
 
-func (r *DefaultRepository) InsertGameQuestion(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionID uuid.UUID) error {
+func (r *DefaultRepository) InsertGameQuestions(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionIDs []uuid.UUID) error {
 	const query = `
-		insert into game_question (game_id, question_id) values ($1, $2)
+		insert into game_question (game_id, question_id) select $1, unnest($2::UUID[])
 		on conflict (game_id, question_id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, gameID, questionID)
+	_, err := tx.ExecContext(ctx, query, gameID, pq.Array(questionIDs))
 	return err
 }
 

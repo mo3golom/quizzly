@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"encoding/json"
+	"github.com/jmoiron/sqlx"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
@@ -19,6 +20,18 @@ type (
 		Status   string    `db:"status"`
 	}
 
+	sqlxSessionExtended struct {
+		ID         int64      `db:"id"`
+		PlayerID   uuid.UUID  `db:"player_id"`
+		GameID     uuid.UUID  `db:"game_id"`
+		Status     string     `db:"status"`
+		ItemID     *int64     `db:"item_id"`
+		QuestionID *uuid.UUID `db:"item_question_id"`
+		Answers    []byte     `db:"item_answers"`
+		IsCorrect  *bool      `db:"item_is_correct"`
+		AnsweredAt *time.Time `db:"item_answered_at"`
+	}
+
 	sqlxSessionItem struct {
 		ID         int64      `db:"id"`
 		SessionID  int64      `db:"session_id"`
@@ -29,11 +42,12 @@ type (
 	}
 
 	DefaultRepository struct {
+		db *sqlx.DB
 	}
 )
 
-func NewRepository() Repository {
-	return &DefaultRepository{}
+func NewRepository(db *sqlx.DB) Repository {
+	return &DefaultRepository{db: db}
 }
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Session) error {
@@ -128,6 +142,66 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 		}
 		return *out, nil
 	})
+}
+
+func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUID) ([]model.SessionExtended, error) {
+	const query = `
+		select 
+		    ps.id, 
+		    ps.game_id, 
+		    ps.player_id, 
+		    ps.status, 
+		    psi.id as item_id, 
+		    psi.question_id as item_question_id, 
+		    psi.answers as item_answers, 
+		    psi.is_correct as item_is_correct, 
+		    psi.answered_at as item_answered_at
+		from player_session ps
+		left join player_session_item as psi on psi.session_id = ps.id
+		where ps.game_id = $1
+	`
+
+	var result []sqlxSessionExtended
+	if err := r.db.SelectContext(ctx, &result, query, id); err != nil {
+		return nil, err
+	}
+
+	resultMap := make(map[int64]model.SessionExtended, len(result))
+	for _, item := range result {
+		session, ok := resultMap[item.ID]
+		if !ok {
+			session = model.SessionExtended{
+				Session: model.Session{
+					ID:       item.ID,
+					GameID:   item.GameID,
+					PlayerID: item.PlayerID,
+					Status:   model.SessionStatus(item.Status),
+				},
+				Items: make([]model.SessionItem, 0, 1),
+			}
+		}
+
+		if item.ItemID != nil {
+			sessionItems := resultMap[item.ID].Items
+			sessionItems = append(sessionItems, model.SessionItem{
+				ID:         *item.ItemID,
+				QuestionID: *item.QuestionID,
+				IsCorrect:  item.IsCorrect,
+				AnsweredAt: item.AnsweredAt,
+			})
+			session.Items = sessionItems
+		}
+
+		resultMap[item.ID] = session
+	}
+
+	out := make([]model.SessionExtended, 0, len(resultMap))
+	for _, item := range resultMap {
+		item := item
+		out = append(out, item)
+	}
+
+	return out, nil
 }
 
 func convertSessionItem(in *sqlxSessionItem) (*model.SessionItem, error) {

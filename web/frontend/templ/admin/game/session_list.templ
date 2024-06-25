@@ -1,0 +1,12 @@
+package frontend_admin_game
+
+import "quizzly/internal/quizzly/model"
+import "strconv"
+
+templ SessionListItem(name string, completionRate int, sessionStatus model.SessionStatus) {
+    <tr>
+            <td>{ name }</td>
+            <td>{ strconv.Itoa(completionRate) } %</td>
+            <td>{ string(sessionStatus) }</td>
+    </tr>
+}

@@ -17,8 +17,11 @@ type (
 		Create(ctx context.Context, in *CreateGameIn) (uuid.UUID, error)
 		Start(ctx context.Context, id uuid.UUID) error
 		Finish(ctx context.Context, id uuid.UUID) error
+		Get(ctx context.Context, id uuid.UUID) (*model.Game, error)
+		GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameStatistics, error)
 
-		AddQuestion(ctx context.Context, gameID uuid.UUID, questionID uuid.UUID) error
+		AddQuestion(ctx context.Context, gameID uuid.UUID, questionID ...uuid.UUID) error
+		GetQuestions(ctx context.Context, gameID uuid.UUID) ([]uuid.UUID, error)
 	}
 
 	AcceptAnswersIn struct {
@@ -38,11 +41,24 @@ type (
 		IsCorrect bool
 	}
 
+	SessionState struct {
+		Status          model.SessionStatus
+		CurrentQuestion *model.Question
+		Progress        Progress
+	}
+
+	Progress struct {
+		Answered int64
+		Total    int64
+	}
+
 	SessionUsecase interface {
 		Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
 		Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
 
 		AcceptAnswers(ctx context.Context, in *AcceptAnswersIn) (*AcceptAnswersOut, error)
-		NextQuestion(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.Question, error)
+		GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*SessionState, error)
+		GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error)
+		GetSessions(ctx context.Context, gameID uuid.UUID) ([]model.SessionExtended, error)
 	}
 )

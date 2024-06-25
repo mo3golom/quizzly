@@ -4,5 +4,6 @@ import "errors"
 
 var (
 	ErrQuestionQueueIsEmpty     = errors.New("question queue is empty")
-	ErrUnansweredQuestionExists = errors.New("you have unanswered question")
+	ErrNotActiveSessionNotFound = errors.New("player's active session not found")
+	ErrSessionNotFound          = errors.New("player's session not found")
 )

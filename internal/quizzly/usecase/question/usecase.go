@@ -34,3 +34,15 @@ func (u *Usecase) Create(ctx context.Context, in *model.Question) error {
 		return u.questions.Insert(ctx, tx, in)
 	})
 }
+
+func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Question, error) {
+	return u.questions.GetBySpec(ctx, &question.Spec{
+		AuthorID: &authorID,
+	})
+}
+
+func (u *Usecase) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Question, error) {
+	return u.questions.GetBySpec(ctx, &question.Spec{
+		IDs: ids,
+	})
+}

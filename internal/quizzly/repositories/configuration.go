@@ -25,7 +25,7 @@ func NewConfiguration(db *sqlx.DB) *Configuration {
 			return game.NewRepository(), nil
 		}),
 		Session: structs.NewSingleton(func() (session.Repository, error) {
-			return session.NewRepository(), nil
+			return session.NewRepository(db), nil
 		}),
 		Question: structs.NewSingleton(func() (question.Repository, error) {
 			return question.NewRepository(db), nil

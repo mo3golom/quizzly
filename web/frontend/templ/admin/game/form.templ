@@ -1,0 +1,49 @@
+package frontend_admin_game
+
+import "quizzly/web/frontend/templ/components"
+
+templ Form(questionsList templ.Component) {
+    <form
+        method="post"
+        hx-post="/game"
+        hx-target="this"
+        hx-swap="outerHTML"
+        hx-trigger="submit"
+    >
+        @frontend_components.Header("Новая игра")
+        <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+                <h1 class="basis-1/2 font-bold text-xl mb-4">Выбрать вопросы для игры</h1>
+                @questionsList
+            </div>
+            <div>
+                 <h1 class="basis-1/2 font-bold text-xl mb-4">Доп. параметры</h1>
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Перемешать вопросы</span>
+                    <input
+                        type="checkbox"
+                        value="1"
+                        name="shuffle_questions"
+                        class="toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500"
+                    />
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Перемешать ответы в вопросе</span>
+                    <input
+                        type="checkbox"
+                        value="1"
+                        name="shuffle_answers"
+                        class="toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500"
+                    />
+                  </label>
+                </div>
+                <div class="form-control mt-4">
+                   <button type="submit" class="btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-slate-900 border-0">Создать</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}

@@ -1,4 +1,6 @@
-build-css:
-	npx tailwindcss -o ./public/styles.css
+.PHONY: build
+
+build:
+	templ generate && npx tailwindcss -o ./public/styles.css
 
 

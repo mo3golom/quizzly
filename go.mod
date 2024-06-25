@@ -15,6 +15,8 @@ require (
 )
 
 require (
+	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e // indirect
+	github.com/gorilla/schema v1.3.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 )

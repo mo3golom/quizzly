@@ -1,0 +1,22 @@
+package frontend_admin_game
+
+templ GlobalScripts() {
+    <script type="text/javascript">
+        function redirectToSpecificGamePage() {
+            let element = document.getElementById("game-id")
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("id") == null) {
+                  window.location = "/game?id=" + element.value;
+            }
+        }
+
+        function copy(element) {
+            let copyText = document.getElementById(element.getAttribute("data-copy-target"));
+
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+
+            navigator.clipboard.writeText(copyText.value);
+        }
+    </script>
+}

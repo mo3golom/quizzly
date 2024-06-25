@@ -56,40 +56,61 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 	return err
 }
 
-func (r *DefaultRepository) Get(ctx context.Context, id uuid.UUID) (*model.Question, error) {
+func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
 	const query = ` 
 		select q.id, q.text, q.type, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct 
 		from question as q
 		inner join question_answer_option as qao on qao.question_id = q.id
-		where q.id = $1
+		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
 	`
 
 	var result []sqlxQuestion
-	if err := r.db.SelectContext(ctx, &result, query, id); err != nil {
+	if err := r.db.SelectContext(
+		ctx,
+		&result,
+		query,
+		pq.Array(spec.IDs),
+	); err != nil {
 		return nil, err
 	}
 
 	return convert(result), nil
 }
 
-func convert(in []sqlxQuestion) *model.Question {
-	var result *model.Question
-
+func convert(in []sqlxQuestion) []model.Question {
+	out := make([]model.Question, 0, len(in))
+	tempMap := make(map[uuid.UUID][]sqlxQuestion, len(in))
 	for _, item := range in {
-		if result == nil {
-			result = &model.Question{
-				ID:            item.ID,
-				Text:          item.Text,
-				Type:          model.QuestionType(item.Type),
-				AnswerOptions: make([]model.AnswerOption, 0, len(in)),
-			}
+		if _, ok := tempMap[item.ID]; !ok {
+			tempMap[item.ID] = make([]sqlxQuestion, 0, 2)
 		}
 
-		result.AnswerOptions = append(result.AnswerOptions, model.AnswerOption{
-			Answer:    item.AnswerOptionAnswer,
-			IsCorrect: item.AnswerOptionIsCorrect,
-		})
+		tempMap[item.ID] = append(tempMap[item.ID], item)
 	}
 
-	return result
+	for _, items := range tempMap {
+		var result *model.Question
+		for _, item := range items {
+			if result == nil {
+				result = &model.Question{
+					ID:            item.ID,
+					Text:          item.Text,
+					Type:          model.QuestionType(item.Type),
+					AnswerOptions: make([]model.AnswerOption, 0, len(in)),
+				}
+			}
+
+			result.AnswerOptions = append(result.AnswerOptions, model.AnswerOption{
+				Answer:    item.AnswerOptionAnswer,
+				IsCorrect: item.AnswerOptionIsCorrect,
+			})
+		}
+
+		if result == nil {
+			continue
+		}
+		out = append(out, *result)
+	}
+
+	return out
 }

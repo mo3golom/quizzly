@@ -1,0 +1,11 @@
+package frontend_public_game
+
+import "quizzly/web/frontend/templ/components"
+
+templ Page(components ...templ.Component) {
+    @GlobalScripts()
+    <div>
+       @frontend_components.Composition(components...)
+    </div>
+    @Overlay()
+}

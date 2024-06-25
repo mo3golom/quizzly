@@ -1,0 +1,12 @@
+@font-face {
+    font-family: "obliqueFont";
+    src: url(/bignoodletoooblique.ttf);
+}
+
+.text-oblique {
+    font-family: "obliqueFont", sans-serif;
+}
+
+.border-stat-grey {
+    border-color: #1f29371a;
+}

@@ -1,0 +1,120 @@
+package frontend_question
+
+type QuestionType struct {
+  Name string
+  ActionUrl string
+  IsActive bool
+  Color string
+}
+
+templ QuestionForm(activeQuestionType string, submitUrl string, color string, questionTypes []QuestionType, answerOptionForms []templ.Component) {
+    <div id="question-form" class="grid grid-cols-6 gap-4">
+        <div>
+            for _, questionType := range questionTypes {
+                <div class="mb-4">
+                    <button
+                        class={getClassForQuestionTypeButton(questionType.IsActive, questionType.Color)}
+                        hx-get={questionType.ActionUrl}
+                        hx-confirm="Are you sure?"
+                        hx-target="#question-form"
+                        hx-swap="outerHTML"
+                    >{ questionType.Name }</button>
+                </div>
+            }
+        </div>
+        <form action={ templ.URL(submitUrl) } method="post" class="m-0 col-span-5">
+            <input type="hidden" name="question_type" value={activeQuestionType}/>
+	        <div class={"card text-primary-content rounded-2xl bg-" + color}>
+                <div class="card-body p-4">
+                    <textarea name="question_text" class="w-full textarea textarea-bordered textarea-lg min-h-40 text-black" placeholder="Текст вопроса" required></textarea>
+
+                    if activeQuestionType == "multiple_choice" {
+                        <div class="mt-4 text-white">
+                        Считать ответ верным если:
+                            <select name="question_multiple_choice_type" class="select select-bordered w-full max-w-max text-black" required>
+                                <option value="all" selected>Выбраны ВСЕ правильные варианты ответа</option>
+                                <option value="one_of">Выбран ЛЮБОЙ из правильных вариантов ответа</option>
+                            </select>
+                        </div>
+                    }
+
+                    <div class="grid grid-cols-4 gap-4 mt-4">
+                    for _, answerOptionForm := range answerOptionForms {
+                        @answerOptionForm
+                    }
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-right">
+                <button type="submit" class={"btn text-white min-w-60 rounded-2xl hover:bg-slate-900 border-0 bg-" + color}>Добавить</button>
+            </div>
+        </form>
+    </div>
+}
+
+templ AnswerOptionForm(questionType string, color string, actionUrl string) {
+    <div id={"answer-option-form-" + color} class={"card justify-self-stretch bg-" + color }>
+          <div class="card-body p-2">
+            <div class="grid grid-cols-2 gap-4 items-start">
+                  <div class="justify-self-start">
+                    <button
+                        class="btn btn-sm btn-ghost"
+                        hx-get={actionUrl}
+                        hx-swap="outerHTML"
+                        hx-target={"#answer-option-form-" + color}
+                    >Удалить</button>
+                  </div>
+                  <div class="form-control justify-self-end">
+                    <div class="tooltip" data-tip="Пометить как правильный ответ">
+                        <label class="cursor-pointer label p-0">
+                            <input
+                                type="hidden"
+                                value="0"
+                                name="question_correct_answer"
+                            />
+                            switch questionType {
+                            		case "multiple_choice":
+                            			<input
+                            			    value="1"
+                            			    name="question_correct_answer"
+                            			    type="checkbox"
+                            			    class="checkbox checkbox-success checkbox-lg border-4 [--chkfg:white]"
+                                        />
+                            		default:
+                            			<input
+                            			    value="1"
+                            			    name="question_correct_answer"
+                            			    type="radio"
+                            			    class="radio radio-success radio-lg border-4 [--chkfg:white]"
+                            			    required
+                                        />
+                            }
+                        </label>
+                    </div>
+                  </div>
+            </div>
+
+            <textarea name="question_answer_option_text" class="textarea min-h-32 text-black" placeholder="Вариант ответа" required></textarea>
+          </div>
+    </div>
+}
+
+templ AnswerOptionAdd(color string, actionUrl string) {
+    <div id={"answer-option-add-" + color} class="self-center justify-self-center">
+        <button
+            class={"btn border-0 text-lg text-white hover:bg-slate-900 bg-" + color}
+            hx-get={actionUrl}
+            hx-swap="outerHTML"
+            hx-target={"#answer-option-add-" + color}
+        >+</button>
+    </div>
+}
+
+
+func getClassForQuestionTypeButton(isActive bool, color string) string {
+    if isActive {
+        return "btn w-full text-white border-0 rounded-2xl hover:bg-slate-900 bg-" + color
+    }
+
+    return  "btn btn-outline w-full rounded-2xl hover:bg-slate-900 border-" + color + " text-" + color
+}

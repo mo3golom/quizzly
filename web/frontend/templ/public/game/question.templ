@@ -1,0 +1,99 @@
+package frontend_public_game
+
+import "strconv"
+import "github.com/google/uuid"
+import "quizzly/web/frontend/handlers"
+import "quizzly/web/frontend/templ/components"
+
+templ QuestionComposition(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
+    <form
+            hx-post="/game/play"
+            hx-target="this"
+            hx-swap="outerHTML"
+            hx-trigger="submit delay:500ms"
+            class="p-4"
+        >
+        <input name="id" type="hidden" value={ gameID.String() }/>
+        <input name="player-id" type="hidden" value={ playerID.String() }/>
+        @frontend_components.Composition(components...)
+        <div>
+            <button
+                id="play-page-submit"
+                type="submit"
+                class={"btn bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"}
+                onclick="submitAnswer()"
+                disabled
+            >Ответить</button>
+        </div>
+    </form>
+}
+
+templ Progress(progress *handlers.SessionProgress) {
+    <div class="mb-3">
+        <progress
+            class="progress progress-warning h-4 rounded-2xl w-32 bg-amber-800"
+            value={strconv.Itoa(progress.Answered)}
+            max={strconv.Itoa(progress.Total)}
+        ></progress>
+        <span class="ml-1 align-text-bottom font-bold text-white">{strconv.Itoa(progress.Answered)} / {strconv.Itoa(progress.Total)}</span>
+    </div>
+}
+
+templ Question(question *handlers.Question) {
+    <div class={"card text-primary-content rounded-2xl drop-shadow-lg mb-2 " + question.Color}>
+        <div class="card-body p-4">
+            <input name="question-id" type="hidden" value={ question.ID.String() }/>
+            <div class="font-bold text-2xl text-white p-4">
+                { question.Text }
+            </div>
+            <div>
+              switch question.Type {
+                case "choice":
+                    Выберите только один правильный ответ
+                case "one_of_choice":
+                    Выберите любой из правильных ответов
+                case "multiple_choice":
+                    Выберите все правильные ответы
+              }
+            </div>
+            <div class={"grid gap-4 grid-cols-" + strconv.Itoa(len(question.AnswerOptions))}>
+            for _, answerOption := range question.AnswerOptions {
+                @AnswerOption(answerOption.ID, answerOption.Text, answerOption.Color)
+            }
+            <script type="text/javascript">
+                chosenAnswers = [];
+            </script>
+            switch question.Type {
+                 case "choice":
+                     <script type="text/javascript">
+                        maxPossibleChosenAnswers = 1
+                     </script>
+                 case "one_of_choice", "multiple_choice":
+                    <script type="text/javascript">
+                        maxPossibleChosenAnswers = 99
+                    </script>
+            }
+            </div>
+        </div>
+    </div>
+}
+
+templ AnswerOption(id uuid.UUID, text string, color string) {
+    <div class={"card justify-self-stretch transition transition-colors duration-200 " + color}>
+          <input
+            type="checkbox"
+            name="answer"
+            value={text}
+            class="hidden"
+            id={"checkbox-"+id.String()}
+          />
+          <button
+            id={id.String()}
+            type="button"
+            class="card-body p-4 pt-6 pb-6 text-white rounded-2xl transition transition-all duration-100"
+            onclick="chooseAnswer(this)"
+          >
+            { text }
+          </button>
+    </div>
+}

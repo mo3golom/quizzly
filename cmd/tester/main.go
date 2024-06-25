@@ -51,6 +51,7 @@ func run(ctx context.Context, quizzly *quizzly.Configuration) error {
 	fmt.Println("game:", gameID)
 	err = prepareGameQuestions(ctx, quizzly.Game.MustGet(), gameID, questionIDs, err)
 	err = startGame(ctx, quizzly.Game.MustGet(), gameID, err)
+	panic("test")
 	playerID, err := startPlayerSession(ctx, quizzly.Session.MustGet(), gameID, err)
 	fmt.Println("player:", playerID)
 
@@ -165,7 +166,7 @@ func getQuestion(ctx context.Context, session contracts.SessionUsecase, gameID u
 		return nil, err
 	}
 
-	return session.NextQuestion(ctx, gameID, playerID)
+	return session.GetCurrentState(ctx, gameID, playerID)
 }
 
 func answerQuestion(

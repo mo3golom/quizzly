@@ -1,0 +1,18 @@
+package frontend_components
+
+templ Table(headers []string, components ...templ.Component) {
+    <div class="overflow-x-auto">
+      <table class="table table-lg bordered">
+        <thead>
+            <tr>
+               for _, title := range headers {
+                  <th>{ title }</th>
+               }
+            </tr>
+        </thead>
+        <tbody>
+           @Composition(components...)
+        </tbody>
+      </table>
+    </div>
+}

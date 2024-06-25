@@ -1,0 +1,67 @@
+package frontend_public_game
+
+templ GlobalScripts() {
+    <script type="text/javascript">
+        let chosenAnswers = [];
+        let maxPossibleChosenAnswers = 1;
+
+        function submitAnswer() {
+            let overlay = document.getElementById("game-page-overlay");
+            overlay.classList.remove("hidden");
+            setTimeout(() => {
+                      overlay.classList.add("opacity-100");
+                      overlay.classList.remove("opacity-0");
+            }, 10);
+        }
+
+        function showAnswerResult() {
+            let result  = document.getElementById("game-page-answer-result");
+            let overlay = document.getElementById("game-page-overlay");
+            setTimeout(() => {
+                result.classList.add("opacity-100");
+                result.classList.remove("opacity-0");
+            }, 100);
+
+            setTimeout(() => {
+                result.classList.add("opacity-0");
+                result.classList.remove("opacity-100");
+
+                overlay.classList.add("opacity-0");
+                overlay.classList.remove("opacity-100");
+            }, 1500);
+            setTimeout(() => {
+                result.classList.add("hidden");
+                overlay.classList.add("hidden");
+            }, 2000);
+        }
+
+        function chooseAnswer(element) {
+              let id = element.id
+              let found = chosenAnswers.findIndex((i) => i == id)
+              if (found != -1) {
+                     element.classList.remove("outline", "outline-4", "outline-green-500");
+                     document.getElementById("checkbox-"+id).checked=false
+                     chosenAnswers.splice(found, 1);
+
+                     if (chosenAnswers.length == 0) {
+                         document.getElementById("play-page-submit").disabled=true
+                     }
+                     return
+              }
+
+              if (maxPossibleChosenAnswers == 1 && chosenAnswers.length > 0) {
+                 chosenAnswers.forEach((i) => {
+                     document.getElementById(i).classList.remove("outline", "outline-4", "outline-green-500");
+                     document.getElementById("checkbox-"+i).checked=false
+                 });
+                 chosenAnswers = [];
+                 document.getElementById("play-page-submit").disabled=true
+              }
+
+              element.classList.add("outline", "outline-4", "outline-green-500");
+              document.getElementById("checkbox-"+id).checked=true
+              document.getElementById("play-page-submit").disabled=false
+              chosenAnswers.push(id);
+        }
+    </script>
+}

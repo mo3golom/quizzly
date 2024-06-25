@@ -1,24 +1,100 @@
 package frontend
 
+const BgColor = "bg"
+const BgWithHoverColor = "bg-hover"
+const TextColor = "text"
+const BorderColor = "border"
+
+var ColorsMap = map[string]map[string]string{
+    "orange": map[string]string{
+        BgWithHoverColor: "bg-orange-500 hover:bg-orange-600",
+        BgColor: "bg-orange-500",
+        TextColor: "text-orange-500",
+        BorderColor: "border-orange-500",
+    },
+    "pink": map[string]string{
+        BgWithHoverColor: "bg-pink-500 hover:bg-pink-600",
+        BgColor: "bg-pink-500",
+        TextColor: "text-pink-500",
+        BorderColor: "border-pink-500",
+    },
+    "amber": map[string]string{
+        BgWithHoverColor: "bg-amber-500 hover:bg-amber-600",
+        BgColor: "bg-amber-500",
+        TextColor: "text-amber-500",
+        BorderColor: "border-amber-500",
+    },
+    "red": map[string]string{
+        BgWithHoverColor: "bg-red-500 hover:bg-red-600",
+        BgColor: "bg-red-500",
+        TextColor: "text-red-500",
+        BorderColor: "border-red-500",
+    },
+    "indigo": map[string]string{
+         BgWithHoverColor: "bg-indigo-500 hover:bg-indigo-600",
+         BgColor: "bg-indigo-500",
+         TextColor: "text-indigo-500",
+         BorderColor: "border-indigo-500",
+    },
+    "blue": map[string]string{
+         BgWithHoverColor: "bg-blue-500 hover:bg-blue-600",
+         BgColor: "bg-blue-500",
+         TextColor: "text-blue-500",
+         BorderColor: "border-blue-500",
+    },
+}
+
 templ headerComponent(title string) {
 	<head>
 	    <link rel="stylesheet" href="/styles.css"></link>
+	    <link rel="stylesheet" href="/custom.css"></link>
+	    <script src="/htmx.min.js"></script>
 	    <title>{ title }</title>
 	</head>
 }
 
 templ contentComponent(title string, body templ.Component) {
-	<body>
-		<h1>{ title }</h1>
-		<div class="content">
-			@body
+	<body class="bg-indigo-950">
+		<div class="max-w-screen-xl container-xl mx-auto min-h-full">
+		    <div class="flex flex-row min-h-full mx-auto">
+		        <div class="basis-56 pl-4">
+		            <div class="card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique">Quizzly</div>
+		            <div class="mt-4">
+		                <ul class="menu bg-white rounded-box">
+                          <li><a href="/game/new">+ Новая игра</a></li>
+                          <li><a href="/question">Список вопросов</a></li>
+                        </ul>
+		            </div>
+		        </div>
+		        <div class="basis-3/4 min-h-full p-4">
+		            <div class="rounded-box bg-white p-4 min-h-full">
+		             @body
+		            </div>
+		        </div>
+		    </div>
+
 		</div>
 	</body>
 }
 
-templ PageComponent(title string, body templ.Component) {
+templ AdminPageComponent(title string, body templ.Component) {
 	<html>
 		@headerComponent(title)
 		@contentComponent(title, body)
 	</html>
+}
+
+templ PublicPageComponent(title string, body templ.Component) {
+    <html>
+    		@headerComponent(title)
+    		<body class="bg-indigo-950">
+            		<div class="max-w-screen-md container-md mx-auto min-h-full">
+            		    <div class="flex h-screen relative">
+            		        <div class="m-auto">
+            		        @body
+            		        </div>
+            		    </div>
+            		</div>
+            </body>
+    </html>
 }

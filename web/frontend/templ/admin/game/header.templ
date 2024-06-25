@@ -1,0 +1,57 @@
+package frontend_admin_game
+
+import "quizzly/web/frontend/handlers"
+
+templ Header(game *handlers.Game) {
+    <div id="game-page-header" class="mb-4">
+                <input id="game-id" name="game-id" type="hidden" value={ game.ID.String() }/>
+                <div class="flex items-center mb-4">
+                    <div class="basis-1/2">
+                        <h1 class="font-bold text-2xl">Игра #{ game.ID.String() }</h1>
+                        <h2 class="mb-4">
+                        switch game.Status {
+                        		case "created":
+                        			<span class="badge bg-blue-500 text-white">{ "Создана" }</span>
+                        		case "started":
+                        			<span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+                        		case "finished":
+                        			<span class="badge bg-orange-500 text-white">{ "Завершена" }</span>
+                        }
+                        </h2>
+                    </div>
+                    <div class="basis-1/2 justify-self-end text-right">
+                         switch game.Status {
+                            case "created":
+                                <button
+                                    class="btn bg-green-500 border-0 text-white"
+                                    hx-post="/game/start"
+                                    hx-trigger="click"
+                                    hx-target="#game-page-header"
+                                    hx-swap="outerHTML"
+                                    hx-include="[name='game-id']"
+                                >Начать</button>
+                                <button
+                                    class="btn bg-red-500 border-0 text-white"
+                                    hx-post="/game/finish"
+                                    hx-trigger="click"
+                                    hx-target="#game-page-header"
+                                    hx-swap="outerHTML"
+                                    hx-include="[name='game-id']"
+                                >Завершить</button>
+                            case "started":
+                                <button
+                                    class="btn bg-red-500 border-0 text-white"
+                                    hx-post="/game/finish"
+                                    hx-trigger="click"
+                                    hx-target="#game-page-header"
+                                    hx-swap="outerHTML"
+                                    hx-include="[name='game-id']"
+                                >Завершить</button>
+                         }
+                    </div>
+                </div>
+    </div>
+    <script type="text/javascript">
+         redirectToSpecificGamePage()
+    </script>
+}

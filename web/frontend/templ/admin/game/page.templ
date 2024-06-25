@@ -1,0 +1,16 @@
+package frontend_admin_game
+
+import "quizzly/web/frontend/templ/components"
+
+templ Page(components ...templ.Component) {
+    @GlobalScripts()
+    <div>
+        @frontend_components.Composition(components...)
+    </div>
+}
+
+templ AdminPageQuestionsList(list templ.Component) {
+    <div id="game-page-questions-list">
+        @list
+    </div>
+}
