@@ -104,7 +104,7 @@ func contentComponent(title string, body templ.Component) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"max-w-screen-xl container-xl mx-auto min-h-full\"><div class=\"flex flex-row min-h-full mx-auto\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique\">Quizzly</div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\">+ Новая игра</a></li><li><a href=\"/question\">Список вопросов</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"max-w-screen-xl container-xl mx-auto min-h-full\"><div class=\"flex flex-row min-h-full mx-auto\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique\">Quizzly</div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\" class=\"hover:text-oblique\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-5\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/question\">Список вопросов</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
