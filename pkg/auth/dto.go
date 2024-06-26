@@ -1,13 +1,20 @@
 package auth
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type (
-	insertLoginCodeIn struct {
+	upsertLoginCodeIn struct {
 		code      LoginCode
+		userID    uuid.UUID
+		expiresAt time.Time
+	}
+
+	upsertTokenIn struct {
+		token     Token
 		userID    uuid.UUID
 		expiresAt time.Time
 	}

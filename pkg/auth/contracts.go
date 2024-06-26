@@ -2,17 +2,17 @@ package auth
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"net/http"
 )
 
 type (
 	Email     string
 	LoginCode int64
+	Token     string
 
 	SimpleAuth interface {
 		SendLoginCode(ctx context.Context, email Email) error
-		Login(ctx context.Context, email Email, code LoginCode) (*uuid.UUID, error)
+		Login(ctx context.Context, email Email, code LoginCode) (*Token, error)
 	}
 
 	SimpleAuthMiddleware interface {

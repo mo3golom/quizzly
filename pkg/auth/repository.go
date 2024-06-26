@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"quizzly/pkg/transactional"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"quizzly/pkg/transactional"
 )
 
 var (
@@ -14,6 +15,11 @@ var (
 )
 
 type (
+	sqlxUser struct {
+		ID    uuid.UUID `db:"id"`
+		Email Email     `db:"email"`
+	}
+
 	defaultRepository struct {
 		db *sqlx.DB
 	}
@@ -36,10 +42,7 @@ func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional
 		limit 1
 	`
 
-	var result struct {
-		ID    uuid.UUID `db:"id"`
-		Email Email     `db:"email"`
-	}
+	var result sqlxUser
 	err := tx.GetContext(ctx, &result, query, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errUserNotFound
@@ -54,7 +57,7 @@ func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional
 	}, nil
 }
 
-func (r *defaultRepository) insertLoginCode(ctx context.Context, tx transactional.Tx, in *insertLoginCodeIn) error {
+func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactional.Tx, in *upsertLoginCodeIn) error {
 	const query = ` 
 		insert into user_auth_login_code (user_id, code, expires_at) values ($1, $2, $3) 
 	    on conflict (user_id) do update set
@@ -85,5 +88,40 @@ func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.T
 	return &loginCodeExtended{
 		userID: result.UserID,
 		code:   result.Code,
+	}, nil
+}
+
+func (r *defaultRepository) upsertToken(ctx context.Context, tx transactional.Tx, in *upsertTokenIn) error {
+	const query = ` 
+		insert into user_auth_token (user_id, token, expires_at) values ($1, $2, $3) 
+	    on conflict (user_id) do update set
+			token = excluded.token
+			expires_at = excluded.expires_at
+	`
+
+	_, err := tx.ExecContext(ctx, query, in.userID, in.token, in.expiresAt)
+	return err
+}
+
+func (r *defaultRepository) getUserByToken(ctx context.Context, tx transactional.Tx, token Token) (*user, error) {
+	const query = ` 
+		select u.id, u.email from "user" u
+		join user_auth_token uat on uat.user_id = u.id
+		where uat.token = $1 and uat.expires_at > now()
+		limit 1
+	`
+
+	var result sqlxUser
+	err := tx.GetContext(ctx, &result, query, token)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, errUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user{
+		id:    result.ID,
+		email: result.Email,
 	}, nil
 }
