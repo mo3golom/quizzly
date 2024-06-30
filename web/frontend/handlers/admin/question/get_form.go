@@ -76,7 +76,7 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, in
 
 	switch in.ActiveQuestionType {
 	case string(model.QuestionTypeMultipleChoice):
-		return frontend_question.QuestionForm(
+		return frontend_admin_question.QuestionForm(
 			string(model.QuestionTypeMultipleChoice),
 			submitUrl,
 			questionTypes[model.QuestionTypeMultipleChoice].color,
@@ -89,7 +89,7 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, in
 			},
 		), nil
 	case string(model.QuestionTypeChoice):
-		return frontend_question.QuestionForm(
+		return frontend_admin_question.QuestionForm(
 			string(model.QuestionTypeChoice),
 			submitUrl,
 			questionTypes[model.QuestionTypeChoice].color,
@@ -105,7 +105,7 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, in
 
 	return frontend.AdminPageComponent(
 		formAddTitle,
-		frontend_question.QuestionForm(
+		frontend_admin_question.QuestionForm(
 			string(model.QuestionTypeChoice),
 			submitUrl,
 			questionTypes[model.QuestionTypeChoice].color,
@@ -120,15 +120,15 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, in
 	), nil
 }
 
-func questionTypesForTempl(url string, activeQuestionType string) []frontend_question.QuestionType {
+func questionTypesForTempl(url string, activeQuestionType string) []frontend_admin_question.QuestionType {
 	if activeQuestionType == "" {
 		activeQuestionType = string(model.QuestionTypeChoice)
 	}
 
-	result := make([]frontend_question.QuestionType, 0, len(questionTypes))
+	result := make([]frontend_admin_question.QuestionType, 0, len(questionTypes))
 	for k, v := range questionTypes {
 		code := string(k)
-		item := frontend_question.QuestionType{
+		item := frontend_admin_question.QuestionType{
 			Name:      v.name,
 			ActionUrl: fmt.Sprintf("%s?%s=%s", url, paramQuestionType, code),
 			Color:     v.color,
@@ -140,7 +140,7 @@ func questionTypesForTempl(url string, activeQuestionType string) []frontend_que
 		result = append(result, item)
 	}
 
-	goSlices.SortFunc(result, func(i, j frontend_question.QuestionType) int {
+	goSlices.SortFunc(result, func(i, j frontend_admin_question.QuestionType) int {
 		return -1 * cmp.Compare(i.Name, j.Name)
 	})
 
@@ -152,7 +152,7 @@ func answerOptionForm(color string, url string, activeQuestionType string) templ
 		activeQuestionType = string(model.QuestionTypeChoice)
 	}
 
-	return frontend_question.AnswerOptionForm(
+	return frontend_admin_question.AnswerOptionForm(
 		activeQuestionType,
 		color,
 		fmt.Sprintf(
@@ -173,7 +173,7 @@ func answerOptionAdd(color string, url string, activeQuestionType string) templ.
 		activeQuestionType = string(model.QuestionTypeChoice)
 	}
 
-	return frontend_question.AnswerOptionAdd(
+	return frontend_admin_question.AnswerOptionAdd(
 		color,
 		fmt.Sprintf(
 			"%s?%s=%s&%s=%s&%s=%s",

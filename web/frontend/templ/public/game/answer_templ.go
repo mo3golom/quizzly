@@ -23,7 +23,7 @@ func Answer(isCorrect bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"absolute top-0 left-0 w-full h-full z-20 transition transition-opacity duration-500 opacity-0\"><div class=\"flex h-full\"><div class=\"m-auto\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"absolute top-0 left-0 w-full h-full z-20 transition transition-opacity duration-500 opacity-0\"><div class=\"flex h-full\"><div class=\"ml-auto mr-auto mt-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

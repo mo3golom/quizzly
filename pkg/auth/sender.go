@@ -1,25 +1,33 @@
 package auth
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"gopkg.in/gomail.v2"
+	frontendEmail "quizzly/web/frontend/templ/email"
 )
 
 const (
-	subject = "Ваш код для входа"
+	subject = "ваш код для входа"
 )
 
 type DefaultSender struct {
 	config *SenderConfig
 }
 
-func (s *DefaultSender) SendLoginCode(_ context.Context, to Email, code LoginCode) error {
+func (s *DefaultSender) SendLoginCode(ctx context.Context, to Email, code LoginCode) error {
+	bodyBuffer := new(bytes.Buffer)
+	err := frontendEmail.Code(int(code)).Render(ctx, bodyBuffer)
+	if err != nil {
+		return err
+	}
+
 	mail := gomail.NewMessage()
 	mail.SetHeader("From", string(s.config.FromEmail))
 	mail.SetHeader("To", string(to))
-	mail.SetHeader("Subject", fmt.Sprintf("%s: %d", subject, code))
-	mail.SetBody("text/html", "Hello <b>Bob</b> and <i>Cora</i>!")
+	mail.SetHeader("Subject", fmt.Sprintf("%d — %s", code, subject))
+	mail.SetBody("text/html", bodyBuffer.String())
 
 	dialer := gomail.NewDialer(
 		s.config.Host,

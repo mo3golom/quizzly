@@ -1,24 +1,25 @@
-package frontend_question
+package frontend_admin_question
 
 import "github.com/google/uuid"
+import "quizzly/internal/quizzly/model"
 
 type Options struct {
   WithSelect bool
 }
 
 
-templ QuestionListItem(id uuid.UUID, text string, answerOptions []templ.Component, options Options) {
+templ QuestionListItem(id uuid.UUID, text string, questionType model.QuestionType, answerOptions []templ.Component, options Options) {
        <div class="card card-bordered mb-4 bg-white border-base-200 border-4">
             <div class="p-4 flex justify-start items-center">
                  if options.WithSelect {
-                     <label class="cursor-pointer mr-2">
-                         <input
-                            value={ id.String() }
-                            name="question"
-                            type="checkbox"
-                            class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
-                        />
-                       </label>
+                  <label class="cursor-pointer mr-2">
+                      <input
+                         value={ id.String() }
+                         name="question"
+                         type="checkbox"
+                         class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
+                     />
+                  </label>
                  }
                  <span class="text-xl font-medium">{ text }</span>
             </div>
@@ -30,6 +31,19 @@ templ QuestionListItem(id uuid.UUID, text string, answerOptions []templ.Componen
                 for _, answerOption := range answerOptions {
                     @answerOption
                 }
+                </div>
+                <div class="mt-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                  </svg>
+                  <span>
+                  switch questionType {
+                    case "one_of_choice":
+                        Должны быть выбраны все правильные ответы
+                    case "multiple_choice":
+                        Может быть выбран любой правильный вариант ответа
+                  }
+                  </span>
                 </div>
               </div>
             </div>

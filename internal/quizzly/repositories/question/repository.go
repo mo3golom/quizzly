@@ -32,10 +32,10 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Question) error {
 	const query = ` 
-		insert into question (id, "text", "type") values ($1, $2, $3) on conflict (id) do nothing
+		insert into question (id, "text", "type", author_id) values ($1, $2, $3, $4) on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Text, in.Type)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Text, in.Type, in.AuthorID)
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,7 @@ func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.
 		from question as q
 		inner join question_answer_option as qao on qao.question_id = q.id
 		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
+		and ($2::UUID is null or q.author_id = $2::UUID)
 	`
 
 	var result []sqlxQuestion
@@ -70,6 +71,7 @@ func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.
 		&result,
 		query,
 		pq.Array(spec.IDs),
+		spec.AuthorID,
 	); err != nil {
 		return nil, err
 	}

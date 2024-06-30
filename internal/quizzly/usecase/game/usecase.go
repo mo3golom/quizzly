@@ -43,6 +43,7 @@ func (u *Usecase) Create(ctx context.Context, in *contracts.CreateGameIn) (uuid.
 			tx,
 			&model.Game{
 				ID:       id,
+				AuthorID: in.AuthorID,
 				Status:   model.GameStatusCreated,
 				Type:     model.GameTypeAsync,
 				Settings: in.Settings,
@@ -83,6 +84,10 @@ func (u *Usecase) Get(ctx context.Context, id uuid.UUID) (*model.Game, error) {
 		specificGame, err = u.games.GetWithTx(ctx, tx, id)
 		return err
 	})
+}
+
+func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
+	return u.games.GetByAuthorID(ctx, authorID)
 }
 
 func (u *Usecase) AddQuestion(ctx context.Context, gameID uuid.UUID, questionID ...uuid.UUID) error {

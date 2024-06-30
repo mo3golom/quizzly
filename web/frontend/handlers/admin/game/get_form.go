@@ -1,9 +1,9 @@
-package admin
+package game
 
 import (
 	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
+	"quizzly/pkg/auth"
 	"quizzly/pkg/structs"
 	"quizzly/web/frontend/services/question"
 	frontendIndex "quizzly/web/frontend/templ"
@@ -27,10 +27,11 @@ func NewGetFormHandler(questionService question.Service) *GetFormHandler {
 }
 
 func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, _ struct{}) (templ.Component, error) {
+	authContext := request.Context().(auth.Context)
 	questionList, err := h.questionService.List(
 		request.Context(),
 		&question.Spec{
-			AuthorID: structs.Pointer(uuid.New()),
+			AuthorID: structs.Pointer(authContext.UserID()),
 		},
 		&question.ListOptions{
 			Type:            question.ListTypeCompact,

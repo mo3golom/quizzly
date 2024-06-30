@@ -1,4 +1,4 @@
-package public
+package game
 
 import (
 	"github.com/google/uuid"

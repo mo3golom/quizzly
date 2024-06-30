@@ -10,6 +10,8 @@ import "context"
 import "io"
 import "bytes"
 
+const SiteName = "Quizzly"
+
 const BgColor = "bg"
 const BgWithHoverColor = "bg-hover"
 const TextColor = "text"
@@ -74,7 +76,7 @@ func headerComponent(title string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 52, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 54, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -104,7 +106,20 @@ func contentComponent(title string, body templ.Component) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"max-w-screen-xl container-xl mx-auto min-h-full\"><div class=\"flex flex-row min-h-full mx-auto\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique\">Quizzly</div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\" class=\"hover:text-oblique\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-5\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/question\">Список вопросов</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"max-w-screen-xl container-xl mx-auto min-h-full\"><div class=\"flex flex-row min-h-full mx-auto\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 63, Col: 104}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\" class=\"hover:text-oblique\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-5\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/game/list\">Список игр</a></li><li><a href=\"/question/list\">Список вопросов</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -131,9 +146,9 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<html>")
@@ -167,9 +182,9 @@ func PublicPageComponent(title string, body templ.Component) templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<html>")
@@ -180,7 +195,20 @@ func PublicPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"max-w-screen-md container-md mx-auto min-h-full\"><div class=\"flex h-screen relative\"><div class=\"m-auto\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"text-bold text-5xl text-left text-oblique text-white p-8\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var7 string
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 101, Col: 94}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"max-w-screen-md container-md mx-auto min-h-full\"><div class=\"flex relative\"><div class=\"ml-auto mr-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

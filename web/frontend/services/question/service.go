@@ -56,7 +56,7 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, options *ListOpti
 }
 
 func convertListToTempl(in []model.Question, withHeader bool, withSelect bool) templ.Component {
-	options := frontend_question.Options{
+	options := frontend_admin_question.Options{
 		WithSelect: withSelect,
 	}
 
@@ -64,15 +64,16 @@ func convertListToTempl(in []model.Question, withHeader bool, withSelect bool) t
 	if withHeader {
 		components = append(components, frontendComponents.Header(
 			listTitle,
-			frontend_question.ActionAddNewQuestion(),
+			frontend_admin_question.ActionAddNewQuestion(),
 		))
 	}
 	for _, item := range in {
-		components = append(components, frontend_question.QuestionListItem(
+		components = append(components, frontend_admin_question.QuestionListItem(
 			item.ID,
 			item.Text,
+			item.Type,
 			slices.SafeMap(item.AnswerOptions, func(ao model.AnswerOption) templ.Component {
-				return frontend_question.QuestionListItemAnswerOption(ao.Answer, ao.IsCorrect)
+				return frontend_admin_question.QuestionListItemAnswerOption(ao.Answer, ao.IsCorrect)
 			}),
 			options,
 		))

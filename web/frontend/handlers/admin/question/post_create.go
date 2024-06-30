@@ -2,12 +2,11 @@ package question
 
 import (
 	"errors"
-	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/structs"
+	"quizzly/pkg/auth"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/services/question"
 )
@@ -38,24 +37,20 @@ func NewPostCreateHandler(uc contracts.QuestionUsecase, service question.Service
 	return &PostCreateHandler{uc: uc, service: service}
 }
 
-func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (templ.Component, error) {
+func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (string, error) {
+	authContext := request.Context().(auth.Context)
 	converted, err := convert(&in)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
+	converted.AuthorID = authContext.UserID()
 	err = h.uc.Create(request.Context(), converted)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return h.service.List(
-		request.Context(),
-		&question.Spec{
-			AuthorID: structs.Pointer(uuid.New()),
-		},
-		&question.ListOptions{},
-	)
+	return "/question/list", nil
 }
 
 func convert(in *NewPostData) (*model.Question, error) {
@@ -100,7 +95,7 @@ func clearIn(in *NewPostData) {
 			continue
 		}
 
-		questionCorrectAnswer[i-1] = value
+		questionCorrectAnswer[len(questionCorrectAnswer)-1] = value
 	}
 
 	in.QuestionCorrectAnswer = questionCorrectAnswer

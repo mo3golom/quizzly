@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	errUserNotFound = errors.New("user not found")
+	errUserNotFound      = errors.New("user not found")
+	errLoginCodeNotFound = errors.New("login code not found")
 )
 
 type (
@@ -62,7 +63,8 @@ func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactiona
 		insert into user_auth_login_code (user_id, code, expires_at) values ($1, $2, $3) 
 	    on conflict (user_id) do update set
 			code=excluded.code,
-			expires_at=excluded.expires_at
+			expires_at=excluded.expires_at,
+			updated_at = now()
 	`
 
 	_, err := tx.ExecContext(ctx, query, in.userID, in.code, in.expiresAt)
@@ -71,7 +73,7 @@ func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactiona
 
 func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.Tx, in *getLoginCodeIn) (*loginCodeExtended, error) {
 	const query = ` 
-		select code from user_auth_login_code
+		select user_id, code from user_auth_login_code
 		where user_id=$1 and code=$2 and expires_at > now()
 		limit 1
 	`
@@ -81,6 +83,9 @@ func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.T
 		Code   LoginCode `db:"code"`
 	}
 	err := tx.GetContext(ctx, &result, query, in.userID, in.code)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, errLoginCodeNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -95,15 +100,16 @@ func (r *defaultRepository) upsertToken(ctx context.Context, tx transactional.Tx
 	const query = ` 
 		insert into user_auth_token (user_id, token, expires_at) values ($1, $2, $3) 
 	    on conflict (user_id) do update set
-			token = excluded.token
-			expires_at = excluded.expires_at
+			token = excluded.token,
+			expires_at = excluded.expires_at,
+			updated_at = now()
 	`
 
 	_, err := tx.ExecContext(ctx, query, in.userID, in.token, in.expiresAt)
 	return err
 }
 
-func (r *defaultRepository) getUserByToken(ctx context.Context, tx transactional.Tx, token Token) (*user, error) {
+func (r *defaultRepository) getUserByToken(ctx context.Context, token Token) (*user, error) {
 	const query = ` 
 		select u.id, u.email from "user" u
 		join user_auth_token uat on uat.user_id = u.id
@@ -112,7 +118,7 @@ func (r *defaultRepository) getUserByToken(ctx context.Context, tx transactional
 	`
 
 	var result sqlxUser
-	err := tx.GetContext(ctx, &result, query, token)
+	err := r.db.GetContext(ctx, &result, query, token)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errUserNotFound
 	}

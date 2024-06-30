@@ -1,4 +1,4 @@
-package admin
+package game
 
 import (
 	"github.com/a-h/templ"

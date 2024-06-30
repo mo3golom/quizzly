@@ -6,5 +6,5 @@ create table if not exists user_auth_login_code (
     created_at TIMESTAMPTZ not null default NOW(),
     updated_at TIMESTAMPTZ not null default NOW(),
 
-    foreign key (user_id) references user (id),
+    foreign key (user_id) references "user" (id)
 )

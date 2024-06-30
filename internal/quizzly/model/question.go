@@ -13,6 +13,7 @@ type (
 
 	Question struct {
 		ID            uuid.UUID
+		AuthorID      uuid.UUID
 		Text          string
 		Type          QuestionType
 		AnswerOptions []AnswerOption

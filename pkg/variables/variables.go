@@ -11,6 +11,13 @@ var registry []Variable
 var (
 	// AppEnvironmentVariable окружение, в котором запущено приложение
 	AppEnvironmentVariable = Environment[string]("ENV", "prod")
+
+	AuthSecretKey       = Environment[string]("AUTH_SECRET_KEY", "")
+	AuthSenderFromEmail = Environment[string]("AUTH_SENDER_FROM_EMAIL", "")
+	AuthSenderHost      = Environment[string]("AUTH_SENDER_HOST", "")
+	AuthSenderPort      = Environment[string]("AUTH_SENDER_PORT", "")
+	AuthSenderUser      = Environment[string]("AUTH_SENDER_USER", "")
+	AuthSenderPassword  = Environment[string]("AUTH_SENDER_PASSWORD", "")
 )
 
 type (

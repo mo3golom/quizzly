@@ -23,7 +23,7 @@ func GlobalScripts() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script type=\"text/javascript\">\n        function redirectToSpecificGamePage() {\n            let element = document.getElementById(\"game-id\")\n            const urlParams = new URLSearchParams(window.location.search);\n            if (urlParams.get(\"id\") == null) {\n                  window.location = \"/game?id=\" + element.value;\n            }\n        }\n\n        function copy(element) {\n            let copyText = document.getElementById(element.getAttribute(\"data-copy-target\"));\n\n            copyText.select();\n            copyText.setSelectionRange(0, 99999); // For mobile devices\n\n            navigator.clipboard.writeText(copyText.value);\n        }\n    </script>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script type=\"text/javascript\">\n        function copy(element) {\n            let copyText = document.getElementById(element.getAttribute(\"data-copy-target\"));\n\n            copyText.select();\n            copyText.setSelectionRange(0, 99999); // For mobile devices\n\n            navigator.clipboard.writeText(copyText.value);\n        }\n    </script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

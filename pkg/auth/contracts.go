@@ -2,7 +2,17 @@ package auth
 
 import (
 	"context"
+	"errors"
+	"github.com/google/uuid"
 	"net/http"
+)
+
+const (
+	CookieToken = "token"
+)
+
+var (
+	ErrLoginFailed = errors.New("login failed")
 )
 
 type (
@@ -10,9 +20,15 @@ type (
 	LoginCode int64
 	Token     string
 
+	Context interface {
+		context.Context
+		UserID() uuid.UUID
+	}
+
 	SimpleAuth interface {
 		SendLoginCode(ctx context.Context, email Email) error
 		Login(ctx context.Context, email Email, code LoginCode) (*Token, error)
+		Middleware() SimpleAuthMiddleware
 	}
 
 	SimpleAuthMiddleware interface {
@@ -29,5 +45,9 @@ type (
 		Port      int64
 		User      string
 		Password  string
+	}
+
+	EncryptorConfig struct {
+		SecretKey string
 	}
 )

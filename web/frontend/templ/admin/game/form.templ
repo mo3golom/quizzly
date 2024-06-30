@@ -3,13 +3,7 @@ package frontend_admin_game
 import "quizzly/web/frontend/templ/components"
 
 templ Form(questionsList templ.Component) {
-    <form
-        method="post"
-        hx-post="/game"
-        hx-target="this"
-        hx-swap="outerHTML"
-        hx-trigger="submit"
-    >
+    <form method="post" action="/game">
         @frontend_components.Header("Новая игра")
         <div class="grid grid-cols-3 gap-4">
             <div class="col-span-2">

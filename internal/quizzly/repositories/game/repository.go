@@ -2,9 +2,14 @@ package game
 
 import (
 	"context"
+	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/structs"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -12,28 +17,32 @@ import (
 type (
 	sqlxGame struct {
 		ID                       uuid.UUID `db:"id"`
+		AuthorID                 uuid.UUID `db:"author_id"`
 		Status                   string    `db:"status"`
 		Type                     string    `db:"type"`
 		SettingsIsPrivate        bool      `db:"settings_is_private"`
 		SettingsShuffleQuestions bool      `db:"settings_shuffle_questions"`
 		SettingsShuffleAnswers   bool      `db:"settings_shuffle_answers"`
+		CreatedAt                time.Time `db:"created_at"`
 	}
 
 	DefaultRepository struct {
+		db *sqlx.DB
 	}
 )
 
-func NewRepository() Repository {
-	return &DefaultRepository{}
+func NewRepository(db *sqlx.DB) Repository {
+	return &DefaultRepository{db: db}
 }
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error {
 	const query = `
-		insert into game (id, status, "type") values ($1, $2, $3)
+		insert into game (id, status, "type", author_id) values ($1, $2, $3, $4)
 		on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type)
+	fmt.Println(in.AuthorID.String())
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID)
 	if err != nil {
 		return err
 	}
@@ -77,6 +86,8 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 			g.id, 
 			g."type", 
 			g.status, 
+			g.author_id,
+			g.created_at,
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
 			gs.shuffle_answers as settings_shuffle_answers
@@ -91,16 +102,33 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 		return nil, err
 	}
 
-	return &model.Game{
-		ID:     result.ID,
-		Type:   model.GameType(result.Type),
-		Status: model.GameStatus(result.Status),
-		Settings: model.GameSettings{
-			IsPrivate:        result.SettingsIsPrivate,
-			ShuffleQuestions: result.SettingsShuffleQuestions,
-			ShuffleAnswers:   result.SettingsShuffleAnswers,
-		},
-	}, nil
+	return structs.Pointer(convertToGame(result)), nil
+}
+
+func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
+	const query = `
+		select 
+			g.id, 
+			g."type", 
+			g.status, 
+			g.author_id,
+			g.created_at,
+			gs.is_private as settings_is_private, 
+			gs.shuffle_questions as settings_shuffle_questions,
+			gs.shuffle_answers as settings_shuffle_answers
+		from game as g
+		inner join game_settings as gs on gs.game_id = g.id
+		where g.author_id = $1
+	`
+
+	var result []sqlxGame
+	if err := r.db.SelectContext(ctx, &result, query, authorID); err != nil {
+		return nil, err
+	}
+
+	return slices.SafeMap(result, func(i sqlxGame) model.Game {
+		return convertToGame(i)
+	}), nil
 }
 
 func (r *DefaultRepository) InsertGameQuestions(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionIDs []uuid.UUID) error {
@@ -127,4 +155,19 @@ func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transac
 	}
 
 	return result, nil
+}
+
+func convertToGame(in sqlxGame) model.Game {
+	return model.Game{
+		ID:       in.ID,
+		Type:     model.GameType(in.Type),
+		Status:   model.GameStatus(in.Status),
+		AuthorID: in.AuthorID,
+		Settings: model.GameSettings{
+			IsPrivate:        in.SettingsIsPrivate,
+			ShuffleQuestions: in.SettingsShuffleQuestions,
+			ShuffleAnswers:   in.SettingsShuffleAnswers,
+		},
+		CreatedAt: in.CreatedAt,
+	}
 }

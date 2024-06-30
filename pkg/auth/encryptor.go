@@ -1,6 +1,9 @@
 package auth
 
-import "crypto/aes"
+import (
+	"crypto/aes"
+	"encoding/base64"
+)
 
 type defaultEncryptor struct {
 	secretKey string
@@ -15,7 +18,7 @@ func (e *defaultEncryptor) Encrypt(data string) (string, error) {
 	ciphertext := make([]byte, len(data))
 	cipher.Encrypt(ciphertext, []byte(data))
 
-	return string(ciphertext), nil
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
 func (e *defaultEncryptor) Decrypt(data string) (string, error) {

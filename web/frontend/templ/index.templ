@@ -1,5 +1,7 @@
 package frontend
 
+const SiteName = "Quizzly"
+
 const BgColor = "bg"
 const BgWithHoverColor = "bg-hover"
 const TextColor = "text"
@@ -58,7 +60,7 @@ templ contentComponent(title string, body templ.Component) {
 		<div class="max-w-screen-xl container-xl mx-auto min-h-full">
 		    <div class="flex flex-row min-h-full mx-auto">
 		        <div class="basis-56 pl-4">
-		            <div class="card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique">Quizzly</div>
+		            <div class="card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique">{ SiteName }</div>
 		            <div class="mt-4">
 		                <ul class="menu bg-white rounded-box">
                           <li>
@@ -69,7 +71,8 @@ templ contentComponent(title string, body templ.Component) {
                                 <span>Новая игра</span>
                             </a>
                           </li>
-                          <li><a href="/question">Список вопросов</a></li>
+                          <li><a href="/game/list">Список игр</a></li>
+                          <li><a href="/question/list">Список вопросов</a></li>
                         </ul>
 		            </div>
 		        </div>
@@ -95,9 +98,10 @@ templ PublicPageComponent(title string, body templ.Component) {
     <html>
     		@headerComponent(title)
     		<body class="bg-indigo-950">
+    		        <div class="text-bold text-5xl text-left text-oblique text-white p-8">{ SiteName }</div>
             		<div class="max-w-screen-md container-md mx-auto min-h-full">
-            		    <div class="flex h-screen relative">
-            		        <div class="m-auto">
+            		    <div class="flex relative">
+            		        <div class="ml-auto mr-auto">
             		        @body
             		        </div>
             		    </div>

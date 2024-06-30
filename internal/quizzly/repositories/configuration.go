@@ -22,7 +22,7 @@ type (
 func NewConfiguration(db *sqlx.DB) *Configuration {
 	return &Configuration{
 		Game: structs.NewSingleton(func() (game.Repository, error) {
-			return game.NewRepository(), nil
+			return game.NewRepository(db), nil
 		}),
 		Session: structs.NewSingleton(func() (session.Repository, error) {
 			return session.NewRepository(db), nil

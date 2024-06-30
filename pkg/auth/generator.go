@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	maxNumber int64 = 9999
-	minNumber int64 = 1000
+	maxNumber int64 = 999999
+	minNumber int64 = 100000
 )
 
 type defaultGenerator struct {

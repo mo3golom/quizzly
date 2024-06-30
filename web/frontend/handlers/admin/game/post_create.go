@@ -1,14 +1,13 @@
-package admin
+package game
 
 import (
-	"github.com/a-h/templ"
+	"fmt"
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/auth"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/web/frontend/handlers"
-	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 )
 
 type (
@@ -29,11 +28,13 @@ func NewPostCreateHandler(uc contracts.GameUsecase) *PostCreateHandler {
 	}
 }
 
-func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostCreateData) (templ.Component, error) {
+func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostCreateData) (string, error) {
+	authContext := request.Context().(auth.Context)
 	gameID, err := h.uc.Create(
 		request.Context(),
 		&contracts.CreateGameIn{
-			Type: model.GameTypeAsync,
+			AuthorID: authContext.UserID(),
+			Type:     model.GameTypeAsync,
 			Settings: model.GameSettings{
 				IsPrivate:        false,
 				ShuffleQuestions: in.ShuffleQuestions,
@@ -42,28 +43,20 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		},
 	)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	questionIDs, err := slices.Map(in.Questions, func(id string) (uuid.UUID, error) {
 		return uuid.Parse(id)
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = h.uc.AddQuestion(request.Context(), gameID, questionIDs...)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return frontendAdminGame.Page(
-		frontendAdminGame.Header(
-			&handlers.Game{
-				ID:     gameID,
-				Status: model.GameStatusCreated,
-				Link:   getGameLink(gameID, request),
-			},
-		),
-	), nil
+	return fmt.Sprintf("/game?id=%s", gameID.String()), nil
 }

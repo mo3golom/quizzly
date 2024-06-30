@@ -1,4 +1,4 @@
-package public
+package game
 
 import (
 	"context"
@@ -80,7 +80,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		return h.statistics(request.Context(), game, playerID)
 	}
 
-	specificQuestionColor := handlers.QuestionTypeColors[session.CurrentQuestion.Type]
+	specificQuestionColor := handlers.QuestionTypePublicColors
 	answerOptions := make([]handlers.AnswerOption, 0, len(session.CurrentQuestion.AnswerOptions))
 	for i, answerOption := range session.CurrentQuestion.AnswerOptions {
 		answerOptions = append(answerOptions, handlers.AnswerOption{

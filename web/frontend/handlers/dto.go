@@ -3,27 +3,17 @@ package handlers
 import (
 	"github.com/google/uuid"
 	"quizzly/internal/quizzly/model"
+	"time"
 )
 
 var (
-	QuestionTypeColors = map[model.QuestionType]QuestionColor{
-		model.QuestionTypeChoice: {
-			Color: "blue",
-			AnswerOptionColors: []string{
-				"orange",
-				"pink",
-				"amber",
-				"red",
-			},
-		},
-		model.QuestionTypeMultipleChoice: {
-			Color: "amber",
-			AnswerOptionColors: []string{
-				"indigo",
-				"pink",
-				"blue",
-				"red",
-			},
+	QuestionTypePublicColors = QuestionColor{
+		Color: "blue",
+		AnswerOptionColors: []string{
+			"orange",
+			"pink",
+			"amber",
+			"red",
 		},
 	}
 )
@@ -35,9 +25,10 @@ type (
 	}
 
 	Game struct {
-		ID     uuid.UUID
-		Status model.GameStatus
-		Link   string
+		ID        uuid.UUID
+		Status    model.GameStatus
+		Link      string
+		CreatedAt time.Time
 	}
 
 	GameStatistics struct {

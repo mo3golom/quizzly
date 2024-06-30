@@ -26,10 +26,12 @@ type (
 	GameType   string
 
 	Game struct {
-		ID       uuid.UUID
-		Status   GameStatus
-		Type     GameType
-		Settings GameSettings
+		ID        uuid.UUID
+		AuthorID  uuid.UUID
+		Status    GameStatus
+		Type      GameType
+		Settings  GameSettings
+		CreatedAt time.Time
 	}
 
 	GameSettings struct {

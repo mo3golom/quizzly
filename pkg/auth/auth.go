@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"github.com/jmoiron/sqlx"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/transactional"
 	"strings"
@@ -24,6 +25,35 @@ type DefaultSimpleAuth struct {
 	generator  *defaultGenerator
 	encryptor  *defaultEncryptor
 	sender     Sender
+	middleware SimpleAuthMiddleware
+}
+
+func NewSimpleAuth(
+	db *sqlx.DB,
+	template transactional.Template,
+	encryptorConfig *EncryptorConfig,
+	senderConfig *SenderConfig,
+) SimpleAuth {
+	encryptor := &defaultEncryptor{
+		secretKey: encryptorConfig.SecretKey,
+	}
+	repository := &defaultRepository{
+		db: db,
+	}
+
+	return &DefaultSimpleAuth{
+		template:   template,
+		repository: repository,
+		generator:  &defaultGenerator{},
+		encryptor:  encryptor,
+		sender: &DefaultSender{
+			config: senderConfig,
+		},
+		middleware: &defaultMiddleware{
+			repository: repository,
+			encryptor:  encryptor,
+		},
+	}
 }
 
 func (a *DefaultSimpleAuth) SendLoginCode(ctx context.Context, email Email) error {
@@ -74,8 +104,17 @@ func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCo
 	h.Write([]byte(strings.ToLower(string(email))))
 	token := Token(hex.EncodeToString(h.Sum(nil)))
 
-	err := a.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificUser, err := a.repository.getUserByEmail(ctx, tx, email)
+	encryptedData, err := a.encryptor.Encrypt(string(email))
+	if err != nil {
+		return nil, err
+	}
+	encryptedEmail := Email(encryptedData)
+
+	err = a.template.Execute(ctx, func(tx transactional.Tx) error {
+		specificUser, err := a.repository.getUserByEmail(ctx, tx, encryptedEmail)
+		if errors.Is(err, errUserNotFound) {
+			return ErrLoginFailed
+		}
 		if err != nil {
 			return err
 		}
@@ -84,12 +123,15 @@ func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCo
 			code:   code,
 			userID: specificUser.id,
 		})
+		if errors.Is(err, errLoginCodeNotFound) {
+			return ErrLoginFailed
+		}
 		if err != nil {
 			return err
 		}
 
 		if specificUser.id != specificCode.userID {
-			return errors.New("can't login")
+			return ErrLoginFailed
 		}
 
 		encryptedToken, err := a.encryptor.Encrypt(string(token))
@@ -108,4 +150,8 @@ func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCo
 	}
 
 	return structs.Pointer(token), nil
+}
+
+func (a *DefaultSimpleAuth) Middleware() SimpleAuthMiddleware {
+	return a.middleware
 }

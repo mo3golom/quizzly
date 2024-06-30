@@ -1,0 +1,24 @@
+package frontend_admin_game
+
+import "quizzly/web/frontend/handlers"
+
+templ GameListItem(game *handlers.Game) {
+       <div>
+       <a href={templ.SafeURL("/game?id=" + game.ID.String())} target="_blank">
+       <div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4">
+                 <span class="text-xl font-medium">Игра от { game.CreatedAt.Format("02-01-2006") }</span>
+                 <p class="text-sm text-gray-400">{ game.ID.String() }</p>
+                 <div class="mt-2">
+                 switch game.Status {
+                      case "created":
+                          <span class="badge bg-blue-500 text-white">{ "Создана" }</span>
+                      case "started":
+                          <span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+                      case "finished":
+                          <span class="badge bg-orange-500 text-white">{ "Завершена" }</span>
+                 }
+                 </div>
+       </div>
+       </a>
+       </div>
+}

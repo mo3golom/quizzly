@@ -1,4 +1,4 @@
-package admin
+package game
 
 import (
 	"github.com/a-h/templ"
@@ -10,21 +10,21 @@ import (
 )
 
 type (
-	PostStartData struct {
+	PostFinishData struct {
 		GameID uuid.UUID `schema:"game-id"`
 	}
 
-	PostStartHandler struct {
+	PostFinishHandler struct {
 		uc contracts.GameUsecase
 	}
 )
 
-func NewPostStartHandler(uc contracts.GameUsecase) *PostStartHandler {
-	return &PostStartHandler{uc: uc}
+func NewPostFinishHandler(uc contracts.GameUsecase) *PostFinishHandler {
+	return &PostFinishHandler{uc: uc}
 }
 
-func (h *PostStartHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostStartData) (templ.Component, error) {
-	err := h.uc.Start(request.Context(), in.GameID)
+func (h *PostFinishHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostFinishData) (templ.Component, error) {
+	err := h.uc.Finish(request.Context(), in.GameID)
 	if err != nil {
 		return nil, err
 	}
