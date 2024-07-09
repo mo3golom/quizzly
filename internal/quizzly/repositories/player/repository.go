@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
 
 	"github.com/google/uuid"
@@ -38,16 +40,15 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 	return err
 }
 
-func (r *DefaultRepository) Get(ctx context.Context, id uuid.UUID) (*model.Player, error) {
+func (r *DefaultRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Player, error) {
 	const query = ` 
 		select id, user_id, name
 		from player
-		where id = $1
-		limit 1
+		where id = any($1)
 	`
 
-	var result sqlxPlayer
-	if err := r.db.GetContext(ctx, &result, query, id); err != nil {
+	var result []sqlxPlayer
+	if err := r.db.SelectContext(ctx, &result, query, pq.Array(ids)); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -55,9 +56,11 @@ func (r *DefaultRepository) Get(ctx context.Context, id uuid.UUID) (*model.Playe
 		return nil, err
 	}
 
-	return &model.Player{
-		ID:     result.ID,
-		Name:   result.Name,
-		UserID: result.UserID,
-	}, nil
+	return slices.SafeMap(result, func(in sqlxPlayer) model.Player {
+		return model.Player{
+			ID:     in.ID,
+			Name:   in.Name,
+			UserID: in.UserID,
+		}
+	}), nil
 }

@@ -9,6 +9,7 @@ import (
 	frontend "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 	frontendComponents "quizzly/web/frontend/templ/components"
+	"sort"
 )
 
 const (
@@ -33,6 +34,10 @@ func (h *GetListHandler) Handle(_ http.ResponseWriter, request *http.Request, _ 
 	if err != nil {
 		return nil, err
 	}
+
+	sort.Slice(games, func(i, j int) bool {
+		return games[i].CreatedAt.After(games[j].CreatedAt)
+	})
 
 	components := make([]templ.Component, 0, len(games)+1)
 	components = append(components, frontendComponents.Header(

@@ -4,8 +4,8 @@ import "github.com/google/uuid"
 
 const (
 	QuestionTypeChoice         QuestionType = "choice"
-	QuestionTypeOneOfChoice    QuestionType = "one_of_choice"
-	QuestionTypeMultipleChoice QuestionType = "multiple_choice"
+	QuestionTypeOneOfChoice    QuestionType = "one_of_choice"   // Может быть выбран любой правильный вариант ответа
+	QuestionTypeMultipleChoice QuestionType = "multiple_choice" // Должны быть выбраны все правильные ответы
 )
 
 type (

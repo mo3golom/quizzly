@@ -7,7 +7,8 @@ templ Header(game *handlers.Game) {
                 <input id="game-id" name="game-id" type="hidden" value={ game.ID.String() }/>
                 <div class="flex items-center mb-4">
                     <div class="basis-1/2">
-                        <h1 class="font-bold text-2xl">Игра #{ game.ID.String() }</h1>
+                        <h1 class="font-bold text-2xl">Игра от { game.CreatedAt.Format("02-01-2006") }</h1>
+                        <p class="text-sm text-gray-400 mb-2">{ game.ID.String() }</p>
                         <h2 class="mb-4">
                         switch game.Status {
                         		case "created":

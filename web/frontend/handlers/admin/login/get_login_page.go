@@ -24,7 +24,7 @@ func (h *GetLoginPageHandler) Handle(_ http.ResponseWriter, _ *http.Request, _ s
 	return frontend.PublicPageComponent(
 		loginPageTitle,
 		frontendLogin.Page(
-			frontendLogin.Form("", false),
+			frontendLogin.Form(""),
 		),
 	), nil
 }

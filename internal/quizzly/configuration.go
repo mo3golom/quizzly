@@ -2,11 +2,13 @@ package quizzly
 
 import (
 	"quizzly/internal/quizzly/contracts"
+	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories"
 	"quizzly/internal/quizzly/usecase/game"
 	"quizzly/internal/quizzly/usecase/player"
 	"quizzly/internal/quizzly/usecase/question"
 	"quizzly/internal/quizzly/usecase/session"
+	"quizzly/internal/quizzly/usecase/session/checker"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/transactional"
 
@@ -44,6 +46,11 @@ func NewConfiguration(
 				repos.Question.MustGet(),
 				repos.Player.MustGet(),
 				template,
+				map[model.QuestionType]session.AnswerChecker{
+					model.QuestionTypeChoice:         checker.NewSingleChoiceChecker(),
+					model.QuestionTypeOneOfChoice:    checker.NewOneOfChoiceChecker(),
+					model.QuestionTypeMultipleChoice: checker.NewMultipleChoiceChecker(),
+				},
 			), nil
 		}),
 		Player: structs.NewSingleton(func() (contracts.PLayerUsecase, error) {

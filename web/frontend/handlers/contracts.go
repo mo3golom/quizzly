@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/a-h/templ"
 	"github.com/gorilla/schema"
@@ -12,40 +13,37 @@ type (
 		Handle(writer http.ResponseWriter, request *http.Request, in T) (templ.Component, error)
 	}
 
-	RedirectHandler[T any] interface {
-		Handle(writer http.ResponseWriter, request *http.Request, in T) (string, error)
+	BadRequestErr struct {
+		originalErr error
 	}
 )
 
+func BadRequest(err error) *BadRequestErr {
+	return &BadRequestErr{
+		originalErr: err,
+	}
+}
+
+func (err *BadRequestErr) Error() string {
+	return err.originalErr.Error()
+}
+
 func Templ[T any](handler Handler[T]) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var inStruct T
-		switch r.Method {
-		case http.MethodPost:
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, fmt.Errorf("parse form error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-			err = schema.NewDecoder().Decode(&inStruct, r.Form)
-			if err != nil {
-				http.Error(w, fmt.Errorf("decode request body error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-		case http.MethodGet:
-			err := schema.NewDecoder().Decode(&inStruct, r.URL.Query())
-			if err != nil {
-				http.Error(w, fmt.Errorf("decode url query error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-		default:
-			http.Error(w, "unsupported method", http.StatusInternalServerError)
+		inStruct, err := parseIn[T](r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		component, err := handler.Handle(w, r, inStruct)
+		var badRequestErr *BadRequestErr
+		if errors.As(err, &badRequestErr) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		if err != nil {
-			http.Error(w, fmt.Errorf("component handlers error: %v", err).Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -54,38 +52,26 @@ func Templ[T any](handler Handler[T]) func(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func Redirect[T any](handler RedirectHandler[T]) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var inStruct T
-		switch r.Method {
-		case http.MethodPost:
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, fmt.Errorf("parse form error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-			err = schema.NewDecoder().Decode(&inStruct, r.Form)
-			if err != nil {
-				http.Error(w, fmt.Errorf("decode request body error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-		case http.MethodGet:
-			err := schema.NewDecoder().Decode(&inStruct, r.URL.Query())
-			if err != nil {
-				http.Error(w, fmt.Errorf("decode url query error: %v", err).Error(), http.StatusInternalServerError)
-				return
-			}
-		default:
-			http.Error(w, "unsupported method", http.StatusInternalServerError)
-			return
-		}
-
-		newUrl, err := handler.Handle(w, r, inStruct)
+func parseIn[T any](r *http.Request) (T, error) {
+	var inStruct T
+	switch r.Method {
+	case http.MethodPost:
+		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, fmt.Errorf("component handlers error: %v", err).Error(), http.StatusInternalServerError)
-			return
+			return inStruct, fmt.Errorf("parse form error: %v", err)
 		}
-
-		http.Redirect(w, r, newUrl, http.StatusFound)
+		err = schema.NewDecoder().Decode(&inStruct, r.Form)
+		if err != nil {
+			return inStruct, fmt.Errorf("decode request body error: %v", err)
+		}
+	case http.MethodGet:
+		err := schema.NewDecoder().Decode(&inStruct, r.URL.Query())
+		if err != nil {
+			return inStruct, fmt.Errorf("decode url query error: %v", err)
+		}
+	default:
+		return inStruct, fmt.Errorf("unsupported method: %v", r.Method)
 	}
+
+	return inStruct, nil
 }

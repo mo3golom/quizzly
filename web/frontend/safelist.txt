@@ -1,1 +1,5 @@
 badge
+alert-info
+alert-error
+alert-success
+alert-warning

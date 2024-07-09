@@ -31,6 +31,11 @@ type (
 		CreatedAt time.Time
 	}
 
+	GameSettings struct {
+		ShuffleQuestions bool
+		ShuffleAnswers   bool
+	}
+
 	GameStatistics struct {
 		QuestionsCount    int
 		ParticipantsCount int

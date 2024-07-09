@@ -45,16 +45,17 @@ func routes(mux *http.ServeMux, config *configuration, quizzlyConfig *quizzly.Co
 	// ADMIN ROUTES
 	mux.HandleFunc("GET /login", handlers.Templ[struct{}](login.NewGetLoginPageHandler()))
 	mux.HandleFunc("POST /login", handlers.Templ[login.PostLoginPageData](login.NewPostLoginPageHandler(simpleAuth)))
+	mux.HandleFunc("GET /logout", handlers.Templ[struct{}](login.NewGetLogoutPageHandler()))
 
 	mux.HandleFunc("GET /question/new", security.WithAuth(handlers.Templ[question.GetFormData](question.NewGetFormHandler())))
-	mux.HandleFunc("POST /question", security.WithAuth(handlers.Redirect[question.NewPostData](question.NewPostCreateHandler(
+	mux.HandleFunc("POST /question", security.WithAuth(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
 		quizzlyConfig.Question.MustGet(),
 		config.questions.MustGet(),
 	))))
 	mux.HandleFunc("GET /question/list", security.WithAuth(handlers.Templ[struct{}](question.NewGetHandler(config.questions.MustGet()))))
 
 	mux.HandleFunc("GET /game/new", security.WithAuth(handlers.Templ[struct{}](game.NewGetFormHandler(config.questions.MustGet()))))
-	mux.HandleFunc("POST /game", security.WithAuth(handlers.Redirect[game.PostCreateData](game.NewPostCreateHandler(quizzlyConfig.Game.MustGet()))))
+	mux.HandleFunc("POST /game", security.WithAuth(handlers.Templ[game.PostCreateData](game.NewPostCreateHandler(quizzlyConfig.Game.MustGet()))))
 	mux.HandleFunc("GET /game", security.WithAuth(handlers.Templ[game.GetAdminPageData](game.NewGetPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		config.questions.MustGet(),
@@ -82,7 +83,10 @@ func ServerRun(quizzlyConfig *quizzly.Configuration, simpleAuth auth.SimpleAuth)
 			return questionService.NewService(quizzlyConfig.Question.MustGet()), nil
 		}),
 		sessions: structs.NewSingleton(func() (sessionService.Service, error) {
-			return sessionService.NewService(quizzlyConfig.Session.MustGet()), nil
+			return sessionService.NewService(
+				quizzlyConfig.Session.MustGet(),
+				quizzlyConfig.Player.MustGet(),
+			), nil
 		}),
 	}
 

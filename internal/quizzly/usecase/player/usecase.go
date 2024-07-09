@@ -34,3 +34,7 @@ func (u *Usecase) Create(ctx context.Context, in *model.Player) error {
 		return u.players.Insert(ctx, tx, in)
 	})
 }
+
+func (u *Usecase) Get(ctx context.Context, ids []uuid.UUID) ([]model.Player, error) {
+	return u.players.GetByIDs(ctx, ids)
+}

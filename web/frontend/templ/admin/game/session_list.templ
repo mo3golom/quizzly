@@ -5,8 +5,22 @@ import "strconv"
 
 templ SessionListItem(name string, completionRate int, sessionStatus model.SessionStatus) {
     <tr>
-            <td>{ name }</td>
-            <td>{ strconv.Itoa(completionRate) } %</td>
-            <td>{ string(sessionStatus) }</td>
+            <td class="font-bold text-oblique text-xl">{ name }</td>
+            <td>
+                        <progress
+                            class="progress h-4 rounded-2xl w-32"
+                            value={strconv.Itoa(completionRate)}
+                            max="100"
+                        ></progress>
+                        <span class="ml-1 align-text-bottom font-bold">{ strconv.Itoa(completionRate) } %</span>
+            </td>
+            <td>
+                 switch sessionStatus {
+                      case model.SessionStatusStarted:
+                          <span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+                      case model.SessionStatusFinished:
+                          <span class="badge bg-orange-500 text-white">{ "Завершено" }</span>
+                 }
+            </td>
     </tr>
 }

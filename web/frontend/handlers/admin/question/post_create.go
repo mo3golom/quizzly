@@ -2,6 +2,7 @@ package question
 
 import (
 	"errors"
+	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
@@ -9,6 +10,7 @@ import (
 	"quizzly/pkg/auth"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/services/question"
+	frontend_components "quizzly/web/frontend/templ/components"
 )
 
 var (
@@ -37,20 +39,20 @@ func NewPostCreateHandler(uc contracts.QuestionUsecase, service question.Service
 	return &PostCreateHandler{uc: uc, service: service}
 }
 
-func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (string, error) {
+func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (templ.Component, error) {
 	authContext := request.Context().(auth.Context)
 	converted, err := convert(&in)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	converted.AuthorID = authContext.UserID()
 	err = h.uc.Create(request.Context(), converted)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return "/question/list", nil
+	return frontend_components.Redirect("/question/list"), nil
 }
 
 func convert(in *NewPostData) (*model.Question, error) {

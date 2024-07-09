@@ -2,20 +2,19 @@ package session
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"errors"
+	"github.com/google/uuid"
+	"math/big"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/player"
 	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
-	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 type (
@@ -24,12 +23,18 @@ type (
 		IsNew bool
 	}
 
+	AnswerChecker interface {
+		Check(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error)
+	}
+
 	Usecase struct {
 		sessions  session.Repository
 		games     game.Repository
 		questions question.Repository
 		players   player.Repository
 		template  transactional.Template
+
+		checkers map[model.QuestionType]AnswerChecker
 	}
 )
 
@@ -39,6 +44,7 @@ func NewUsecase(
 	questions question.Repository,
 	players player.Repository,
 	template transactional.Template,
+	checkers map[model.QuestionType]AnswerChecker,
 ) contracts.SessionUsecase {
 	return &Usecase{
 		sessions:  sessions,
@@ -46,6 +52,7 @@ func NewUsecase(
 		questions: questions,
 		players:   players,
 		template:  template,
+		checkers:  checkers,
 	}
 }
 
@@ -55,11 +62,11 @@ func (u *Usecase) Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUI
 			return err
 		}
 
-		specificPlayer, err := u.players.Get(ctx, playerID)
+		specificPlayers, err := u.players.GetByIDs(ctx, []uuid.UUID{playerID})
 		if err != nil {
 			return err
 		}
-		if specificPlayer == nil {
+		if len(specificPlayers) == 0 {
 			err = u.players.Insert(ctx, tx, &model.Player{
 				ID:   playerID,
 				Name: "unknown",
@@ -97,142 +104,6 @@ func (u *Usecase) Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UU
 
 		specificPlayerGame.Status = model.SessionStatusFinished
 		return u.sessions.Update(ctx, tx, specificPlayerGame)
-	})
-}
-
-func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswersIn) (*contracts.AcceptAnswersOut, error) {
-	var result *contracts.AcceptAnswersOut
-	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, in.GameID); err != nil {
-			return err
-		}
-
-		specificSession, err := u.getSession(ctx, tx, in.PlayerID, in.GameID)
-		if err != nil {
-			return err
-		}
-		if specificSession.Status != model.SessionStatusStarted {
-			return contracts.ErrNotActiveSessionNotFound
-		}
-
-		specificPlayerSessionItems, err := u.sessions.GetSessionBySpecWithTx(ctx, tx, &session.ItemSpec{
-			PlayerID:   in.PlayerID,
-			GameID:     in.GameID,
-			QuestionID: &in.QuestionID,
-		})
-		if err != nil {
-			return err
-		}
-		if len(specificPlayerSessionItems) == 0 {
-			return errors.New("player session is empty")
-		}
-
-		specificPlayerSessionItem := specificPlayerSessionItems[0]
-		if specificPlayerSessionItem.AnsweredAt != nil {
-			return errors.New("question is already answered")
-		}
-
-		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
-			IDs: []uuid.UUID{in.QuestionID},
-		})
-		if err != nil {
-			return err
-		}
-		if len(specificQuestions) == 0 {
-			return errors.New("question not found")
-		}
-
-		result, err = checkAnswers(&specificQuestions[0], in.Answers)
-		if err != nil {
-			return err
-		}
-
-		specificPlayerSessionItem.IsCorrect = structs.Pointer(result.IsCorrect)
-		specificPlayerSessionItem.Answers = in.Answers
-		specificPlayerSessionItem.AnsweredAt = structs.Pointer(time.Now())
-		return u.sessions.UpdateSessionItem(
-			ctx,
-			tx,
-			&specificPlayerSessionItem,
-		)
-	})
-}
-
-func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*contracts.SessionState, error) {
-	var result *contracts.SessionState
-	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
-			return err
-		}
-
-		specificSession, err := u.getSession(ctx, tx, playerID, gameID)
-		if err != nil {
-			return err
-		}
-		if specificSession.Status == model.SessionStatusFinished {
-			result = &contracts.SessionState{
-				Status: specificSession.Status,
-			}
-			return nil
-		}
-
-		gameQuestions, err := u.games.GetQuestionIDsBySpec(
-			ctx,
-			tx,
-			&game.Spec{
-				GameID: gameID,
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		sessionItems, err := u.sessions.GetSessionBySpecWithTx(
-			ctx,
-			tx,
-			&session.ItemSpec{
-				PlayerID: playerID,
-				GameID:   gameID,
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		specificUnansweredQuestion, err := getUnansweredQuestionID(gameQuestions, sessionItems)
-		if err != nil {
-			return err
-		}
-
-		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
-			IDs: []uuid.UUID{specificUnansweredQuestion.ID},
-		})
-		if err != nil {
-			return err
-		}
-		if len(specificQuestions) == 0 {
-			return errors.New("question not found")
-		}
-
-		result = &contracts.SessionState{
-			CurrentQuestion: &specificQuestions[0],
-			Progress: contracts.Progress{
-				Total: int64(len(gameQuestions)),
-				Answered: int64(len(
-					slices.Filter(sessionItems, func(item model.SessionItem) bool {
-						return item.AnsweredAt != nil
-					}),
-				)),
-			},
-		}
-
-		if !specificUnansweredQuestion.IsNew {
-			return nil
-		}
-		return u.sessions.InsertSessionItem(ctx, tx, &model.SessionItem{
-			SessionID:  specificSession.ID,
-			QuestionID: result.CurrentQuestion.ID,
-		})
 	})
 }
 
@@ -317,13 +188,13 @@ func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID 
 	return specificSession, nil
 }
 
-func getUnansweredQuestionID(gameQuestions []uuid.UUID, sessionItems []model.SessionItem) (*unansweredQuestion, error) {
-	unAnsweredSessionItems := slices.Filter(sessionItems, func(item model.SessionItem) bool {
+func getUnansweredQuestionID(game *model.Game, gameQuestions []uuid.UUID, sessionItems []model.SessionItem) (*unansweredQuestion, error) {
+	unansweredSessionItems := slices.Filter(sessionItems, func(item model.SessionItem) bool {
 		return item.AnsweredAt == nil
 	})
-	if len(unAnsweredSessionItems) > 0 {
+	if len(unansweredSessionItems) > 0 {
 		return &unansweredQuestion{
-			ID:    unAnsweredSessionItems[0].QuestionID,
+			ID:    unansweredSessionItems[0].QuestionID,
 			IsNew: false,
 		}, nil
 	}
@@ -341,8 +212,14 @@ func getUnansweredQuestionID(gameQuestions []uuid.UUID, sessionItems []model.Ses
 		return nil, contracts.ErrQuestionQueueIsEmpty
 	}
 
+	questionIndex := 0
+	if game.Settings.ShuffleQuestions {
+		randomNumber, _ := rand.Int(rand.Reader, big.NewInt(int64(len(unansweredQuestionIDs))))
+		questionIndex = int(randomNumber.Int64())
+	}
+
 	return &unansweredQuestion{
-		ID:    unansweredQuestionIDs[0],
+		ID:    unansweredQuestionIDs[questionIndex],
 		IsNew: true,
 	}, nil
 }

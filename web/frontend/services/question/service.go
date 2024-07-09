@@ -10,6 +10,7 @@ import (
 	frontend "quizzly/web/frontend/templ"
 	"quizzly/web/frontend/templ/admin/question"
 	frontendComponents "quizzly/web/frontend/templ/components"
+	"sort"
 )
 
 const (
@@ -56,6 +57,10 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, options *ListOpti
 }
 
 func convertListToTempl(in []model.Question, withHeader bool, withSelect bool) templ.Component {
+	sort.Slice(in, func(i, j int) bool {
+		return in[i].ID.String() < in[j].ID.String()
+	})
+
 	options := frontend_admin_question.Options{
 		WithSelect: withSelect,
 	}

@@ -1,6 +1,9 @@
 package frontend
 
-const SiteName = "Quizzly"
+import "quizzly/web/frontend/templ/components"
+import "time"
+
+const SiteName = "Quiz Whiz"
 
 const BgColor = "bg"
 const BgWithHoverColor = "bg-hover"
@@ -46,6 +49,7 @@ var ColorsMap = map[string]map[string]string{
     },
 }
 
+
 templ headerComponent(title string) {
 	<head>
 	    <link rel="stylesheet" href="/styles.css"></link>
@@ -55,42 +59,51 @@ templ headerComponent(title string) {
 	</head>
 }
 
-templ contentComponent(title string, body templ.Component) {
-	<body class="bg-indigo-950">
-		<div class="max-w-screen-xl container-xl mx-auto min-h-full">
-		    <div class="flex flex-row min-h-full mx-auto">
-		        <div class="basis-56 pl-4">
-		            <div class="card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique">{ SiteName }</div>
-		            <div class="mt-4">
-		                <ul class="menu bg-white rounded-box">
-                          <li>
-                            <a href="/game/new" class="hover:text-oblique">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                </svg>
-                                <span>Новая игра</span>
-                            </a>
-                          </li>
-                          <li><a href="/game/list">Список игр</a></li>
-                          <li><a href="/question/list">Список вопросов</a></li>
-                        </ul>
-		            </div>
-		        </div>
-		        <div class="basis-3/4 min-h-full p-4">
-		            <div class="rounded-box bg-white p-4 min-h-full">
-		             @body
-		            </div>
-		        </div>
-		    </div>
+templ footerComponent() {
+    <footer class="footer text-neutral-content p-4">
+      <aside class="grid-flow-col items-center">
+        <p>{ SiteName } { time.Now().Format("2006") }</p>
+      </aside>
+      <nav class="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
 
-		</div>
-	</body>
+      </nav>
+    </footer>
 }
 
 templ AdminPageComponent(title string, body templ.Component) {
-	<html>
+	<html lang="RU">
 		@headerComponent(title)
-		@contentComponent(title, body)
+		<body class="bg-indigo-950">
+            <div class="max-w-screen-xl container-xl mx-auto min-h-full">
+              <div class="flex flex-row min-h-full mx-auto">
+                  <div class="basis-56 pl-4">
+                      <div class="card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique">{ SiteName }</div>
+                      <div class="mt-4">
+                          <ul class="menu bg-white rounded-box">
+                              <li>
+                                <a href="/game/new" class="link link-primary no-underline">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                    <span>Новая игра</span>
+                                </a>
+                              </li>
+                              <li><a href="/game/list">Список игр</a></li>
+                              <li><a href="/question/list">Список вопросов</a></li>
+                              <li><a href="/logout">Выйти</a></li>
+                            </ul>
+                      </div>
+                  </div>
+                  <div class="basis-3/4 min-h-full p-4">
+                      <div class="rounded-box bg-white p-4 min-h-full">
+                       @body
+                       @frontend_components.GlobalMessages()
+                      </div>
+                  </div>
+              </div>
+            </div>
+            @footerComponent()
+        </body>
 	</html>
 }
 
@@ -98,13 +111,15 @@ templ PublicPageComponent(title string, body templ.Component) {
     <html>
     		@headerComponent(title)
     		<body class="bg-indigo-950">
-    		        <div class="text-bold text-5xl text-left text-oblique text-white p-8">{ SiteName }</div>
-            		<div class="max-w-screen-md container-md mx-auto min-h-full">
-            		    <div class="flex relative">
-            		        <div class="ml-auto mr-auto">
-            		        @body
-            		        </div>
+            		<div class="flex flex-col h-screen ">
+            		    <div class="text-bold text-5xl text-left text-oblique text-white p-8">{ SiteName }</div>
+            		    <div class="mb-auto relative">
+            		         <div class="max-w-screen-md container-md mx-auto">
+                                @body
+                             </div>
             		    </div>
+            		    @frontend_components.GlobalMessages()
+            		    @footerComponent()
             		</div>
             </body>
     </html>

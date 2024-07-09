@@ -11,6 +11,6 @@ import (
 type (
 	Repository interface {
 		Insert(ctx context.Context, tx transactional.Tx, in *model.Player) error
-		Get(ctx context.Context, id uuid.UUID) (*model.Player, error)
+		GetByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Player, error)
 	}
 )

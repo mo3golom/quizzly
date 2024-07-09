@@ -2,12 +2,14 @@ package game
 
 import (
 	"fmt"
+	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/auth"
 	"quizzly/pkg/structs/collections/slices"
+	frontend_components "quizzly/web/frontend/templ/components"
 )
 
 type (
@@ -28,7 +30,7 @@ func NewPostCreateHandler(uc contracts.GameUsecase) *PostCreateHandler {
 	}
 }
 
-func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostCreateData) (string, error) {
+func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostCreateData) (templ.Component, error) {
 	authContext := request.Context().(auth.Context)
 	gameID, err := h.uc.Create(
 		request.Context(),
@@ -43,20 +45,20 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		},
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	questionIDs, err := slices.Map(in.Questions, func(id string) (uuid.UUID, error) {
 		return uuid.Parse(id)
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	err = h.uc.AddQuestion(request.Context(), gameID, questionIDs...)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return fmt.Sprintf("/game?id=%s", gameID.String()), nil
+	return frontend_components.Redirect(fmt.Sprintf("/game?id=%s", gameID.String())), nil
 }

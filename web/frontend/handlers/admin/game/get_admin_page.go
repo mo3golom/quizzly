@@ -94,9 +94,10 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 		frontendAdminGame.Page(
 			frontendAdminGame.Header(
 				&handlers.Game{
-					ID:     game.ID,
-					Status: game.Status,
-					Link:   getGameLink(game.ID, request),
+					ID:        game.ID,
+					Status:    game.Status,
+					Link:      getGameLink(game.ID, request),
+					CreatedAt: game.CreatedAt,
 				},
 			),
 			frontendAdminGame.Statistics(
@@ -107,6 +108,10 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 					CompletionRate:    int(stats.CompletionRate),
 				},
 			),
+			frontendAdminGame.Settings(&handlers.GameSettings{
+				ShuffleQuestions: game.Settings.ShuffleQuestions,
+				ShuffleAnswers:   game.Settings.ShuffleAnswers,
+			}),
 			frontendComponents.Tabs(
 				uuid.New(),
 				frontendComponents.Tab{
