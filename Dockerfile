@@ -7,7 +7,7 @@ COPY ./ ./
 
 RUN go mod download
 RUN go mod verify
-RUN go build -o app  ./cmd/main.go
+RUN go build -o app  ./cmd/service/main.go
 
 FROM golang:1.22.2-alpine
 
