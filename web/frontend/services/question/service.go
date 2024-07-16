@@ -47,22 +47,23 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, options *ListOpti
 
 	switch options.Type {
 	case ListTypeCompact:
-		return convertListToTempl(list, false, options.SelectIsEnabled), nil
+		return convertListToTempl(list, false, options.SelectIsEnabled, options.ActionsIsEnabled), nil
 	default:
 		return frontend.AdminPageComponent(
 			listTitle,
-			convertListToTempl(list, true, options.SelectIsEnabled),
+			convertListToTempl(list, true, options.SelectIsEnabled, options.ActionsIsEnabled),
 		), nil
 	}
 }
 
-func convertListToTempl(in []model.Question, withHeader bool, withSelect bool) templ.Component {
+func convertListToTempl(in []model.Question, withHeader bool, withSelect bool, withActions bool) templ.Component {
 	sort.Slice(in, func(i, j int) bool {
 		return in[i].ID.String() < in[j].ID.String()
 	})
 
 	options := frontend_admin_question.Options{
-		WithSelect: withSelect,
+		WithSelect:  withSelect,
+		WithActions: withActions,
 	}
 
 	components := make([]templ.Component, 0, len(in)+1)

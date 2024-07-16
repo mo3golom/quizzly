@@ -4,7 +4,7 @@ import "quizzly/web/frontend/handlers"
 
 templ GameListItem(game *handlers.Game) {
        <div>
-       <a href={templ.SafeURL("/game?id=" + game.ID.String())} target="_blank">
+       <a href={templ.SafeURL("/game?id=" + game.ID.String())}>
        <div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4">
                  <span class="text-xl font-medium">Игра от { game.CreatedAt.Format("02-01-2006") }</span>
                  <p class="text-sm text-gray-400">{ game.ID.String() }</p>

@@ -1,0 +1,1 @@
+alter table question add column if not exists deleted_at TIMESTAMPTZ default null;

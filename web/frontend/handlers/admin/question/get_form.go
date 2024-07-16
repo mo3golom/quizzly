@@ -8,12 +8,14 @@ import (
 	"quizzly/internal/quizzly/model"
 	frontend "quizzly/web/frontend/templ"
 	"quizzly/web/frontend/templ/admin/question"
+	frontendComponents "quizzly/web/frontend/templ/components"
 	goSlices "slices"
 )
 
 const (
 	formAddTitle = "Добавление вопроса"
 	submitUrl    = "/question"
+	listUrl      = "/game/list"
 )
 
 const (
@@ -105,17 +107,20 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, in
 
 	return frontend.AdminPageComponent(
 		formAddTitle,
-		frontend_admin_question.QuestionForm(
-			string(model.QuestionTypeChoice),
-			submitUrl,
-			questionTypes[model.QuestionTypeChoice].color,
-			templQuestionTypes,
-			[]templ.Component{
-				answerOptionForm("orange-500", url, in.ActiveQuestionType),
-				answerOptionForm("pink-500", url, in.ActiveQuestionType),
-				answerOptionAdd("amber-500", url, in.ActiveQuestionType),
-				answerOptionAdd("red-500", url, in.ActiveQuestionType),
-			},
+		frontendComponents.Composition(
+			frontendComponents.BackLink(listUrl),
+			frontend_admin_question.QuestionForm(
+				string(model.QuestionTypeChoice),
+				submitUrl,
+				questionTypes[model.QuestionTypeChoice].color,
+				templQuestionTypes,
+				[]templ.Component{
+					answerOptionForm("orange-500", url, in.ActiveQuestionType),
+					answerOptionForm("pink-500", url, in.ActiveQuestionType),
+					answerOptionAdd("amber-500", url, in.ActiveQuestionType),
+					answerOptionAdd("red-500", url, in.ActiveQuestionType),
+				},
+			),
 		),
 	), nil
 }

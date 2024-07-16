@@ -10,3 +10,7 @@
 .border-stat-grey {
     border-color: #1f29371a;
 }
+
+.bg-base-disabled {
+    background-color: rgba(242,242,242,0.5);
+}

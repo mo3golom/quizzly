@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
+	"strconv"
 )
 
 type (
@@ -25,16 +27,19 @@ type (
 	PostPlayPageHandler struct {
 		gameUC    contracts.GameUsecase
 		sessionUC contracts.SessionUsecase
+		playerUC  contracts.PLayerUsecase
 	}
 )
 
 func NewPostPlayPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
+	playerUC contracts.PLayerUsecase,
 ) *PostPlayPageHandler {
 	return &PostPlayPageHandler{
 		gameUC:    gameUC,
 		sessionUC: sessionUC,
+		playerUC:  playerUC,
 	}
 }
 
@@ -44,7 +49,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 		return nil, err
 	}
 	if game == nil || game.Status == model.GameStatusFinished {
-		return frontendPublicGame.NotFound(), nil
+		return frontendPublicGame.StartPage(), nil
 	}
 
 	playerID := in.PlayerID
@@ -53,15 +58,27 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 	}
 
 	if playerID == uuid.Nil {
-		return frontendPublicGame.NotFound(), nil
+		return frontendPublicGame.StartPage(), nil
 	}
 	setPlayerID(writer, playerID)
+
+	answers, err := slices.Map(in.Answers, func(i string) (model.AnswerOptionID, error) {
+		number, err := strconv.Atoi(i)
+		if err != nil {
+			return model.AnswerOptionID(0), err
+		}
+
+		return model.AnswerOptionID(number), nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	answerResult, err := h.sessionUC.AcceptAnswers(request.Context(), &contracts.AcceptAnswersIn{
 		GameID:     game.ID,
 		PlayerID:   playerID,
 		QuestionID: in.QuestionID,
-		Answers:    in.Answers,
+		Answers:    answers,
 	})
 	if err != nil {
 		return nil, err
@@ -79,19 +96,31 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 	answerOptions := make([]handlers.AnswerOption, 0, len(session.CurrentQuestion.AnswerOptions))
 	for i, answerOption := range session.CurrentQuestion.AnswerOptions {
 		answerOptions = append(answerOptions, handlers.AnswerOption{
-			ID:    uuid.New(),
+			ID:    int64(answerOption.ID),
 			Text:  answerOption.Answer,
 			Color: frontend.ColorsMap[specificQuestionColor.AnswerOptionColors[i]][frontend.BgWithHoverColor],
 		})
 	}
 
+	var playerName string
+	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{playerID})
+	if err != nil {
+		return nil, err
+	}
+	if len(players) > 0 {
+		playerName = players[0].Name
+	}
+
 	return frontendPublicGame.QuestionComposition(
 		game.ID,
 		playerID,
-		frontendPublicGame.Progress(&handlers.SessionProgress{
-			Answered: int(session.Progress.Answered),
-			Total:    int(session.Progress.Total),
-		}),
+		frontendComponents.GridLine(
+			frontendPublicGame.Progress(&handlers.SessionProgress{
+				Answered: int(session.Progress.Answered),
+				Total:    int(session.Progress.Total),
+			}),
+			frontendPublicGame.Player(playerName),
+		),
 		frontendPublicGame.Question(&handlers.Question{
 			ID:            session.CurrentQuestion.ID,
 			Type:          session.CurrentQuestion.Type,
@@ -120,11 +149,15 @@ func (h *PostPlayPageHandler) finish(
 	}
 
 	return frontendComponents.Composition(
-		frontendPublicGame.Statistics(
-			&handlers.SessionStatistics{
-				QuestionsCount:      int(stats.QuestionsCount),
-				CorrectAnswersCount: int(stats.CorrectAnswersCount),
-			},
+		frontendComponents.CompositionMD(
+			frontendPublicGame.ResultHeader(),
+			frontendPublicGame.ResultStatistics(
+				&handlers.SessionStatistics{
+					QuestionsCount:      int(stats.QuestionsCount),
+					CorrectAnswersCount: int(stats.CorrectAnswersCount),
+				},
+			),
+			frontendPublicGame.ActionRestartGame(game.ID),
 		),
 		frontendPublicGame.Answer(answerResult),
 	), nil

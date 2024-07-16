@@ -1,0 +1,11 @@
+package frontend_components
+
+import "strconv"
+
+templ GridLine(components ...templ.Component) {
+    <div class={"grid gap-4 grid-cols-" + strconv.Itoa(len(components))}>
+      for _, element := range components {
+        @element
+      }
+    </div>
+}

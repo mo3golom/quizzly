@@ -15,8 +15,9 @@ type (
 	ListType string
 
 	ListOptions struct {
-		Type            ListType
-		SelectIsEnabled bool
+		Type             ListType
+		SelectIsEnabled  bool
+		ActionsIsEnabled bool
 	}
 
 	Spec struct {

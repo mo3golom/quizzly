@@ -17,6 +17,7 @@ type (
 	Repository interface {
 		Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error
 		Update(ctx context.Context, tx transactional.Tx, in *model.Game) error
+		Get(ctx context.Context, id uuid.UUID) (*model.Game, error)
 		GetWithTx(ctx context.Context, tx transactional.Tx, id uuid.UUID) (*model.Game, error)
 		GetByAuthorID(ctx context.Context, authorID uuid.UUID) ([]model.Game, error)
 

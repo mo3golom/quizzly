@@ -12,6 +12,7 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
+	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
 	"time"
 )
@@ -23,7 +24,8 @@ const (
 
 type (
 	GetPlayPageData struct {
-		GameID uuid.UUID `schema:"id"`
+		GameID  uuid.UUID `schema:"id"`
+		Restart *bool     `schema:"restart"`
 	}
 
 	GetPlayPageHandler struct {
@@ -47,17 +49,23 @@ func NewGetPlayPageHandler(
 
 func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in GetPlayPageData) (templ.Component, error) {
 	game, err := h.gameUC.Get(request.Context(), in.GameID)
+	if errors.Is(err, contracts.ErrGameNotFound) {
+		return frontend.PublicPageComponent(
+			getPlayPageTitle,
+			frontendPublicGame.StartPage(),
+		), nil
+	}
 	if err != nil {
 		return nil, err
 	}
 	if game == nil || game.Status == model.GameStatusFinished {
 		return frontend.PublicPageComponent(
 			getPlayPageTitle,
-			frontendPublicGame.NotFound(),
+			frontendPublicGame.StartPage(),
 		), nil
 	}
 
-	playerID, err := h.getPlayerID(request)
+	playerID, err := h.getPlayerID(request, in.Restart)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +92,19 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	answerOptions := make([]handlers.AnswerOption, 0, len(session.CurrentQuestion.AnswerOptions))
 	for i, answerOption := range session.CurrentQuestion.AnswerOptions {
 		answerOptions = append(answerOptions, handlers.AnswerOption{
-			ID:    uuid.New(),
+			ID:    int64(answerOption.ID),
 			Text:  answerOption.Answer,
 			Color: frontend.ColorsMap[specificQuestionColor.AnswerOptionColors[i]][frontend.BgWithHoverColor],
 		})
+	}
+
+	var playerName string
+	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{playerID})
+	if err != nil {
+		return nil, err
+	}
+	if len(players) > 0 {
+		playerName = players[0].Name
 	}
 
 	return frontend.PublicPageComponent(
@@ -96,10 +113,13 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 			frontendPublicGame.QuestionComposition(
 				game.ID,
 				playerID,
-				frontendPublicGame.Progress(&handlers.SessionProgress{
-					Answered: int(session.Progress.Answered),
-					Total:    int(session.Progress.Total),
-				}),
+				frontendComponents.GridLine(
+					frontendPublicGame.Progress(&handlers.SessionProgress{
+						Answered: int(session.Progress.Answered),
+						Total:    int(session.Progress.Total),
+					}),
+					frontendPublicGame.Player(playerName),
+				),
 				frontendPublicGame.Question(&handlers.Question{
 					ID:            session.CurrentQuestion.ID,
 					Type:          session.CurrentQuestion.Type,
@@ -112,8 +132,11 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	), nil
 }
 
-func (h *GetPlayPageHandler) getPlayerID(request *http.Request) (uuid.UUID, error) {
-	playerID := getPlayerID(request)
+func (h *GetPlayPageHandler) getPlayerID(request *http.Request, withReset *bool) (uuid.UUID, error) {
+	playerID := uuid.Nil
+	if withReset == nil || !*withReset {
+		playerID = getPlayerID(request)
+	}
 	if playerID == uuid.Nil {
 		newPlayerID := uuid.New()
 		err := h.playerUC.Create(request.Context(), &model.Player{
@@ -138,11 +161,15 @@ func (h *GetPlayPageHandler) statistics(ctx context.Context, game *model.Game, p
 
 	return frontend.PublicPageComponent(
 		fmt.Sprintf("%s #%s", getPlayPageTitle, game.ID.String()),
-		frontendPublicGame.Statistics(
-			&handlers.SessionStatistics{
-				QuestionsCount:      int(stats.QuestionsCount),
-				CorrectAnswersCount: int(stats.CorrectAnswersCount),
-			},
+		frontendComponents.CompositionMD(
+			frontendPublicGame.ResultHeader(),
+			frontendPublicGame.ResultStatistics(
+				&handlers.SessionStatistics{
+					QuestionsCount:      int(stats.QuestionsCount),
+					CorrectAnswersCount: int(stats.CorrectAnswersCount),
+				},
+			),
+			frontendPublicGame.ActionRestartGame(game.ID),
 		),
 	), nil
 }

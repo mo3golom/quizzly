@@ -3,8 +3,11 @@ package frontend_public_game
 import "strconv"
 import "quizzly/web/frontend/handlers"
 
-templ Statistics(stats *handlers.SessionStatistics) {
-     <div class="text-white text-5xl font-bold text-oblique mb-3">Игра завершена!</div>
+templ ResultHeader() {
+    <div class="text-white text-5xl font-bold text-oblique mb-3">Игра завершена!</div>
+}
+
+templ ResultStatistics(stats *handlers.SessionStatistics) {
      <div class="mb-4">
           <progress
              class="progress progress-warning h-4 rounded-2xl bg-amber-800"
@@ -12,7 +15,7 @@ templ Statistics(stats *handlers.SessionStatistics) {
              max={strconv.Itoa(stats.QuestionsCount)}
           ></progress>
      </div>
-     <div class="stats w-full bg-amber-500 rounded-2xl">
+     <div class="stats w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg">
            <div class="stat">
              <div class="stat-title text-white">Всего вопросов</div>
              <div class="stat-value text-oblique text-white">{strconv.Itoa(stats.QuestionsCount)}</div>

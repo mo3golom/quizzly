@@ -1,0 +1,23 @@
+package frontend_public_game
+
+templ StartPage() {
+        <div class={"card text-primary-content rounded-2xl drop-shadow-lg bg-blue-500 max-w-max mx-auto"}>
+            <div class="card-body p-4">
+                <div class="text-oblique text-2xl text-white">
+                 Подключиться к игре
+                </div>
+                <div class="join">
+                    <label class="input input-bordered flex items-center gap-2 w-80 rounded-xl join-item">
+                        <input
+                            id="game-start-page-game-id"
+                            type="text"
+                            class="grow"
+                            placeholder="Код игры"
+                            required
+                        />
+                    </label>
+                    <button class="btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0" onclick="connectToGame()">Играть</button>
+                </div>
+            </div>
+        </div>
+}

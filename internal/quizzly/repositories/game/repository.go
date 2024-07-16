@@ -2,9 +2,11 @@ package game
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
@@ -41,7 +43,6 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		on conflict (id) do nothing
 	`
 
-	fmt.Println(in.AuthorID.String())
 	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID)
 	if err != nil {
 		return err
@@ -80,29 +81,12 @@ func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in 
 	return err
 }
 
+func (r *DefaultRepository) Get(ctx context.Context, id uuid.UUID) (*model.Game, error) {
+	return r.get(ctx, r.db, id)
+}
+
 func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, id uuid.UUID) (*model.Game, error) {
-	const query = `
-		select 
-			g.id, 
-			g."type", 
-			g.status, 
-			g.author_id,
-			g.created_at,
-			gs.is_private as settings_is_private, 
-			gs.shuffle_questions as settings_shuffle_questions,
-			gs.shuffle_answers as settings_shuffle_answers
-		from game as g
-		inner join game_settings as gs on gs.game_id = g.id
-		where g.id = $1
-		limit 1
-	`
-
-	var result sqlxGame
-	if err := tx.GetContext(ctx, &result, query, id); err != nil {
-		return nil, err
-	}
-
-	return structs.Pointer(convertToGame(result)), nil
+	return r.get(ctx, tx, id)
 }
 
 func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
@@ -155,6 +139,35 @@ func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transac
 	}
 
 	return result, nil
+}
+
+func (r *DefaultRepository) get(ctx context.Context, db transactional.Tx, id uuid.UUID) (*model.Game, error) {
+	const query = `
+		select 
+			g.id, 
+			g."type", 
+			g.status, 
+			g.author_id,
+			g.created_at,
+			gs.is_private as settings_is_private, 
+			gs.shuffle_questions as settings_shuffle_questions,
+			gs.shuffle_answers as settings_shuffle_answers
+		from game as g
+		inner join game_settings as gs on gs.game_id = g.id
+		where g.id = $1
+		limit 1
+	`
+
+	var result sqlxGame
+	if err := db.GetContext(ctx, &result, query, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, contracts.ErrGameNotFound
+		}
+
+		return nil, err
+	}
+
+	return structs.Pointer(convertToGame(result)), nil
 }
 
 func convertToGame(in sqlxGame) model.Game {

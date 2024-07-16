@@ -15,6 +15,7 @@ import (
 
 const (
 	getPageTitle = "Управление игрой"
+	listUrl      = "/game/list"
 )
 
 type (
@@ -92,6 +93,7 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 	return frontend.AdminPageComponent(
 		getPageTitle,
 		frontendAdminGame.Page(
+			frontendComponents.BackLink(listUrl),
 			frontendAdminGame.Header(
 				&handlers.Game{
 					ID:        game.ID,

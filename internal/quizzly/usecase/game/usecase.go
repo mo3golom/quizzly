@@ -78,12 +78,7 @@ func (u *Usecase) Finish(ctx context.Context, id uuid.UUID) error {
 }
 
 func (u *Usecase) Get(ctx context.Context, id uuid.UUID) (*model.Game, error) {
-	var specificGame *model.Game
-	return specificGame, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		var err error
-		specificGame, err = u.games.GetWithTx(ctx, tx, id)
-		return err
-	})
+	return u.games.Get(ctx, id)
 }
 
 func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
@@ -144,6 +139,9 @@ func (u *Usecase) GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameS
 		questionsCount = int64(len(questions))
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	sessions, err := u.sessions.GetSessionsByGameID(ctx, id)
 	if err != nil {

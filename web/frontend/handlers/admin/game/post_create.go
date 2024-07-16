@@ -31,6 +31,10 @@ func NewPostCreateHandler(uc contracts.GameUsecase) *PostCreateHandler {
 }
 
 func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostCreateData) (templ.Component, error) {
+	if len(in.Questions) == 0 {
+		return nil, fmt.Errorf("questions are required")
+	}
+
 	authContext := request.Context().(auth.Context)
 	gameID, err := h.uc.Create(
 		request.Context(),

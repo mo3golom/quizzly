@@ -24,7 +24,7 @@ type (
 	}
 
 	AnswerChecker interface {
-		Check(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error)
+		Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error)
 	}
 
 	Usecase struct {

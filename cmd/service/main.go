@@ -38,5 +38,5 @@ func main() {
 	)
 	simpleAuthConfig := auth.NewConfiguration(db, template, variables.Repository.MustGet())
 
-	web.ServerRun(quizzlyConfig, simpleAuthConfig.SimpleAuth.MustGet())
+	web.ServerRun(log, quizzlyConfig, simpleAuthConfig.SimpleAuth.MustGet())
 }

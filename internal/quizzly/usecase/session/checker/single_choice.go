@@ -12,15 +12,15 @@ func NewSingleChoiceChecker() *SingleChoiceChecker {
 	return &SingleChoiceChecker{}
 }
 
-func (c *SingleChoiceChecker) Check(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
+func (c *SingleChoiceChecker) Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) > 1 {
 		return nil, errors.New("simple choice can't have multiple answers")
 	}
 
 	correctAnswers := question.GetCorrectAnswers()
-	correctAnswersMap := make(map[string]struct{}, len(correctAnswers))
+	correctAnswersMap := make(map[model.AnswerOptionID]struct{}, len(correctAnswers))
 	for _, answer := range correctAnswers {
-		correctAnswersMap[answer.Answer] = struct{}{}
+		correctAnswersMap[answer.ID] = struct{}{}
 	}
 
 	_, ok := correctAnswersMap[answers[0]]

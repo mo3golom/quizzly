@@ -46,7 +46,6 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, _ *ListOptions) (
 
 	specificPlayersMap := make(map[uuid.UUID]model.Player, len(specificPlayers))
 	for _, player := range specificPlayers {
-		player = player
 		specificPlayersMap[player.ID] = player
 	}
 
