@@ -8,6 +8,7 @@ import (
 	"quizzly/web/frontend/services/question"
 	frontendIndex "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
+	frontendComponents "quizzly/web/frontend/templ/components"
 )
 
 const (
@@ -44,6 +45,9 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, _ 
 
 	return frontendIndex.AdminPageComponent(
 		title,
-		frontendAdminGame.Form(questionList),
+		frontendComponents.Composition(
+			frontendComponents.BackLink(listUrl),
+			frontendAdminGame.Form(questionList),
+		),
 	), nil
 }

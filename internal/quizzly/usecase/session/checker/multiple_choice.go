@@ -11,11 +11,11 @@ func NewMultipleChoiceChecker() *MultipleChoiceChecker {
 	return &MultipleChoiceChecker{}
 }
 
-func (c *MultipleChoiceChecker) Check(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
+func (c *MultipleChoiceChecker) Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
 	correctAnswers := question.GetCorrectAnswers()
-	correctAnswersMap := make(map[string]struct{}, len(correctAnswers))
+	correctAnswersMap := make(map[model.AnswerOptionID]struct{}, len(correctAnswers))
 	for _, answer := range correctAnswers {
-		correctAnswersMap[answer.Answer] = struct{}{}
+		correctAnswersMap[answer.ID] = struct{}{}
 	}
 
 	result := &contracts.AcceptAnswersOut{

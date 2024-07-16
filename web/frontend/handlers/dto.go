@@ -66,7 +66,7 @@ type (
 	}
 
 	AnswerOption struct {
-		ID    uuid.UUID
+		ID    int64
 		Text  string
 		Color string
 	}

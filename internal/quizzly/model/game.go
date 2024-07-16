@@ -64,7 +64,7 @@ type (
 		ID         int64
 		SessionID  int64
 		QuestionID uuid.UUID
-		Answers    []string
+		Answers    []AnswerOptionID
 		IsCorrect  *bool
 		AnsweredAt *time.Time
 	}

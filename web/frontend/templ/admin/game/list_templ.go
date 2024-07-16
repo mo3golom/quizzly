@@ -34,7 +34,7 @@ func GameListItem(game *handlers.Game) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" target=\"_blank\"><div class=\"card card-bordered mb-4 bg-white border-base-200 border-4 p-4\"><span class=\"text-xl font-medium\">Игра от ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card card-bordered mb-4 bg-white border-base-200 border-4 p-4\"><span class=\"text-xl font-medium\">Игра от ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

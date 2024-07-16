@@ -25,6 +25,8 @@ func (h *GetHandler) Handle(_ http.ResponseWriter, request *http.Request, _ stru
 		&question.Spec{
 			AuthorID: structs.Pointer(authContext.UserID()),
 		},
-		&question.ListOptions{},
+		&question.ListOptions{
+			ActionsIsEnabled: true,
+		},
 	)
 }

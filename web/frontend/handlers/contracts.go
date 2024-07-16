@@ -6,6 +6,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/gorilla/schema"
 	"net/http"
+	"quizzly/pkg/logger"
 )
 
 type (
@@ -28,11 +29,12 @@ func (err *BadRequestErr) Error() string {
 	return err.originalErr.Error()
 }
 
-func Templ[T any](handler Handler[T]) func(w http.ResponseWriter, r *http.Request) {
+func Templ[T any](handler Handler[T], log logger.Logger) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		inStruct, err := parseIn[T](r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Error("parse request error", err)
 			return
 		}
 
@@ -44,6 +46,7 @@ func Templ[T any](handler Handler[T]) func(w http.ResponseWriter, r *http.Reques
 		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Error("handle request error", err)
 			return
 		}
 
@@ -64,7 +67,7 @@ func parseIn[T any](r *http.Request) (T, error) {
 		if err != nil {
 			return inStruct, fmt.Errorf("decode request body error: %v", err)
 		}
-	case http.MethodGet:
+	case http.MethodGet, http.MethodDelete:
 		err := schema.NewDecoder().Decode(&inStruct, r.URL.Query())
 		if err != nil {
 			return inStruct, fmt.Errorf("decode url query error: %v", err)

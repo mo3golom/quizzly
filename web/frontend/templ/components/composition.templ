@@ -5,3 +5,12 @@ templ Composition(components ...templ.Component) {
         @component
      }
 }
+
+
+templ CompositionMD(components ...templ.Component) {
+     <div class="max-w-max sm:max-w-md mx-auto">
+     for _, component := range components {
+        @component
+     }
+     </div>
+}

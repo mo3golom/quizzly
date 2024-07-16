@@ -2,6 +2,8 @@ package question
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
@@ -12,11 +14,12 @@ import (
 
 type (
 	sqlxQuestion struct {
-		ID                    uuid.UUID `db:"id"`
-		Text                  string    `db:"text"`
-		Type                  string    `db:"type"`
-		AnswerOptionAnswer    string    `db:"answer_option_answer"`
-		AnswerOptionIsCorrect bool      `db:"answer_option_is_correct"`
+		ID                    uuid.UUID            `db:"id"`
+		Text                  string               `db:"text"`
+		Type                  string               `db:"type"`
+		AnswerOptionID        model.AnswerOptionID `db:"answer_option_id"`
+		AnswerOptionAnswer    string               `db:"answer_option_answer"`
+		AnswerOptionIsCorrect bool                 `db:"answer_option_is_correct"`
 	}
 
 	DefaultRepository struct {
@@ -56,13 +59,24 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 	return err
 }
 
+func (r *DefaultRepository) Delete(ctx context.Context, tx transactional.Tx, id uuid.UUID) error {
+	const query = `update question set deleted_at = now() where id = $1`
+
+	_, err := tx.ExecContext(ctx, query, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	return err
+}
+
 func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
 	const query = ` 
-		select q.id, q.text, q.type, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct 
+		select q.id, q.text, q.type, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
 		from question as q
 		inner join question_answer_option as qao on qao.question_id = q.id
 		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
 		and ($2::UUID is null or q.author_id = $2::UUID)
+		and ($3::bool = true or deleted_at is null)
 	`
 
 	var result []sqlxQuestion
@@ -72,6 +86,7 @@ func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.
 		query,
 		pq.Array(spec.IDs),
 		spec.AuthorID,
+		len(spec.IDs) > 0,
 	); err != nil {
 		return nil, err
 	}
@@ -103,6 +118,7 @@ func convert(in []sqlxQuestion) []model.Question {
 			}
 
 			result.AnswerOptions = append(result.AnswerOptions, model.AnswerOption{
+				ID:        item.AnswerOptionID,
 				Answer:    item.AnswerOptionAnswer,
 				IsCorrect: item.AnswerOptionIsCorrect,
 			})

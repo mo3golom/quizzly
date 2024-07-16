@@ -71,7 +71,7 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 	})
 }
 
-func (u *Usecase) checkAnswers(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
+func (u *Usecase) checkAnswers(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) == 0 {
 		return nil, errors.New("answers are empty")
 	}

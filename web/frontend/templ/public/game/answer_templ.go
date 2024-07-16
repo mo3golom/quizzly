@@ -23,17 +23,17 @@ func Answer(isCorrect bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"absolute top-0 left-0 w-full h-full z-20 transition transition-opacity duration-500 opacity-0\"><div class=\"flex h-full\"><div class=\"ml-auto mr-auto mt-8\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"absolute top-0 left-0 w-full h-full z-20 transition transition-opacity duration-500 animate-duration-500 opacity-0\"><div class=\"flex\"><div class=\"ml-auto mr-auto mt-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isCorrect {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-green-500 text-5xl font-bold text-oblique\">Правильный ответ!</span>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-green-500 font-bold text-oblique text-6xl sm:text-8xl\">Правильный ответ!</span><script type=\"text/javascript\">\n                        fire();\n                </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-red-500 text-5xl font-bold text-oblique\">Неудача!</span>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"animate-tada animate-duration-1000\"><span class=\"text-red-500 font-bold text-oblique text-6xl sm:text-8xl\">Неудача!</span></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

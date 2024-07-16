@@ -35,6 +35,12 @@ func (u *Usecase) Create(ctx context.Context, in *model.Question) error {
 	})
 }
 
+func (u *Usecase) Delete(ctx context.Context, id uuid.UUID) error {
+	return u.template.Execute(ctx, func(tx transactional.Tx) error {
+		return u.questions.Delete(ctx, tx, id)
+	})
+}
+
 func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Question, error) {
 	return u.questions.GetBySpec(ctx, &question.Spec{
 		AuthorID: &authorID,
