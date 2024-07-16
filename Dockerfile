@@ -13,9 +13,12 @@ FROM golang:1.22.2-alpine
 
 ENV APP_HOME /go/src/app
 RUN mkdir -p "$APP_HOME"
+RUN mkdir -p "$APP_HOME"/web
 WORKDIR "$APP_HOME"
 
 COPY --from=builder "$APP_HOME"/app $APP_HOME
+COPY --from=builder "$APP_HOME"/web "$APP_HOME"/web
+RUN ls -ra
 
 EXPOSE 8010
 CMD ["./app"]
