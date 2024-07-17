@@ -33,7 +33,6 @@ func removeToken(writer http.ResponseWriter) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
-		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	}
 

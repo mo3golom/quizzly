@@ -65,7 +65,6 @@ func setToken(writer http.ResponseWriter, token auth.Token) {
 		Expires:  time.Now().Add(336 * time.Hour),
 		MaxAge:   1209600,
 		HttpOnly: true,
-		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	}
 
