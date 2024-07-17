@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"quizzly/internal/quizzly"
 	"quizzly/pkg/auth"
 	"quizzly/pkg/logger"
@@ -105,18 +104,11 @@ func ServerRun(log logger.Logger, quizzlyConfig *quizzly.Configuration, simpleAu
 
 	mux := http.NewServeMux()
 
-	ex, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	exPath := filepath.Dir(ex)
-	publicPathFull := fmt.Sprintf("%s/%s", exPath, publicPath)
-
-	_, err = os.Stat(publicPathFull)
+	_, err := os.Stat(publicPath)
 	if os.IsNotExist(err) {
 		panic(fmt.Sprintf("Directory '%s' not found.\n", "web"))
 	}
-	mux.Handle("/", http.FileServer(http.Dir(publicPathFull)))
+	mux.Handle("/", http.FileServer(http.Dir(publicPath)))
 
 	routes(mux, config, log, quizzlyConfig, simpleAuth)
 

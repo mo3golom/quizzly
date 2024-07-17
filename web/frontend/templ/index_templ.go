@@ -135,14 +135,14 @@ func footerComponent() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" (beta) ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 74, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 74, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -180,20 +180,20 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen\"><div class=\"flex flex-row mb-auto relative\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-5xl text-center p-8 mt-4 text-oblique\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen\"><div class=\"flex flex-row mb-auto relative\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-oblique p-8 mt-4 min-w-min\"><span class=\"text-5xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 90, Col: 112}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 91, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\" class=\"link link-primary no-underline\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/game/list\">Список игр</a></li><li><a href=\"/question/list\">Список вопросов</a></li></ul></div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/logout\">Выйти</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top text-right text-2xl\">(beta)</span></div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/game/new\" class=\"link link-primary no-underline\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/game/list\">Список игр</a></li><li><a href=\"/question/list\">Список вопросов</a></li></ul></div><div class=\"mt-4\"><ul class=\"menu bg-white rounded-box\"><li><a href=\"/logout\">Выйти</a></li></ul></div></div><div class=\"basis-3/4 min-h-full p-4\"><div class=\"rounded-box bg-white p-4 min-h-full\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -245,20 +245,20 @@ func PublicPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen\"><div class=\"text-bold text-5xl text-left text-oblique text-white p-8 pl-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen\"><div class=\"text-bold text-left text-oblique text-white p-8 pl-4\"><span class=\"text-5xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 130, Col: 103}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 134, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"mb-auto relative\"><div class=\"max-w-screen-lg container-lg mx-auto p-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top ml-2 text-2xl\">(beta)</span></div><div class=\"mb-auto relative\"><div class=\"max-w-screen-lg container-lg mx-auto p-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

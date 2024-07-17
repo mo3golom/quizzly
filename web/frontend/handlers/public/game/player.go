@@ -28,7 +28,6 @@ func setPlayerID(writer http.ResponseWriter, id uuid.UUID) {
 		Expires:  time.Now().Add(47 * time.Hour),
 		MaxAge:   172800,
 		HttpOnly: true,
-		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	}
 
