@@ -33,9 +33,24 @@ templ Question(question *handlers.Question) {
     <div class={"card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 " + question.Color}>
         <div class="card-body p-4">
             <input name="question-id" type="hidden" value={ question.ID.String() }/>
-            <div class="font-bold text-2xl text-white pt-4 pb-4">
-                { question.Text }
-            </div>
+
+            if question.ImageID != nil {
+                <div class="flex gap-4 pb-4">
+                    <div class="flex-col basis-1/4 avatar">
+                        <div class="rounded-xl">
+                            <img src={fmt.Sprintf("/file/%s", *question.ImageID)}/>
+                        </div>
+                    </div>
+                     <div class="flex-col basis-3/4 font-bold text-2xl text-white">
+                        { question.Text }
+                     </div>
+                </div>
+            } else {
+                <div class="font-bold text-2xl text-white pb-4">
+                    { question.Text }
+                </div>
+            }
+
             <div>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
@@ -74,7 +89,7 @@ templ Question(question *handlers.Question) {
 }
 
 templ AnswerOption(id int64, text string, color string) {
-    <div class={"card justify-self-stretch transition transition-colors duration-200 " + color}>
+    <div class={"card justify-self-stretch transition transition-colors rounded-xl duration-200 " + color}>
           <input
             type="checkbox"
             name="answer"
@@ -85,7 +100,7 @@ templ AnswerOption(id int64, text string, color string) {
           <button
             id={fmt.Sprintf("%d",id)}
             type="button"
-            class="card-body p-4 pt-6 pb-6 text-xl text-white rounded-2xl transition transition-all duration-100"
+            class="card-body p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100"
             onclick="chooseAnswer(this)"
           >
             { text }

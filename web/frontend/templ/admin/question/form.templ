@@ -22,11 +22,23 @@ templ QuestionForm(activeQuestionType string, submitUrl string, color string, qu
                 </div>
             }
         </div>
-        <form action={ templ.URL(submitUrl) } method="post" class="m-0 col-span-5">
+        <form action={ templ.URL(submitUrl) } method="post" enctype="multipart/form-data" class="m-0 col-span-5">
             <input type="hidden" name="question_type" value={activeQuestionType}/>
 	        <div class={"card text-primary-content rounded-2xl bg-" + color}>
                 <div class="card-body p-4">
-                    <textarea name="question_text" class="w-full textarea textarea-bordered textarea-lg min-h-40 text-black" placeholder="Текст вопроса" required></textarea>
+                    <div class="flex gap-4">
+                        <div class="flex-col basis-1/4 self-start p-4 bg-white rounded-lg">
+                            <label class="form-control w-full max-w-xs min-h-32">
+                              <div class="label">
+                                <span class="label-text">Выбрать изображение</span>
+                              </div>
+                              <input type="file" name="question_image" class="file-input file-input-bordered w-full max-w-xs [&::file-selector-button]:hidden text-black p-2" />
+                            </label>
+                        </div>
+                        <div class="flex-col basis-3/4">
+                            <textarea name="question_text" class="w-full textarea textarea-lg min-h-40 text-black" placeholder="Текст вопроса" required></textarea>
+                        </div>
+                    </div>
 
                     if activeQuestionType == "multiple_choice" {
                         <div class="mt-4 text-white">

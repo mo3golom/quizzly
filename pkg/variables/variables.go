@@ -18,6 +18,12 @@ var (
 	AuthSenderPort      = Environment[string]("AUTH_SENDER_PORT", "")
 	AuthSenderUser      = Environment[string]("AUTH_SENDER_USER", "")
 	AuthSenderPassword  = Environment[string]("AUTH_SENDER_PASSWORD", "")
+
+	S3Endpoint  = Environment[string]("S3_ENDPOINT", "")
+	S3AccessKey = Environment[string]("S3_ACCESS_KEY", "")
+	S3SecretKey = Environment[string]("S3_SECRET_KEY", "")
+	S3Bucket    = Environment[string]("S3_BUCKET", "")
+	S3UseSSL    = Environment[bool]("S3_USE_SSL", false)
 )
 
 type (

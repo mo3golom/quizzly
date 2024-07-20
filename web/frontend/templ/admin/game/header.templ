@@ -7,7 +7,13 @@ templ Header(game *handlers.Game) {
                 <input id="game-id" name="game-id" type="hidden" value={ game.ID.String() }/>
                 <div class="flex items-center mb-4">
                     <div class="basis-1/2">
-                        <h1 class="font-bold text-2xl">Игра от { game.CreatedAt.Format("02-01-2006") }</h1>
+                        <h1 class="font-bold text-2xl">
+                        if game.Title != nil {
+                            { *game.Title }
+                        } else {
+                            Игра от { game.CreatedAt.Format("02-01-2006") }
+                        }
+                        </h1>
                         <p class="text-sm text-gray-400 mb-2">{ game.ID.String() }</p>
                         <h2 class="mb-4">
                         switch game.Status {
@@ -20,34 +26,13 @@ templ Header(game *handlers.Game) {
                         }
                         </h2>
                     </div>
-                    <div class="basis-1/2 justify-self-end text-right">
+                    <div class="basis-1/2 justify-self-end text-right self-start">
                          switch game.Status {
                             case "created":
-                                <button
-                                    class="btn bg-green-500 border-0 text-white"
-                                    hx-post="/game/start"
-                                    hx-trigger="click"
-                                    hx-target="#game-page-header"
-                                    hx-swap="outerHTML"
-                                    hx-include="[name='game-id']"
-                                >Начать</button>
-                                <button
-                                    class="btn bg-red-500 border-0 text-white"
-                                    hx-post="/game/finish"
-                                    hx-trigger="click"
-                                    hx-target="#game-page-header"
-                                    hx-swap="outerHTML"
-                                    hx-include="[name='game-id']"
-                                >Завершить</button>
+                                @ActionStartGame()
+                                @ActionFinishGame()
                             case "started":
-                                <button
-                                    class="btn bg-red-500 border-0 text-white"
-                                    hx-post="/game/finish"
-                                    hx-trigger="click"
-                                    hx-target="#game-page-header"
-                                    hx-swap="outerHTML"
-                                    hx-include="[name='game-id']"
-                                >Завершить</button>
+                                @ActionFinishGame()
                          }
                     </div>
                 </div>

@@ -1,8 +1,9 @@
 package frontend_admin_question
 
-import "github.com/google/uuid"
-import "quizzly/internal/quizzly/model"
+import "quizzly/web/frontend/handlers"
 import "fmt"
+import "github.com/google/uuid"
+import "quizzly/pkg/structs"
 
 type Options struct {
   WithSelect bool
@@ -11,31 +12,29 @@ type Options struct {
 }
 
 
-templ QuestionListItem(id uuid.UUID, text string, questionType model.QuestionType, answerOptions []templ.Component, options Options) {
+templ QuestionListItem(question handlers.Question, answerOptions []templ.Component, options Options) {
        <div
-        id={fmt.Sprintf("question-%s", id.String())}
+        id={fmt.Sprintf("question-%s", question.ID.String())}
         class="card card-bordered mb-4 bg-white border-base-200 border-4 relative"
        >
             if options.WithDisabledOverlay {
                 <div class="absolute bg-base-disabled w-full h-full z-10"></div>
             }
             <div class="grid gap-4 grid-cols-4 content-start">
-                   <div class="grid-col col-span-3 p-4 justify-start flex">
-                    if options.WithSelect {
-                        <label class="cursor-pointer mr-2">
-                            <input
-                            value={ id.String() }
-                            name="question"
-                            type="checkbox"
-                            class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
-                        />
-                        </label>
-                    }
-                    <span class="text-xl font-medium">{ text }</span>
+                   <div class="grid-col col-span-3 p-4">
+                     <label class={fmt.Sprintf("justify-start flex gap-4 %s", structs.Or(options.WithSelect ,"cursor-pointer", ""))}>
+                        if options.WithSelect {
+                            @QuestionSelect(question.ID)
+                        }
+                        if question.ImageID != nil {
+                            @QuestionImage(*question.ImageID)
+                        }
+                        @QuestionText(question.Text)
+                     </label>
                    </div>
                    <div class="grid-col justify-self-end self-start p-4">
                         if options.WithActions {
-                            @ActionDeleteQuestion(id)
+                            @ActionDeleteQuestion(question.ID)
                         }
                    </div>
             </div>
@@ -49,7 +48,7 @@ templ QuestionListItem(id uuid.UUID, text string, questionType model.QuestionTyp
                     @answerOption
                 }
                 </div>
-                switch questionType {
+                switch question.Type {
                     case "one_of_choice":
                         <div class="mt-2">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
@@ -68,6 +67,31 @@ templ QuestionListItem(id uuid.UUID, text string, questionType model.QuestionTyp
               </div>
             </div>
        </div>
+}
+
+templ QuestionSelect(id uuid.UUID) {
+   <div class="flex-col basis-auto">
+    <input
+        value={ id.String() }
+        name="question"
+        type="checkbox"
+        class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
+    />
+   </div>
+}
+
+templ QuestionImage(imageID string) {
+    <div class="flex-col basis-1/4 avatar">
+        <div class="rounded-lg">
+            <img src={fmt.Sprintf("/file/%s", imageID)}/>
+        </div>
+    </div>
+}
+
+templ QuestionText(text string) {
+    <div class="flex-col">
+       <span class="text-xl font-medium">{ text }</span>
+    </div>
 }
 
 templ QuestionListItemAnswerOption(text string, isCorrect bool) {

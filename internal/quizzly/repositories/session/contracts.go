@@ -27,6 +27,7 @@ type (
 
 		InsertSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error
 		UpdateSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error
+		DeleteSessionItemsBySessionID(ctx context.Context, tx transactional.Tx, sessionID int64) error
 		GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error)
 		GetSessionsByGameID(ctx context.Context, id uuid.UUID) ([]model.SessionExtended, error)
 	}

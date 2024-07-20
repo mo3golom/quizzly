@@ -9,12 +9,14 @@ import (
 	"os/signal"
 	"quizzly/internal/quizzly"
 	"quizzly/pkg/auth"
+	"quizzly/pkg/files"
 	"quizzly/pkg/logger"
 	"quizzly/pkg/structs"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/handlers/admin/game"
 	"quizzly/web/frontend/handlers/admin/login"
 	"quizzly/web/frontend/handlers/admin/question"
+	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
 	questionService "quizzly/web/frontend/services/question"
 	sessionService "quizzly/web/frontend/services/session"
@@ -40,8 +42,17 @@ type (
 	}
 )
 
-func routes(mux *http.ServeMux, config *configuration, log logger.Logger, quizzlyConfig *quizzly.Configuration, simpleAuth auth.SimpleAuth) {
+func routes(
+	mux *http.ServeMux,
+	config *configuration,
+	log logger.Logger,
+	quizzlyConfig *quizzly.Configuration,
+	simpleAuth auth.SimpleAuth,
+	filesManager files.Manager,
+) {
 	security := simpleAuth.Middleware()
+
+	mux.HandleFunc("GET /file/{filename}", files2.NewGetFileHandler(filesManager, log).Handle())
 
 	// ADMIN ROUTES
 	mux.HandleFunc("GET /login", handlers.Templ[struct{}](login.NewGetLoginPageHandler(), log))
@@ -51,7 +62,7 @@ func routes(mux *http.ServeMux, config *configuration, log logger.Logger, quizzl
 	mux.HandleFunc("GET /question/new", security.WithAuth(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))
 	mux.HandleFunc("POST /question", security.WithAuth(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
 		quizzlyConfig.Question.MustGet(),
-		config.questions.MustGet(),
+		filesManager,
 	), log)))
 	mux.HandleFunc("DELETE /question", security.WithAuth(handlers.Templ[question.GetDeleteData](question.NewPostDeleteHandler(
 		quizzlyConfig.Question.MustGet(),
@@ -82,7 +93,12 @@ func routes(mux *http.ServeMux, config *configuration, log logger.Logger, quizzl
 	), log))
 }
 
-func ServerRun(log logger.Logger, quizzlyConfig *quizzly.Configuration, simpleAuth auth.SimpleAuth) {
+func ServerRun(
+	log logger.Logger,
+	quizzlyConfig *quizzly.Configuration,
+	simpleAuth auth.SimpleAuth,
+	filesManager files.Manager,
+) {
 	config := &configuration{
 		questions: structs.NewSingleton(func() (questionService.Service, error) {
 			return questionService.NewService(quizzlyConfig.Question.MustGet()), nil
@@ -110,7 +126,7 @@ func ServerRun(log logger.Logger, quizzlyConfig *quizzly.Configuration, simpleAu
 	}
 	mux.Handle("/", http.FileServer(http.Dir(publicPath)))
 
-	routes(mux, config, log, quizzlyConfig, simpleAuth)
+	routes(mux, config, log, quizzlyConfig, simpleAuth, filesManager)
 
 	server := &http.Server{
 		Addr:         settings.Port,

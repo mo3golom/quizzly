@@ -1,0 +1,1 @@
+alter table game add column if not exists title text default null;

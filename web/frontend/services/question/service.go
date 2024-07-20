@@ -7,6 +7,7 @@ import (
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
+	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
 	"quizzly/web/frontend/templ/admin/question"
 	frontendComponents "quizzly/web/frontend/templ/components"
@@ -75,9 +76,12 @@ func convertListToTempl(in []model.Question, withHeader bool, withSelect bool, w
 	}
 	for _, item := range in {
 		components = append(components, frontend_admin_question.QuestionListItem(
-			item.ID,
-			item.Text,
-			item.Type,
+			handlers.Question{
+				ID:      item.ID,
+				ImageID: item.ImageID,
+				Type:    item.Type,
+				Text:    item.Text,
+			},
 			slices.SafeMap(item.AnswerOptions, func(ao model.AnswerOption) templ.Component {
 				return frontend_admin_question.QuestionListItemAnswerOption(ao.Answer, ao.IsCorrect)
 			}),

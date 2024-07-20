@@ -27,6 +27,7 @@ type (
 	Game struct {
 		ID        uuid.UUID
 		Status    model.GameStatus
+		Title     *string
 		Link      string
 		CreatedAt time.Time
 	}
@@ -59,6 +60,7 @@ type (
 
 	Question struct {
 		ID            uuid.UUID
+		ImageID       *string
 		Text          string
 		Type          model.QuestionType
 		AnswerOptions []AnswerOption

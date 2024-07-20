@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/schema"
 	"net/http"
 	"quizzly/pkg/logger"
+	"strings"
 )
 
 type (
@@ -59,11 +60,22 @@ func parseIn[T any](r *http.Request) (T, error) {
 	var inStruct T
 	switch r.Method {
 	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			return inStruct, fmt.Errorf("parse form error: %v", err)
+		contentType := r.Header.Get("Content-Type")
+		if strings.Contains(contentType, "multipart/form-data") {
+			err := r.ParseMultipartForm(4 << 20)
+			if err != nil {
+				return inStruct, fmt.Errorf("parse multipart form error: %v", err)
+			}
+		} else {
+			err := r.ParseForm()
+			if err != nil {
+				return inStruct, fmt.Errorf("parse form error: %v", err)
+			}
 		}
-		err = schema.NewDecoder().Decode(&inStruct, r.Form)
+
+		decoder := schema.NewDecoder()
+		decoder.IgnoreUnknownKeys(true)
+		err := decoder.Decode(&inStruct, r.Form)
 		if err != nil {
 			return inStruct, fmt.Errorf("decode request body error: %v", err)
 		}

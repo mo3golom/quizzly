@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
+	"quizzly/web/frontend/handlers"
 	frontendAdminQuestion "quizzly/web/frontend/templ/admin/question"
 )
 
@@ -41,9 +42,12 @@ func (h *GetDeleteHandler) Handle(_ http.ResponseWriter, request *http.Request, 
 
 	question := questions[0]
 	return frontendAdminQuestion.QuestionListItem(
-		question.ID,
-		question.Text,
-		question.Type,
+		handlers.Question{
+			ID:      question.ID,
+			ImageID: question.ImageID,
+			Text:    question.Text,
+			Type:    question.Type,
+		},
 		nil,
 		frontendAdminQuestion.Options{
 			WithActions:         true,

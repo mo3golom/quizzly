@@ -125,6 +125,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 			ID:            session.CurrentQuestion.ID,
 			Type:          session.CurrentQuestion.Type,
 			Text:          session.CurrentQuestion.Text,
+			ImageID:       session.CurrentQuestion.ImageID,
 			AnswerOptions: answerOptions,
 			Color:         frontend.ColorsMap[specificQuestionColor.Color][frontend.BgColor],
 		}),
