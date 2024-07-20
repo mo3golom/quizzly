@@ -120,6 +120,15 @@ func (r *DefaultRepository) UpdateSessionItem(ctx context.Context, tx transactio
 	return err
 }
 
+func (r *DefaultRepository) DeleteSessionItemsBySessionID(ctx context.Context, tx transactional.Tx, sessionID int64) error {
+	const query = `
+		delete from player_session_item where session_id = $1
+	`
+
+	_, err := tx.ExecContext(ctx, query, sessionID)
+	return err
+}
+
 func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error) {
 	const query = `
 		select psi.id, psi.session_id, psi.question_id, psi.answers, psi.is_correct, psi.answered_at

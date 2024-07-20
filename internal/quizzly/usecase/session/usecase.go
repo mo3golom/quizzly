@@ -107,6 +107,30 @@ func (u *Usecase) Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UU
 	})
 }
 
+func (u *Usecase) Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error {
+	return u.template.Execute(ctx, func(tx transactional.Tx) error {
+		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
+			return err
+		}
+
+		specificPlayerGame, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+			PlayerID: playerID,
+			GameID:   gameID,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = u.sessions.DeleteSessionItemsBySessionID(ctx, tx, specificPlayerGame.ID)
+		if err != nil {
+			return err
+		}
+
+		specificPlayerGame.Status = model.SessionStatusStarted
+		return u.sessions.Update(ctx, tx, specificPlayerGame)
+	})
+}
+
 func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error) {
 	var result *model.SessionStatistics
 	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {

@@ -17,6 +17,7 @@ type (
 		Questions        []string `schema:"question"`
 		ShuffleQuestions bool     `schema:"shuffle_questions"`
 		ShuffleAnswers   bool     `schema:"shuffle_answers"`
+		Title            *string  `schema:"title"`
 	}
 
 	PostCreateHandler struct {
@@ -41,6 +42,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		&contracts.CreateGameIn{
 			AuthorID: authContext.UserID(),
 			Type:     model.GameTypeAsync,
+			Title:    in.Title,
 			Settings: model.GameSettings{
 				IsPrivate:        false,
 				ShuffleQuestions: in.ShuffleQuestions,

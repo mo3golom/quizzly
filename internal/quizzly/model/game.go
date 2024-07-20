@@ -30,6 +30,7 @@ type (
 		AuthorID  uuid.UUID
 		Status    GameStatus
 		Type      GameType
+		Title     *string
 		Settings  GameSettings
 		CreatedAt time.Time
 	}

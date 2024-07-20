@@ -97,7 +97,7 @@ func QuestionForm(activeQuestionType string, submitUrl string, color string, que
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"post\" class=\"m-0 col-span-5\"><input type=\"hidden\" name=\"question_type\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"post\" enctype=\"multipart/form-data\" class=\"m-0 col-span-5\"><input type=\"hidden\" name=\"question_type\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -132,7 +132,7 @@ func QuestionForm(activeQuestionType string, submitUrl string, color string, que
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-4\"><textarea name=\"question_text\" class=\"w-full textarea textarea-bordered textarea-lg min-h-40 text-black\" placeholder=\"Текст вопроса\" required></textarea> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-4\"><div class=\"flex gap-4\"><div class=\"flex-col basis-1/4 self-start p-4 bg-white rounded-lg\"><label class=\"form-control w-full max-w-xs min-h-32\"><div class=\"label\"><span class=\"label-text\">Выбрать изображение</span></div><input type=\"file\" name=\"question_image\" class=\"file-input file-input-bordered w-full max-w-xs [&amp;::file-selector-button]:hidden text-black p-2\"></label></div><div class=\"flex-col basis-3/4\"><textarea name=\"question_text\" class=\"w-full textarea textarea-lg min-h-40 text-black\" placeholder=\"Текст вопроса\" required></textarea></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -210,7 +210,7 @@ func AnswerOptionForm(questionType string, color string, actionUrl string) templ
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs("answer-option-form-" + color)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 56, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 68, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -236,7 +236,7 @@ func AnswerOptionForm(questionType string, color string, actionUrl string) templ
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(actionUrl)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 62, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 74, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -249,7 +249,7 @@ func AnswerOptionForm(questionType string, color string, actionUrl string) templ
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs("#answer-option-form-" + color)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 64, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 76, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -302,7 +302,7 @@ func AnswerOptionAdd(color string, actionUrl string) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs("answer-option-add-" + color)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 103, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 115, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -337,7 +337,7 @@ func AnswerOptionAdd(color string, actionUrl string) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(actionUrl)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 106, Col: 29}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 118, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -350,7 +350,7 @@ func AnswerOptionAdd(color string, actionUrl string) templ.Component {
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs("#answer-option-add-" + color)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 108, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 120, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {

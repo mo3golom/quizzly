@@ -11,6 +11,7 @@ type (
 	CreateGameIn struct {
 		AuthorID uuid.UUID
 		Type     model.GameType
+		Title    *string
 		Settings model.GameSettings
 	}
 
@@ -57,6 +58,7 @@ type (
 	SessionUsecase interface {
 		Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
 		Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
+		Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
 
 		AcceptAnswers(ctx context.Context, in *AcceptAnswersIn) (*AcceptAnswersOut, error)
 		GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*SessionState, error)

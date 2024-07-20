@@ -22,6 +22,7 @@ type (
 		AuthorID                 uuid.UUID `db:"author_id"`
 		Status                   string    `db:"status"`
 		Type                     string    `db:"type"`
+		Title                    *string   `db:"title"`
 		SettingsIsPrivate        bool      `db:"settings_is_private"`
 		SettingsShuffleQuestions bool      `db:"settings_shuffle_questions"`
 		SettingsShuffleAnswers   bool      `db:"settings_shuffle_answers"`
@@ -39,11 +40,11 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error {
 	const query = `
-		insert into game (id, status, "type", author_id) values ($1, $2, $3, $4)
+		insert into game (id, status, "type", author_id, title) values ($1, $2, $3, $4, $5)
 		on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID, in.Title)
 	if err != nil {
 		return err
 	}
@@ -97,6 +98,7 @@ func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUI
 			g.status, 
 			g.author_id,
 			g.created_at,
+			g.title,
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
 			gs.shuffle_answers as settings_shuffle_answers
@@ -149,6 +151,7 @@ func (r *DefaultRepository) get(ctx context.Context, db transactional.Tx, id uui
 			g.status, 
 			g.author_id,
 			g.created_at,
+			g.title,
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
 			gs.shuffle_answers as settings_shuffle_answers
@@ -176,6 +179,7 @@ func convertToGame(in sqlxGame) model.Game {
 		Type:     model.GameType(in.Type),
 		Status:   model.GameStatus(in.Status),
 		AuthorID: in.AuthorID,
+		Title:    in.Title,
 		Settings: model.GameSettings{
 			IsPrivate:        in.SettingsIsPrivate,
 			ShuffleQuestions: in.SettingsShuffleQuestions,

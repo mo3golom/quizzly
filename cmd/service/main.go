@@ -7,6 +7,7 @@ import (
 	"quizzly/cmd"
 	"quizzly/internal/quizzly"
 	"quizzly/pkg/auth"
+	"quizzly/pkg/files"
 	"quizzly/pkg/transactional"
 	variables2 "quizzly/pkg/variables"
 	"quizzly/web"
@@ -32,11 +33,18 @@ func main() {
 	log := cmd.MustInitLogger()
 	defer log.Flush()
 
+	filesConfig := files.NewConfiguration(variables.Repository.MustGet())
+	simpleAuthConfig := auth.NewConfiguration(db, template, variables.Repository.MustGet())
+
 	quizzlyConfig := quizzly.NewConfiguration(
 		db,
 		template,
 	)
-	simpleAuthConfig := auth.NewConfiguration(db, template, variables.Repository.MustGet())
 
-	web.ServerRun(log, quizzlyConfig, simpleAuthConfig.SimpleAuth.MustGet())
+	web.ServerRun(
+		log,
+		quizzlyConfig,
+		simpleAuthConfig.SimpleAuth.MustGet(),
+		filesConfig.S3.MustGet(),
+	)
 }

@@ -6,7 +6,13 @@ templ GameListItem(game *handlers.Game) {
        <div>
        <a href={templ.SafeURL("/game?id=" + game.ID.String())}>
        <div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4">
-                 <span class="text-xl font-medium">Игра от { game.CreatedAt.Format("02-01-2006") }</span>
+                 <span class="text-xl font-medium">
+                     if game.Title != nil {
+                        { *game.Title }
+                     } else {
+                        Игра от { game.CreatedAt.Format("02-01-2006") }
+                     }
+                 </span>
                  <p class="text-sm text-gray-400">{ game.ID.String() }</p>
                  <div class="mt-2">
                  switch game.Status {

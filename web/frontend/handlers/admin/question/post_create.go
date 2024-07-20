@@ -1,6 +1,7 @@
 package question
 
 import (
+	"bytes"
 	"errors"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
@@ -8,9 +9,13 @@ import (
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/auth"
+	"quizzly/pkg/files"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/web/frontend/services/question"
 	frontend_components "quizzly/web/frontend/templ/components"
+)
+
+const (
+	questionImageName = "question_image"
 )
 
 var (
@@ -30,13 +35,19 @@ type (
 	}
 
 	PostCreateHandler struct {
-		uc      contracts.QuestionUsecase
-		service question.Service
+		uc     contracts.QuestionUsecase
+		images files.Manager
 	}
 )
 
-func NewPostCreateHandler(uc contracts.QuestionUsecase, service question.Service) *PostCreateHandler {
-	return &PostCreateHandler{uc: uc, service: service}
+func NewPostCreateHandler(
+	uc contracts.QuestionUsecase,
+	images files.Manager,
+) *PostCreateHandler {
+	return &PostCreateHandler{
+		uc:     uc,
+		images: images,
+	}
 }
 
 func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (templ.Component, error) {
@@ -47,6 +58,19 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 	}
 
 	converted.AuthorID = authContext.UserID()
+
+	image, err := findQuestionImage(request)
+	if err != nil {
+		return nil, err
+	}
+	if image != nil {
+		err = h.images.Upload(request.Context(), image)
+		if err != nil {
+			return nil, err
+		}
+		converted.ImageID = &image.Name
+	}
+
 	err = h.uc.Create(request.Context(), converted)
 	if err != nil {
 		return nil, err
@@ -101,4 +125,27 @@ func clearIn(in *NewPostData) {
 	}
 
 	in.QuestionCorrectAnswer = questionCorrectAnswer
+}
+
+func findQuestionImage(r *http.Request) (*files.UploadFile, error) {
+	file, handler, err := r.FormFile(questionImageName)
+	if errors.Is(err, http.ErrMissingFile) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	buffer := bytes.Buffer{}
+	_, err = buffer.ReadFrom(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return &files.UploadFile{
+		Data: &buffer,
+		Name: handler.Filename,
+		Size: handler.Size,
+	}, nil
 }

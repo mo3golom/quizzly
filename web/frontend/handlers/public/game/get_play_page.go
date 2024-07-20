@@ -65,15 +65,22 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		), nil
 	}
 
-	playerID, err := h.getPlayerID(request, in.Restart)
+	playerID, err := h.getPlayerID(request)
 	if err != nil {
 		return nil, err
 	}
 	setPlayerID(writer, playerID)
 
+	if in.Restart != nil && *in.Restart {
+		err = h.sessionUC.Restart(request.Context(), game.ID, playerID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
-		err := h.sessionUC.Finish(context.Background(), game.ID, playerID)
+		err = h.sessionUC.Finish(context.Background(), game.ID, playerID)
 		if err != nil {
 			return nil, err
 		}
@@ -124,6 +131,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 					ID:            session.CurrentQuestion.ID,
 					Type:          session.CurrentQuestion.Type,
 					Text:          session.CurrentQuestion.Text,
+					ImageID:       session.CurrentQuestion.ImageID,
 					AnswerOptions: answerOptions,
 					Color:         frontend.ColorsMap[specificQuestionColor.Color][frontend.BgColor],
 				}),
@@ -132,11 +140,8 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	), nil
 }
 
-func (h *GetPlayPageHandler) getPlayerID(request *http.Request, withReset *bool) (uuid.UUID, error) {
-	playerID := uuid.Nil
-	if withReset == nil || !*withReset {
-		playerID = getPlayerID(request)
-	}
+func (h *GetPlayPageHandler) getPlayerID(request *http.Request) (uuid.UUID, error) {
+	playerID := getPlayerID(request)
 	if playerID == uuid.Nil {
 		newPlayerID := uuid.New()
 		err := h.playerUC.Create(request.Context(), &model.Player{

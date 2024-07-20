@@ -46,6 +46,7 @@ func (u *Usecase) Create(ctx context.Context, in *contracts.CreateGameIn) (uuid.
 				AuthorID: in.AuthorID,
 				Status:   model.GameStatusCreated,
 				Type:     model.GameTypeAsync,
+				Title:    in.Title,
 				Settings: in.Settings,
 			},
 		)

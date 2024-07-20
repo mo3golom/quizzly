@@ -48,6 +48,7 @@ func (h *GetListHandler) Handle(_ http.ResponseWriter, request *http.Request, _ 
 		components = append(components, frontendAdminGame.GameListItem(&handlers.Game{
 			ID:        game.ID,
 			Status:    game.Status,
+			Title:     game.Title,
 			CreatedAt: game.CreatedAt,
 		}))
 	}

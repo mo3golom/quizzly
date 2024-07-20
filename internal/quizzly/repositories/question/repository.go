@@ -15,6 +15,7 @@ import (
 type (
 	sqlxQuestion struct {
 		ID                    uuid.UUID            `db:"id"`
+		ImageID               *string              `db:"image_id"`
 		Text                  string               `db:"text"`
 		Type                  string               `db:"type"`
 		AnswerOptionID        model.AnswerOptionID `db:"answer_option_id"`
@@ -35,10 +36,10 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Question) error {
 	const query = ` 
-		insert into question (id, "text", "type", author_id) values ($1, $2, $3, $4) on conflict (id) do nothing
+		insert into question (id, "text", "type", author_id, image_id) values ($1, $2, $3, $4, $5) on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Text, in.Type, in.AuthorID)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Text, in.Type, in.AuthorID, in.ImageID)
 	if err != nil {
 		return err
 	}
@@ -71,7 +72,7 @@ func (r *DefaultRepository) Delete(ctx context.Context, tx transactional.Tx, id 
 
 func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
 	const query = ` 
-		select q.id, q.text, q.type, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
+		select q.id, q.text, q.type, q.image_id, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
 		from question as q
 		inner join question_answer_option as qao on qao.question_id = q.id
 		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
@@ -113,6 +114,7 @@ func convert(in []sqlxQuestion) []model.Question {
 					ID:            item.ID,
 					Text:          item.Text,
 					Type:          model.QuestionType(item.Type),
+					ImageID:       item.ImageID,
 					AnswerOptions: make([]model.AnswerOption, 0, len(in)),
 				}
 			}

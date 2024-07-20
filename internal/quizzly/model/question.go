@@ -1,6 +1,8 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 const (
 	QuestionTypeChoice         QuestionType = "choice"
@@ -17,6 +19,7 @@ type (
 		AuthorID      uuid.UUID
 		Text          string
 		Type          QuestionType
+		ImageID       *string
 		AnswerOptions []AnswerOption
 	}
 

@@ -36,9 +36,11 @@ func (h *PostFinishHandler) Handle(_ http.ResponseWriter, request *http.Request,
 
 	return frontendAdminGame.Header(
 		&handlers.Game{
-			ID:     game.ID,
-			Status: game.Status,
-			Link:   getGameLink(game.ID, request),
+			ID:        game.ID,
+			Status:    game.Status,
+			Title:     game.Title,
+			Link:      getGameLink(game.ID, request),
+			CreatedAt: game.CreatedAt,
 		},
 	), nil
 }
