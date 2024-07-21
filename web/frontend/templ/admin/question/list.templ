@@ -21,7 +21,7 @@ templ QuestionListItem(question handlers.Question, answerOptions []templ.Compone
                 <div class="absolute bg-base-disabled w-full h-full z-10"></div>
             }
             <div class="grid gap-4 grid-cols-4 content-start">
-                   <div class="grid-col col-span-3 p-4">
+                   <div class={fmt.Sprintf("grid-col col-span-3 p-4 %s", structs.Or(options.WithActions, "col-span-3", "col-span-4"))}>
                      <label class={fmt.Sprintf("justify-start flex gap-4 %s", structs.Or(options.WithSelect ,"cursor-pointer", ""))}>
                         if options.WithSelect {
                             @QuestionSelect(question.ID)
@@ -32,11 +32,11 @@ templ QuestionListItem(question handlers.Question, answerOptions []templ.Compone
                         @QuestionText(question.Text)
                      </label>
                    </div>
+                   if options.WithActions {
                    <div class="grid-col justify-self-end self-start p-4">
-                        if options.WithActions {
-                            @ActionDeleteQuestion(question.ID)
-                        }
+                      @ActionDeleteQuestion(question.ID)
                    </div>
+                   }
             </div>
 
             <div class="collapse collapse-arrow bg-base-200 rounded-none">
@@ -82,7 +82,7 @@ templ QuestionSelect(id uuid.UUID) {
 
 templ QuestionImage(imageID string) {
     <div class="flex-col basis-1/4">
-        <img src={fmt.Sprintf("/file/%s", imageID)} class="rounded-lg"/>
+        <img src={fmt.Sprintf("/file/%s", imageID)} class="rounded-lg min-w-16 max-w-32"/>
     </div>
 }
 
