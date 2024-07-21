@@ -15,7 +15,7 @@ import (
 const (
 	formAddTitle = "Добавление вопроса"
 	submitUrl    = "/question"
-	listUrl      = "/game/list"
+	listUrl      = "/question/list"
 )
 
 const (

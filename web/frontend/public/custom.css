@@ -1,10 +1,10 @@
 @font-face {
-    font-family: "obliqueFont";
+    font-family: "bigNoodleFont";
     src: url(/bignoodletoooblique.ttf);
 }
 
-.text-oblique {
-    font-family: "obliqueFont", sans-serif;
+.text-big-noodle {
+    font-family: "bigNoodleFont", sans-serif;
 }
 
 .border-stat-grey {

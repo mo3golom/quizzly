@@ -19,17 +19,17 @@ templ Statistics(gameLink string, stats *handlers.GameStatistics) {
         <div class="stats w-full bg-amber-500 rounded-b-2xl rounded-t-none">
               <div class="stat">
                 <div class="stat-title text-white">Всего вопросов</div>
-                <div class="stat-value text-oblique text-white">{strconv.Itoa(stats.QuestionsCount)}</div>
+                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.QuestionsCount)}</div>
               </div>
 
               <div class="stat">
                 <div class="stat-title text-white">Участников</div>
-                <div class="stat-value text-oblique text-white">{strconv.Itoa(stats.ParticipantsCount)}</div>
+                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.ParticipantsCount)}</div>
               </div>
 
               <div class="stat">
                 <div class="stat-title text-white">Процент прохождения</div>
-                <div class="stat-value text-oblique text-white">{strconv.Itoa(stats.CompletionRate)}%</div>
+                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.CompletionRate)}%</div>
               </div>
         </div>
     </div>

@@ -26,14 +26,14 @@ func SessionListItem(name string, completionRate int, sessionStatus model.Sessio
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr><td class=\"font-bold text-oblique text-xl\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr><td class=\"font-bold text-big-noodle text-xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/session_list.templ`, Line: 8, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/session_list.templ`, Line: 8, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
