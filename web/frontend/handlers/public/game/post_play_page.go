@@ -114,6 +114,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 	return frontendPublicGame.QuestionComposition(
 		game.ID,
 		playerID,
+		frontendPublicGame.Header(game.Title),
 		frontendComponents.GridLine(
 			frontendPublicGame.Progress(&handlers.SessionProgress{
 				Answered: int(session.Progress.Answered),
