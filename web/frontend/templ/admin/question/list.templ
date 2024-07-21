@@ -81,10 +81,8 @@ templ QuestionSelect(id uuid.UUID) {
 }
 
 templ QuestionImage(imageID string) {
-    <div class="flex-col basis-1/4 avatar">
-        <div class="rounded-lg">
-            <img src={fmt.Sprintf("/file/%s", imageID)}/>
-        </div>
+    <div class="flex-col basis-1/4">
+        <img src={fmt.Sprintf("/file/%s", imageID)} class="rounded-lg"/>
     </div>
 }
 

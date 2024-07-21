@@ -151,7 +151,7 @@ func (h *PostPlayPageHandler) finish(
 
 	return frontendComponents.Composition(
 		frontendComponents.CompositionMD(
-			frontendPublicGame.ResultHeader(),
+			frontendPublicGame.ResultHeader(game.Title),
 			frontendPublicGame.ResultStatistics(
 				&handlers.SessionStatistics{
 					QuestionsCount:      int(stats.QuestionsCount),

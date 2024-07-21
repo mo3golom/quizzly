@@ -25,7 +25,7 @@ func Settings(settings *handlers.GameSettings) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mb-4\"><div class=\"stats w-full bg-blue-500 rounded-2xl\"><div class=\"stat\"><div class=\"stat-title text-white\">Перемешать вопросы</div><div class=\"stat-value text-oblique text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mb-4\"><div class=\"stats w-full bg-blue-500 rounded-2xl\"><div class=\"stat\"><div class=\"stat-title text-white\">Перемешать вопросы</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -40,7 +40,7 @@ func Settings(settings *handlers.GameSettings) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Перемешать ответы</div><div class=\"stat-value text-oblique text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Перемешать ответы</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

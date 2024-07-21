@@ -36,10 +36,8 @@ templ Question(question *handlers.Question) {
 
             if question.ImageID != nil {
                 <div class="flex gap-4 pb-4">
-                    <div class="flex-col basis-1/4 avatar">
-                        <div class="rounded-xl">
-                            <img src={fmt.Sprintf("/file/%s", *question.ImageID)}/>
-                        </div>
+                    <div class="flex-col basis-1/4">
+                        <img src={fmt.Sprintf("/file/%s", *question.ImageID)} class="rounded-xl"/>
                     </div>
                      <div class="flex-col basis-3/4 font-bold text-2xl text-white">
                         { question.Text }
@@ -115,7 +113,7 @@ templ Progress(progress *handlers.SessionProgress) {
             value={strconv.Itoa(progress.Answered)}
             max={strconv.Itoa(progress.Total)}
         ></progress>
-        <span class="ml-1 align-bottom font-bold text-white text-oblique text-xl">{strconv.Itoa(progress.Answered)} / {strconv.Itoa(progress.Total)}</span>
+        <span class="ml-1 align-bottom font-bold text-white text-big-noodle text-xl">{strconv.Itoa(progress.Answered)} / {strconv.Itoa(progress.Total)}</span>
     </div>
 }
 

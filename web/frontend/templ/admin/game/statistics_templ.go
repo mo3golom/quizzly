@@ -39,40 +39,40 @@ func Statistics(gameLink string, stats *handlers.GameStatistics) templ.Component
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"input join-item w-full select-all\" disabled> <button class=\"btn join-item bg-blue-500 hover:bg-blue-600 text-white border-0\" data-copy-target=\"game-page-game-link\" onclick=\"copy(this)\">скопировать</button></div></div><div class=\"stats w-full bg-amber-500 rounded-b-2xl rounded-t-none\"><div class=\"stat\"><div class=\"stat-title text-white\">Всего вопросов</div><div class=\"stat-value text-oblique text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"input join-item w-full select-all\" disabled> <button class=\"btn join-item bg-blue-500 hover:bg-blue-600 text-white border-0\" data-copy-target=\"game-page-game-link\" onclick=\"copy(this)\">скопировать</button></div></div><div class=\"stats w-full bg-amber-500 rounded-b-2xl rounded-t-none\"><div class=\"stat\"><div class=\"stat-title text-white\">Всего вопросов</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(stats.QuestionsCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 22, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 22, Col: 102}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Участников</div><div class=\"stat-value text-oblique text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Участников</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(stats.ParticipantsCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 27, Col: 102}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 27, Col: 105}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Процент прохождения</div><div class=\"stat-value text-oblique text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"stat\"><div class=\"stat-title text-white\">Процент прохождения</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(stats.CompletionRate))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 32, Col: 99}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/statistics.templ`, Line: 32, Col: 102}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

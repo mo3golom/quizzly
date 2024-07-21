@@ -120,6 +120,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 			frontendPublicGame.QuestionComposition(
 				game.ID,
 				playerID,
+				frontendPublicGame.Header(game.Title),
 				frontendComponents.GridLine(
 					frontendPublicGame.Progress(&handlers.SessionProgress{
 						Answered: int(session.Progress.Answered),
@@ -167,7 +168,7 @@ func (h *GetPlayPageHandler) statistics(ctx context.Context, game *model.Game, p
 	return frontend.PublicPageComponent(
 		fmt.Sprintf("%s #%s", getPlayPageTitle, game.ID.String()),
 		frontendComponents.CompositionMD(
-			frontendPublicGame.ResultHeader(),
+			frontendPublicGame.ResultHeader(game.Title),
 			frontendPublicGame.ResultStatistics(
 				&handlers.SessionStatistics{
 					QuestionsCount:      int(stats.QuestionsCount),
