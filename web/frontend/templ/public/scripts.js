@@ -37,7 +37,7 @@ function chooseAnswer(element) {
 
     let hideSubmitButton = () => {
         document.getElementById("play-page-submit-button").disabled=true
-        document.getElemexntById("play-page-submit").classList.add("hidden", "opacity-0")
+        document.getElementById("play-page-submit").classList.add("hidden", "opacity-0")
         document.getElementById("play-page-submit").classList.remove("animate-fade-in-up", "sm:animate-fade-in")
     }
     let showSubmitButton = () => {
