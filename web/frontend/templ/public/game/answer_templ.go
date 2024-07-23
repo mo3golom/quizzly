@@ -28,12 +28,12 @@ func Answer(isCorrect bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if isCorrect {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-green-500 font-bold text-big-noodle text-4xl sm:text-8xl\">Правильный ответ!</span><script type=\"text/javascript\">\n                        fire();\n                </script>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Правильный ответ!</span><script type=\"text/javascript\">\n                        fire();\n                </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"animate-tada animate-duration-1000\"><span class=\"text-red-500 font-bold text-big-noodle text-4xl sm:text-8xl\">Неудача!</span></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"animate-tada animate-duration-1000\"><span class=\"text-red-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Неудача!</span></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
