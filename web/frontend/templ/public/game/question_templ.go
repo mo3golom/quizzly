@@ -64,7 +64,7 @@ func QuestionComposition(gameID uuid.UUID, playerID uuid.UUID, components ...tem
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"play-page-submit\" class=\"fixed w-full sm:static p-4 sm:p-0 bottom-0 left-0 opacity-0\"><button id=\"play-page-submit-button\" type=\"submit\" class=\"btn drop-shadow-lg sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl\" onclick=\"submitAnswer()\" disabled>Ответить</button></div></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"play-page-submit\" class=\"fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 opacity-0 animate-duration-300\"><button id=\"play-page-submit-button\" type=\"submit\" class=\"btn drop-shadow-lg sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl\" onclick=\"submitAnswer()\" disabled>Ответить</button></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

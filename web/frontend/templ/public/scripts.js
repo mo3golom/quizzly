@@ -42,6 +42,7 @@ function chooseAnswer(element) {
         if (chosenAnswers.length === 0) {
             document.getElementById("play-page-submit-button").disabled=true
             document.getElementById("play-page-submit").classList.add("opacity-0");
+            document.getElementById("play-page-submit").classList.remove("animate-fade-in-up");
 
         }
         return
@@ -55,12 +56,14 @@ function chooseAnswer(element) {
         chosenAnswers = [];
         document.getElementById("play-page-submit-button").disabled=true
         document.getElementById("play-page-submit").classList.add("opacity-0");
+        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up");
     }
 
     element.classList.add("outline", "outline-4", "outline-green-500");
     document.getElementById("checkbox-"+id).checked=true
     document.getElementById("play-page-submit-button").disabled=false
     document.getElementById("play-page-submit").classList.remove("opacity-0");
+    document.getElementById("play-page-submit").classList.add("animate-fade-in-up");
     chosenAnswers.push(id);
 }
 
