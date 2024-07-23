@@ -21,7 +21,7 @@ templ ResultStatistics(stats *handlers.SessionStatistics) {
              max={strconv.Itoa(stats.QuestionsCount)}
           ></progress>
      </div>
-     <div class="stats w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg">
+     <div class="stats stats-vertical sm:stats-horizontal w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg">
            <div class="stat">
              <div class="stat-title text-white">Всего вопросов</div>
              <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.QuestionsCount)}</div>

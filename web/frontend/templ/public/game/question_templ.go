@@ -146,7 +146,7 @@ func Question(question *handlers.Question) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if question.ImageID != nil {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex gap-4 pb-4\"><div class=\"flex-col basis-1/4\"><img src=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col sm:flex-row gap-4 pb-4\"><div class=\"flex-col basis-full sm:basis-1/4\"><img src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -159,7 +159,7 @@ func Question(question *handlers.Question) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"rounded-xl\"></div><div class=\"flex-col basis-3/4 font-bold text-2xl text-white\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"rounded-xl\"></div><div class=\"flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -382,7 +382,7 @@ func Progress(progress *handlers.SessionProgress) templ.Component {
 			templ_7745c5c3_Var22 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"self-center justify-self-start\"><progress class=\"progress progress-warning h-4 rounded-2xl w-32 bg-amber-800\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"self-center justify-self-start\"><progress class=\"progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
