@@ -35,11 +35,11 @@ templ Question(question *handlers.Question) {
             <input name="question-id" type="hidden" value={ question.ID.String() }/>
 
             if question.ImageID != nil {
-                <div class="flex gap-4 pb-4">
-                    <div class="flex-col basis-1/4">
+                <div class="flex flex-col sm:flex-row gap-4 pb-4">
+                    <div class="flex-col basis-full sm:basis-1/4">
                         <img src={fmt.Sprintf("/file/%s", *question.ImageID)} class="rounded-xl"/>
                     </div>
-                     <div class="flex-col basis-3/4 font-bold text-2xl text-white">
+                     <div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
                         { question.Text }
                      </div>
                 </div>
@@ -109,7 +109,7 @@ templ AnswerOption(id int64, text string, color string) {
 templ Progress(progress *handlers.SessionProgress) {
     <div class="self-center justify-self-start">
         <progress
-            class="progress progress-warning h-4 rounded-2xl w-32 bg-amber-800"
+            class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800"
             value={strconv.Itoa(progress.Answered)}
             max={strconv.Itoa(progress.Total)}
         ></progress>

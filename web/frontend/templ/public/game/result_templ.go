@@ -104,7 +104,7 @@ func ResultStatistics(stats *handlers.SessionStatistics) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></progress></div><div class=\"stats w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg\"><div class=\"stat\"><div class=\"stat-title text-white\">Всего вопросов</div><div class=\"stat-value text-big-noodle text-white\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></progress></div><div class=\"stats stats-vertical sm:stats-horizontal w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg\"><div class=\"stat\"><div class=\"stat-title text-white\">Всего вопросов</div><div class=\"stat-value text-big-noodle text-white\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
