@@ -17,7 +17,7 @@ templ QuestionComposition(gameID uuid.UUID, playerID uuid.UUID, components ...te
         <input name="id" type="hidden" value={ gameID.String() }/>
         <input name="player-id" type="hidden" value={ playerID.String() }/>
         @frontend_components.Composition(components...)
-        <div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 opacity-0 animate-duration-300">
+        <div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
             <button
                 id="play-page-submit-button"
                 type="submit"

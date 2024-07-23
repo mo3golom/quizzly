@@ -34,37 +34,42 @@ function showAnswerResult() {
 function chooseAnswer(element) {
     let id = element.id
     let found = chosenAnswers.findIndex((i) => i === id)
+
+    let hideSubmitButton = () => {
+        document.getElementById("play-page-submit-button").disabled=true
+        document.getElemexntById("play-page-submit").classList.add("hidden", "opacity-0")
+        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up", "sm:animate-fade-in")
+    }
+    let showSubmitButton = () => {
+        document.getElementById("play-page-submit-button").disabled=false
+        document.getElementById("play-page-submit").classList.remove("hidden", "opacity-0")
+        document.getElementById("play-page-submit").classList.add("animate-fade-in-up", "sm:animate-fade-in")
+    }
+
     if (found !== -1) {
-        element.classList.remove("outline", "outline-4", "outline-green-500");
+        element.classList.remove("outline", "outline-4", "outline-green-500")
         document.getElementById("checkbox-"+id).checked=false
-        chosenAnswers.splice(found, 1);
+        chosenAnswers.splice(found, 1)
 
         if (chosenAnswers.length === 0) {
-            document.getElementById("play-page-submit-button").disabled=true
-            document.getElementById("play-page-submit").classList.add("opacity-0");
-            document.getElementById("play-page-submit").classList.remove("animate-fade-in-up");
-
+           hideSubmitButton()
         }
         return
     }
 
     if (maxPossibleChosenAnswers === 1 && chosenAnswers.length > 0) {
         chosenAnswers.forEach((i) => {
-            document.getElementById(i).classList.remove("outline", "outline-4", "outline-green-500");
+            document.getElementById(i).classList.remove("outline", "outline-4", "outline-green-500")
             document.getElementById("checkbox-"+i).checked=false
         });
-        chosenAnswers = [];
-        document.getElementById("play-page-submit-button").disabled=true
-        document.getElementById("play-page-submit").classList.add("opacity-0");
-        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up");
+        chosenAnswers = []
+        hideSubmitButton()
     }
 
-    element.classList.add("outline", "outline-4", "outline-green-500");
+    element.classList.add("outline", "outline-4", "outline-green-500")
     document.getElementById("checkbox-"+id).checked=true
-    document.getElementById("play-page-submit-button").disabled=false
-    document.getElementById("play-page-submit").classList.remove("opacity-0");
-    document.getElementById("play-page-submit").classList.add("animate-fade-in-up");
-    chosenAnswers.push(id);
+    showSubmitButton()
+    chosenAnswers.push(id)
 }
 
 function fire() {
