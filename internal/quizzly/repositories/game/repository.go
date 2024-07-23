@@ -44,7 +44,12 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID, in.Title)
+	var title *string
+	if in.Title != nil && len(*in.Title) > 0 {
+		title = in.Title
+	}
+
+	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID, title)
 	if err != nil {
 		return err
 	}
