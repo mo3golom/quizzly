@@ -3,8 +3,10 @@ package frontend_public_game
 import "quizzly/web/frontend/templ/components"
 
 templ Page(components ...templ.Component) {
-    <div>
-       @frontend_components.Composition(components...)
+    <div class="flex min-h-[75vh]">
+       <div class="m-auto">
+        @frontend_components.Composition(components...)
+       </div>
     </div>
     @Overlay()
 }
