@@ -11,7 +11,7 @@ templ Header(game *handlers.Game) {
                         if game.Title != nil {
                             { *game.Title }
                         } else {
-                            Игра от { game.CreatedAt.Format("02-01-2006") }
+                            Игра от { game.CreatedAt.Format("02.01.2006") }
                         }
                         </h1>
                         <p class="text-sm text-gray-400 mb-2">{ game.ID.String() }</p>

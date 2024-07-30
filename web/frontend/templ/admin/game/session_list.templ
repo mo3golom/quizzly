@@ -1,21 +1,32 @@
 package frontend_admin_game
 
 import "quizzly/internal/quizzly/model"
+import "quizzly/web/frontend/handlers"
 import "strconv"
 
-templ SessionListItem(name string, completionRate int, sessionStatus model.SessionStatus) {
+templ SessionListItem(item handlers.SessionItemStatistics) {
     <tr>
-            <td class="font-bold text-big-noodle text-xl">{ name }</td>
+            <td class="font-bold text-big-noodle text-xl">{ item.PlayerName }</td>
             <td>
                         <progress
-                            class="progress h-4 rounded-2xl w-32"
-                            value={strconv.Itoa(completionRate)}
+                            class="progress h-4 rounded-2xl max-w-16"
+                            value={strconv.Itoa(item.CompletionRate)}
                             max="100"
                         ></progress>
-                        <span class="ml-1 align-text-bottom font-bold">{ strconv.Itoa(completionRate) } %</span>
+                        <span class="ml-1 align-text-bottom font-bold">{ strconv.Itoa(item.CompletionRate) } %</span>
             </td>
             <td>
-                 switch sessionStatus {
+              if item.SessionStartedAt != nil {
+                {item.SessionStartedAt.Format("15:04 02.01.2006")}
+              }
+            </td>
+            <td>
+              if item.SessionLastQuestionAnsweredAt != nil {
+                 {item.SessionLastQuestionAnsweredAt.Format("15:04 02.01.2006")}
+              }
+            </td>
+            <td>
+                 switch item.SessionStatus {
                       case model.SessionStatusStarted:
                           <span class="badge bg-green-500 text-white">{ "В процессе" }</span>
                       case model.SessionStatusFinished:

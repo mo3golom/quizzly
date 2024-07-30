@@ -45,6 +45,7 @@ type (
 		Port      int64
 		User      string
 		Password  string
+		Debug     bool
 	}
 
 	EncryptorConfig struct {

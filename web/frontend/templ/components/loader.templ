@@ -1,0 +1,9 @@
+package frontend_components
+
+import "quizzly/pkg/structs"
+
+templ OverlayLoader(id string) {
+    <div id={structs.Or(id == "", "spinner", id)} class="htmx-indicator absolute top-0 left-0 w-full h-full flex">
+       <span class="loading loading-spinner loading-md m-auto"></span>
+    </div>
+}

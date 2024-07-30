@@ -10,7 +10,7 @@ templ GameListItem(game *handlers.Game) {
                      if game.Title != nil {
                         { *game.Title }
                      } else {
-                        Игра от { game.CreatedAt.Format("02-01-2006") }
+                        Игра от { game.CreatedAt.Format("02.01.2006") }
                      }
                  </span>
                  <p class="text-sm text-gray-400">{ game.ID.String() }</p>

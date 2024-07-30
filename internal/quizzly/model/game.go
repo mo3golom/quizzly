@@ -68,6 +68,7 @@ type (
 		Answers    []AnswerOptionID
 		IsCorrect  *bool
 		AnsweredAt *time.Time
+		CreatedAt  time.Time
 	}
 
 	SessionStatistics struct {

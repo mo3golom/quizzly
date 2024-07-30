@@ -30,6 +30,7 @@ type (
 		Answers    []byte     `db:"item_answers"`
 		IsCorrect  *bool      `db:"item_is_correct"`
 		AnsweredAt *time.Time `db:"item_answered_at"`
+		CreatedAt  time.Time  `db:"item_created_at"`
 	}
 
 	sqlxSessionItem struct {
@@ -39,6 +40,7 @@ type (
 		Answers    []byte     `db:"answers"`
 		IsCorrect  *bool      `db:"is_correct"`
 		AnsweredAt *time.Time `db:"answered_at"`
+		CreatedAt  time.Time  `db:"created_at"`
 	}
 
 	DefaultRepository struct {
@@ -131,7 +133,7 @@ func (r *DefaultRepository) DeleteSessionItemsBySessionID(ctx context.Context, t
 
 func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error) {
 	const query = `
-		select psi.id, psi.session_id, psi.question_id, psi.answers, psi.is_correct, psi.answered_at
+		select psi.id, psi.session_id, psi.question_id, psi.answers, psi.is_correct, psi.answered_at, psi.created_at
 		from player_session_item as psi
 		inner join player_session as ps on ps.id = psi.session_id
 		where ps.player_id = $1 
@@ -164,7 +166,8 @@ func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUI
 		    psi.question_id as item_question_id, 
 		    psi.answers as item_answers, 
 		    psi.is_correct as item_is_correct, 
-		    psi.answered_at as item_answered_at
+		    psi.answered_at as item_answered_at,
+		    psi.created_at as item_created_at
 		from player_session ps
 		left join player_session_item as psi on psi.session_id = ps.id
 		where ps.game_id = $1
@@ -197,6 +200,7 @@ func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUI
 				QuestionID: *item.QuestionID,
 				IsCorrect:  item.IsCorrect,
 				AnsweredAt: item.AnsweredAt,
+				CreatedAt:  item.CreatedAt,
 			})
 			session.Items = sessionItems
 		}
