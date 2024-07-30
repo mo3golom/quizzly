@@ -41,14 +41,21 @@ func NewSimpleAuth(
 		db: db,
 	}
 
+	var sender Sender
+	if senderConfig.Debug {
+		sender = &DebugSender{}
+	} else {
+		sender = &DefaultSender{
+			config: senderConfig,
+		}
+	}
+
 	return &DefaultSimpleAuth{
 		template:   template,
 		repository: repository,
 		generator:  &defaultGenerator{},
 		encryptor:  encryptor,
-		sender: &DefaultSender{
-			config: senderConfig,
-		},
+		sender:     sender,
 		middleware: &defaultMiddleware{
 			repository: repository,
 			encryptor:  encryptor,

@@ -124,7 +124,12 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 				frontendComponents.Tab{
 					Name: "Участники",
 					Content: frontendComponents.Table(
-						[]string{"Имя", "Процент прохождения", "Статус прохождения"},
+						[]string{
+							"Имя",
+							"Процент прохождения",
+							"Дата старта",
+							"Дата последнего ответа",
+							"Статус прохождения"},
 						sessionList...,
 					),
 				},

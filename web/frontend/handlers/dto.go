@@ -86,4 +86,12 @@ type (
 		QuestionsCount      int
 		CorrectAnswersCount int
 	}
+
+	SessionItemStatistics struct {
+		PlayerName                    string
+		CompletionRate                int
+		SessionStatus                 model.SessionStatus
+		SessionStartedAt              *time.Time
+		SessionLastQuestionAnsweredAt *time.Time
+	}
 )

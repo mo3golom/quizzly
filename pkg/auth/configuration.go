@@ -30,6 +30,7 @@ func NewConfiguration(
 					Port:      variablesRepo.GetInt64(variables.AuthSenderPort),
 					User:      variablesRepo.GetString(variables.AuthSenderUser),
 					Password:  variablesRepo.GetString(variables.AuthSenderPassword),
+					Debug:     variablesRepo.GetString(variables.AppEnvironmentVariable) == string(variables.EnvironmentLocal),
 				},
 			), nil
 		}),
