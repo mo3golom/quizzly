@@ -1,13 +1,19 @@
 package frontend_public_game
 
-templ StartPage() {
-        <div class={"card text-primary-content rounded-2xl drop-shadow-lg bg-blue-500 max-w-max mx-auto"}>
+templ StartPage(warns ...string) {
+    <div class="max-w-md mx-auto">
+        for _, warn := range warns {
+            <div role="alert" class="alert bg-amber-500 border-0 mb-4 text-white">
+              <span>{warn}</span>
+            </div>
+        }
+        <div class={"card text-primary-content rounded-2xl drop-shadow-lg bg-blue-500"}>
             <div class="card-body p-4">
                 <div class="text-big-noodle text-2xl text-white">
                  Подключиться к игре
                 </div>
                 <div class="join">
-                    <label class="input input-bordered flex items-center gap-2 w-80 rounded-xl join-item">
+                    <label class="input input-bordered flex items-center gap-2 w-full rounded-xl join-item">
                         <input
                             id="game-start-page-game-id"
                             type="text"
@@ -20,4 +26,5 @@ templ StartPage() {
                 </div>
             </div>
         </div>
+    </div>
 }

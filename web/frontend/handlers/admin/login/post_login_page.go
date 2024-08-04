@@ -62,8 +62,7 @@ func setToken(writer http.ResponseWriter, token auth.Token) {
 		Name:     auth.CookieToken,
 		Value:    string(token),
 		Path:     "/",
-		Expires:  time.Now().Add(336 * time.Hour),
-		MaxAge:   1209600,
+		Expires:  time.Now().Add(730001 * time.Hour),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}

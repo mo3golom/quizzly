@@ -52,16 +52,22 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	if errors.Is(err, contracts.ErrGameNotFound) {
 		return frontend.PublicPageComponent(
 			getPlayPageTitle,
-			frontendPublicGame.StartPage(),
+			frontendPublicGame.StartPage("Игра не найдена."),
 		), nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	if game == nil || game.Status == model.GameStatusFinished {
+	if game.Status == model.GameStatusFinished {
 		return frontend.PublicPageComponent(
 			getPlayPageTitle,
-			frontendPublicGame.StartPage(),
+			frontendPublicGame.StartPage("Игра уже завершена."),
+		), nil
+	}
+	if game.Status == model.GameStatusCreated {
+		return frontend.PublicPageComponent(
+			getPlayPageTitle,
+			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
 		), nil
 	}
 
