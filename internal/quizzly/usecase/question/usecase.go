@@ -26,8 +26,16 @@ func NewUsecase(
 }
 
 func (u *Usecase) Create(ctx context.Context, in *model.Question) error {
+	if len(in.AnswerOptions) == 0 {
+		return contracts.ErrEmptyAnswerOptions
+	}
+
 	if in.ID == uuid.Nil {
 		in.ID = uuid.New()
+	}
+
+	if in.Type == model.QuestionTypeFillTheGap {
+		in.AnswerOptions[0].IsCorrect = true
 	}
 
 	return u.template.Execute(ctx, func(tx transactional.Tx) error {

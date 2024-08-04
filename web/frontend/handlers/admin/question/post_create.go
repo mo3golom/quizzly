@@ -22,6 +22,8 @@ var (
 	availableQuestionTypes = []string{
 		string(model.QuestionTypeChoice),
 		string(model.QuestionTypeMultipleChoice),
+		string(model.QuestionTypeOneOfChoice),
+		string(model.QuestionTypeFillTheGap),
 	}
 )
 

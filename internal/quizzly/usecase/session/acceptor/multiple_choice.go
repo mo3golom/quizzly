@@ -1,17 +1,18 @@
-package checker
+package acceptor
 
 import (
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"strconv"
 )
 
-type OneOfChoiceChecker struct{}
+type MultipleChoiceAcceptor struct{}
 
-func NewOneOfChoiceChecker() *OneOfChoiceChecker {
-	return &OneOfChoiceChecker{}
+func NewMultipleChoiceAcceptor() *MultipleChoiceAcceptor {
+	return &MultipleChoiceAcceptor{}
 }
 
-func (c *OneOfChoiceChecker) Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
+func (a *MultipleChoiceAcceptor) Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
 	correctAnswers := question.GetCorrectAnswers()
 	correctAnswersMap := make(map[model.AnswerOptionID]struct{}, len(correctAnswers))
 	for _, answer := range correctAnswers {
@@ -22,6 +23,7 @@ func (c *OneOfChoiceChecker) Check(question *model.Question, answers []model.Ans
 		IsCorrect: true,
 		Details:   make([]contracts.AnswerResult, 0, len(answers)),
 	}
+	findCount := 0
 	for _, answer := range answers {
 		_, ok := correctAnswersMap[answer]
 
@@ -29,11 +31,18 @@ func (c *OneOfChoiceChecker) Check(question *model.Question, answers []model.Ans
 			result.IsCorrect = ok
 		}
 
+		if ok {
+			findCount++
+			delete(correctAnswersMap, answer)
+		}
+
 		result.Details = append(result.Details, contracts.AnswerResult{
-			Answer:    answer,
+			Answer:    strconv.Itoa(int(answer)),
 			IsCorrect: ok,
 		})
 	}
+
+	result.IsCorrect = findCount == len(correctAnswers)
 
 	return result, nil
 }

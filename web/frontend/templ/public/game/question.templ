@@ -1,19 +1,19 @@
 package frontend_public_game
 
 import "strconv"
-import "time"
 import "fmt"
-import "github.com/google/uuid"
 import "quizzly/web/frontend/handlers"
+import "github.com/google/uuid"
+import "quizzly/internal/quizzly/model"
 import "quizzly/web/frontend/templ/components"
 
-templ QuestionComposition(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
-    <form
-            hx-post="/game/play"
-            hx-target="this"
-            hx-swap="outerHTML"
-            hx-trigger="submit delay:500ms"
-        >
+templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
+   <form
+     hx-post="/game/play"
+     hx-target="this"
+     hx-swap="outerHTML"
+     hx-trigger="submit delay:500ms"
+   >
         <input name="id" type="hidden" value={ gameID.String() }/>
         <input name="player-id" type="hidden" value={ playerID.String() }/>
         @frontend_components.Composition(components...)
@@ -26,52 +26,80 @@ templ QuestionComposition(gameID uuid.UUID, playerID uuid.UUID, components ...te
                 disabled
             >Ответить</button>
         </div>
-    </form>
+   </form>
 }
 
-templ Question(question *handlers.Question) {
-    <div class={"card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 " + question.Color}>
+templ Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Component) {
+    <div class={"card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 bg-blue-500"}>
         <div class="card-body p-4">
-            <input name="question-id" type="hidden" value={ question.ID.String() }/>
+            <input name="question-id" type="hidden" value={ id.String() }/>
+            @questionBlock
+            @answerBlock
+        </div>
+    </div>
+}
 
-            if question.ImageID != nil {
-                <div class="flex flex-col sm:flex-row gap-4 pb-4">
-                    <div class="flex-col basis-full sm:basis-1/4">
-                        <img src={fmt.Sprintf("/file/%s", *question.ImageID)} class="rounded-xl"/>
-                    </div>
-                     <div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
-                        { question.Text }
-                     </div>
-                </div>
-            } else {
-                <div class="font-bold text-2xl text-white pb-4">
-                    { question.Text }
-                </div>
-            }
-
-            <div>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-              </svg>
-              <span>
-              switch question.Type {
-                case "choice":
-                    Выберите только один правильный ответ
-                case "one_of_choice":
-                    Выберите любой из правильных ответов
-                case "multiple_choice":
-                    Выберите все правильные ответы
-              }
-              </span>
+templ QuestionBlock(text string, imageID *string) {
+    if imageID != nil {
+        <div class="flex flex-col sm:flex-row gap-4 pb-4">
+            <div class="flex-col basis-full sm:basis-1/4">
+                <img src={fmt.Sprintf("/file/%s", *imageID)} class="rounded-xl"/>
             </div>
-            <div class={fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1",len(question.AnswerOptions))}>
-            for _, answerOption := range question.AnswerOptions {
-                @AnswerOption(answerOption.ID, answerOption.Text, answerOption.Color)
+             <div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
+                { text }
+             </div>
+        </div>
+    } else {
+        <div class="font-bold text-2xl text-white pb-4">
+            { text }
+        </div>
+    }
+}
+
+
+templ AnswerChoiceDescription(questionType model.QuestionType) {
+    <div>
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+       </svg>
+       <span>
+                  switch questionType {
+                    case "choice":
+                        Выберите только один правильный ответ
+                    case "one_of_choice":
+                        Выберите любой из правильных ответов
+                    case "multiple_choice":
+                        Выберите все правильные ответы
+                  }
+        </span>
+    </div>
+}
+
+templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption) {
+    <div class={fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1",len(in))}>
+            for _, answerOption := range in {
+                <div class={fmt.Sprintf("card justify-self-stretch transition transition-colors rounded-xl duration-200 %s",answerOption.Color)}>
+                      <input
+                        type="checkbox"
+                        name="answer"
+                        value={fmt.Sprintf("%d",answerOption.ID)}
+                        class="hidden"
+                        id={fmt.Sprintf("checkbox-%d",answerOption.ID)}
+                      />
+                      <button
+                        id={fmt.Sprintf("%d",answerOption.ID)}
+                        type="button"
+                        class="card-body p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100"
+                        onclick="chooseAnswer(this)"
+                      >
+                        { answerOption.Text }
+                      </button>
+                </div>
             }
             <script type="text/javascript">
                 chosenAnswers = [];
             </script>
-            switch question.Type {
+            switch questionType {
                  case "choice":
                      <script type="text/javascript">
                         maxPossibleChosenAnswers = 1
@@ -81,28 +109,24 @@ templ Question(question *handlers.Question) {
                         maxPossibleChosenAnswers = 99
                     </script>
             }
-            </div>
-        </div>
     </div>
 }
 
-templ AnswerOption(id int64, text string, color string) {
-    <div class={"card justify-self-stretch transition transition-colors rounded-xl duration-200 " + color}>
-          <input
-            type="checkbox"
-            name="answer"
-            value={fmt.Sprintf("%d",id)}
-            class="hidden"
-            id={fmt.Sprintf("checkbox-%d",id)}
-          />
-          <button
-            id={fmt.Sprintf("%d",id)}
-            type="button"
-            class="card-body p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100"
-            onclick="chooseAnswer(this)"
-          >
-            { text }
-          </button>
+templ AnswerTextInput() {
+    <div class="col-span-4 card justify-self-stretch bg-orange-500 rounded-xl">
+        <div class="card-body p-4">
+            <label>
+                <input
+                    name="answer"
+                    type="text"
+                    placeholder="Правильный ответ"
+                    class="input input-md w-full text-white focus:text-black bg-orange-600 focus:bg-white placeholder:text-gray-300"
+                    onkeyup="writeAnswer(this)"
+                    required
+                    autocomplete="off"
+                />
+            </label>
+        </div>
     </div>
 }
 
@@ -114,29 +138,5 @@ templ Progress(progress *handlers.SessionProgress) {
             max={strconv.Itoa(progress.Total)}
         ></progress>
         <span class="ml-1 align-bottom font-bold text-white text-big-noodle text-xl">{strconv.Itoa(progress.Answered)} / {strconv.Itoa(progress.Total)}</span>
-    </div>
-}
-
-templ Timer(duration time.Duration) {
-    <div
-        id="timer"
-        data-duration={strconv.Itoa(int(duration.Seconds()))}
-        class="self-center justify-self-end align-text-bottom font-bold text-white"
-    >
-        <div class="flex gap-1">
-            <div class="flex-col">
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-               </svg>
-            </div>
-            <div class="flex-col self-center">
-                  <span class="countdown font-mono text-xl">
-                    <span id="timer-minutes" style="--value:0;"></span>
-                    :
-                    <span id="timer-seconds" style="--value:0;"></span>
-                  </span>
-            </div>
-        </div>
-        <script type="text/javascript">timer()</script>
     </div>
 }

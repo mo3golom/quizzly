@@ -23,8 +23,12 @@ type (
 		IsNew bool
 	}
 
-	AnswerChecker interface {
-		Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error)
+	AnswerOptionIDAcceptor interface {
+		Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error)
+	}
+
+	AnswerTextAcceptor interface {
+		Accept(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error)
 	}
 
 	Usecase struct {
@@ -34,7 +38,8 @@ type (
 		players   player.Repository
 		template  transactional.Template
 
-		checkers map[model.QuestionType]AnswerChecker
+		optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor
+		textAcceptors     map[model.QuestionType]AnswerTextAcceptor
 	}
 )
 
@@ -44,15 +49,17 @@ func NewUsecase(
 	questions question.Repository,
 	players player.Repository,
 	template transactional.Template,
-	checkers map[model.QuestionType]AnswerChecker,
+	optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor,
+	textAcceptors map[model.QuestionType]AnswerTextAcceptor,
 ) contracts.SessionUsecase {
 	return &Usecase{
-		sessions:  sessions,
-		games:     games,
-		questions: questions,
-		players:   players,
-		template:  template,
-		checkers:  checkers,
+		sessions:          sessions,
+		games:             games,
+		questions:         questions,
+		players:           players,
+		template:          template,
+		optionIDAcceptors: optionIDAcceptors,
+		textAcceptors:     textAcceptors,
 	}
 }
 

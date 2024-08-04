@@ -72,6 +72,27 @@ function chooseAnswer(element) {
     chosenAnswers.push(id)
 }
 
+function writeAnswer(element) {
+    let hideSubmitButton = () => {
+        document.getElementById("play-page-submit-button").disabled=true
+        document.getElementById("play-page-submit").classList.add("hidden", "opacity-0")
+        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up", "sm:animate-fade-in")
+    }
+    let showSubmitButton = () => {
+        document.getElementById("play-page-submit-button").disabled=false
+        document.getElementById("play-page-submit").classList.remove("hidden", "opacity-0")
+        document.getElementById("play-page-submit").classList.add("animate-fade-in-up", "sm:animate-fade-in")
+    }
+
+    console.log(element.value, element.value.length)
+    if (element.value.length > 0) {
+        showSubmitButton()
+        return
+    }
+
+    hideSubmitButton()
+}
+
 function fire() {
     let count = 200
     let defaults = {
