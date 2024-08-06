@@ -218,7 +218,7 @@ func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUI
 }
 
 func convertSessionItem(in *sqlxSessionItem) (*model.SessionItem, error) {
-	var answers []model.AnswerOptionID
+	var answers []string
 	if in.Answers != nil {
 		if err := json.Unmarshal(in.Answers, &answers); err != nil {
 			return nil, err

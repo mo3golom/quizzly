@@ -120,10 +120,29 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		playerName = players[0].Name
 	}
 
+	var question templ.Component
+	switch session.CurrentQuestion.Type {
+	case model.QuestionTypeChoice, model.QuestionTypeOneOfChoice, model.QuestionTypeMultipleChoice:
+		question = frontendPublicGame.Question(
+			session.CurrentQuestion.ID,
+			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
+			frontendComponents.Composition(
+				frontendPublicGame.AnswerChoiceDescription(session.CurrentQuestion.Type),
+				frontendPublicGame.AnswerChoiceOptions(session.CurrentQuestion.Type, answerOptions),
+			),
+		)
+	case model.QuestionTypeFillTheGap:
+		question = frontendPublicGame.Question(
+			session.CurrentQuestion.ID,
+			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
+			frontendPublicGame.AnswerTextInput(),
+		)
+	}
+
 	return frontend.PublicPageComponent(
 		fmt.Sprintf("%s #%s", getPlayPageTitle, game.ID.String()),
 		frontendPublicGame.Page(
-			frontendPublicGame.QuestionComposition(
+			frontendPublicGame.QuestionForm(
 				game.ID,
 				playerID,
 				frontendPublicGame.Header(game.Title),
@@ -134,14 +153,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 					}),
 					frontendPublicGame.Player(playerName),
 				),
-				frontendPublicGame.Question(&handlers.Question{
-					ID:            session.CurrentQuestion.ID,
-					Type:          session.CurrentQuestion.Type,
-					Text:          session.CurrentQuestion.Text,
-					ImageID:       session.CurrentQuestion.ImageID,
-					AnswerOptions: answerOptions,
-					Color:         frontend.ColorsMap[specificQuestionColor.Color][frontend.BgColor],
-				}),
+				question,
 			),
 		),
 	), nil

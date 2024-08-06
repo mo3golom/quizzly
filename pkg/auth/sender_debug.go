@@ -6,7 +6,6 @@ import (
 )
 
 type DebugSender struct {
-	config *SenderConfig
 }
 
 func (s *DebugSender) SendLoginCode(_ context.Context, _ Email, code LoginCode) error {

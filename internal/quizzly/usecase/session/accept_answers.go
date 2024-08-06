@@ -9,7 +9,9 @@ import (
 	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
 	"quizzly/pkg/structs"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
+	"strconv"
 	"time"
 )
 
@@ -55,7 +57,7 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 			return errors.New("question not found")
 		}
 
-		result, err = u.checkAnswers(&specificQuestions[0], in.Answers)
+		result, err = u.acceptAnswers(&specificQuestions[0], in.Answers)
 		if err != nil {
 			return err
 		}
@@ -71,15 +73,26 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 	})
 }
 
-func (u *Usecase) checkAnswers(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
+func (u *Usecase) acceptAnswers(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) == 0 {
 		return nil, errors.New("answers are empty")
 	}
 
-	checker, ok := u.checkers[question.Type]
-	if !ok {
-		return nil, errors.New("question type is not supported")
+	if acceptor, ok := u.textAcceptors[question.Type]; ok {
+		return acceptor.Accept(question, answers)
 	}
 
-	return checker.Check(question, answers)
+	if acceptor, ok := u.optionIDAcceptors[question.Type]; ok {
+		convertedAnswers, err := slices.Map(answers, func(i string) (model.AnswerOptionID, error) {
+			id, err := strconv.Atoi(i)
+			return model.AnswerOptionID(id), err
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return acceptor.Accept(question, convertedAnswers)
+	}
+
+	return nil, errors.New("question type is not supported")
 }

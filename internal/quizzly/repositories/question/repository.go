@@ -7,6 +7,7 @@ import (
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,7 @@ type (
 		ImageID               *string              `db:"image_id"`
 		Text                  string               `db:"text"`
 		Type                  string               `db:"type"`
+		CreatedAt             time.Time            `db:"created_at"`
 		AnswerOptionID        model.AnswerOptionID `db:"answer_option_id"`
 		AnswerOptionAnswer    string               `db:"answer_option_answer"`
 		AnswerOptionIsCorrect bool                 `db:"answer_option_is_correct"`
@@ -72,7 +74,7 @@ func (r *DefaultRepository) Delete(ctx context.Context, tx transactional.Tx, id 
 
 func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
 	const query = ` 
-		select q.id, q.text, q.type, q.image_id, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
+		select q.id, q.text, q.type, q.image_id, q.created_at, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
 		from question as q
 		inner join question_answer_option as qao on qao.question_id = q.id
 		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
@@ -116,6 +118,7 @@ func convert(in []sqlxQuestion) []model.Question {
 					Type:          model.QuestionType(item.Type),
 					ImageID:       item.ImageID,
 					AnswerOptions: make([]model.AnswerOption, 0, len(in)),
+					CreatedAt:     item.CreatedAt,
 				}
 			}
 

@@ -1,18 +1,19 @@
-package checker
+package acceptor
 
 import (
 	"errors"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"strconv"
 )
 
-type SingleChoiceChecker struct{}
+type SingleChoiceAcceptor struct{}
 
-func NewSingleChoiceChecker() *SingleChoiceChecker {
-	return &SingleChoiceChecker{}
+func NewSingleChoiceAcceptor() *SingleChoiceAcceptor {
+	return &SingleChoiceAcceptor{}
 }
 
-func (c *SingleChoiceChecker) Check(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
+func (a *SingleChoiceAcceptor) Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) > 1 {
 		return nil, errors.New("simple choice can't have multiple answers")
 	}
@@ -28,7 +29,7 @@ func (c *SingleChoiceChecker) Check(question *model.Question, answers []model.An
 		IsCorrect: ok,
 		Details: []contracts.AnswerResult{
 			{
-				Answer:    answers[0],
+				Answer:    strconv.Itoa(int(answers[0])),
 				IsCorrect: ok,
 			},
 		},

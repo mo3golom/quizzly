@@ -8,7 +8,7 @@ import (
 	"quizzly/internal/quizzly/usecase/player"
 	"quizzly/internal/quizzly/usecase/question"
 	"quizzly/internal/quizzly/usecase/session"
-	"quizzly/internal/quizzly/usecase/session/checker"
+	"quizzly/internal/quizzly/usecase/session/acceptor"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/transactional"
 
@@ -46,10 +46,13 @@ func NewConfiguration(
 				repos.Question.MustGet(),
 				repos.Player.MustGet(),
 				template,
-				map[model.QuestionType]session.AnswerChecker{
-					model.QuestionTypeChoice:         checker.NewSingleChoiceChecker(),
-					model.QuestionTypeOneOfChoice:    checker.NewOneOfChoiceChecker(),
-					model.QuestionTypeMultipleChoice: checker.NewMultipleChoiceChecker(),
+				map[model.QuestionType]session.AnswerOptionIDAcceptor{
+					model.QuestionTypeChoice:         acceptor.NewSingleChoiceAcceptor(),
+					model.QuestionTypeOneOfChoice:    acceptor.NewOneOfChoiceAcceptor(),
+					model.QuestionTypeMultipleChoice: acceptor.NewMultipleChoiceAcceptor(),
+				},
+				map[model.QuestionType]session.AnswerTextAcceptor{
+					model.QuestionTypeFillTheGap: acceptor.NewFillTheGapAcceptor(),
 				},
 			), nil
 		}),

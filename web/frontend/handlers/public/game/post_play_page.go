@@ -8,12 +8,10 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
-	"strconv"
 )
 
 type (
@@ -62,23 +60,11 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 	}
 	setPlayerID(writer, playerID)
 
-	answers, err := slices.Map(in.Answers, func(i string) (model.AnswerOptionID, error) {
-		number, err := strconv.Atoi(i)
-		if err != nil {
-			return model.AnswerOptionID(0), err
-		}
-
-		return model.AnswerOptionID(number), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	answerResult, err := h.sessionUC.AcceptAnswers(request.Context(), &contracts.AcceptAnswersIn{
 		GameID:     game.ID,
 		PlayerID:   playerID,
 		QuestionID: in.QuestionID,
-		Answers:    answers,
+		Answers:    in.Answers,
 	})
 	if err != nil {
 		return nil, err
@@ -111,7 +97,26 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 		playerName = players[0].Name
 	}
 
-	return frontendPublicGame.QuestionComposition(
+	var question templ.Component
+	switch session.CurrentQuestion.Type {
+	case model.QuestionTypeChoice, model.QuestionTypeOneOfChoice, model.QuestionTypeMultipleChoice:
+		question = frontendPublicGame.Question(
+			session.CurrentQuestion.ID,
+			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
+			frontendComponents.Composition(
+				frontendPublicGame.AnswerChoiceDescription(session.CurrentQuestion.Type),
+				frontendPublicGame.AnswerChoiceOptions(session.CurrentQuestion.Type, answerOptions),
+			),
+		)
+	case model.QuestionTypeFillTheGap:
+		question = frontendPublicGame.Question(
+			session.CurrentQuestion.ID,
+			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
+			frontendPublicGame.AnswerTextInput(),
+		)
+	}
+
+	return frontendPublicGame.QuestionForm(
 		game.ID,
 		playerID,
 		frontendPublicGame.Header(game.Title),
@@ -122,14 +127,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 			}),
 			frontendPublicGame.Player(playerName),
 		),
-		frontendPublicGame.Question(&handlers.Question{
-			ID:            session.CurrentQuestion.ID,
-			Type:          session.CurrentQuestion.Type,
-			Text:          session.CurrentQuestion.Text,
-			ImageID:       session.CurrentQuestion.ImageID,
-			AnswerOptions: answerOptions,
-			Color:         frontend.ColorsMap[specificQuestionColor.Color][frontend.BgColor],
-		}),
+		question,
 		frontendPublicGame.Answer(answerResult.IsCorrect),
 	), nil
 }

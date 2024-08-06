@@ -31,7 +31,7 @@ type (
 		GameID     uuid.UUID
 		PlayerID   uuid.UUID
 		QuestionID uuid.UUID
-		Answers    []model.AnswerOptionID
+		Answers    []string
 	}
 
 	AcceptAnswersOut struct {
@@ -40,7 +40,7 @@ type (
 	}
 
 	AnswerResult struct {
-		Answer    model.AnswerOptionID
+		Answer    string
 		IsCorrect bool
 	}
 

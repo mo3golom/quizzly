@@ -59,7 +59,7 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, options *ListOpti
 
 func convertListToTempl(in []model.Question, withHeader bool, withSelect bool, withActions bool) templ.Component {
 	sort.Slice(in, func(i, j int) bool {
-		return in[i].ID.String() < in[j].ID.String()
+		return in[i].CreatedAt.After(in[j].CreatedAt)
 	})
 
 	options := frontend_admin_question.Options{
