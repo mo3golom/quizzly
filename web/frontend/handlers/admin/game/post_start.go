@@ -39,7 +39,6 @@ func (h *PostStartHandler) Handle(_ http.ResponseWriter, request *http.Request, 
 			ID:        game.ID,
 			Status:    game.Status,
 			Title:     game.Title,
-			Link:      getGameLink(game.ID, request),
 			CreatedAt: game.CreatedAt,
 		},
 	), nil

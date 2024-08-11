@@ -1,5 +1,14 @@
 let chosenQuestions = [];
 
+function copy(element) {
+    let copyText = document.getElementById(element.getAttribute("data-copy-target"));
+
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile devices
+
+    navigator.clipboard.writeText(copyText.value);
+}
+
 function showChoiceInput(element) {
     let id = element.getAttribute("data-id")
     document.getElementById("answer-choice-input-checkbox-"+id).checked = false

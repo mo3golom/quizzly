@@ -7,10 +7,12 @@
     font-family: "bigNoodleFont", sans-serif;
 }
 
-.border-stat-grey {
-    border-color: #1f29371a;
-}
-
 .bg-base-disabled {
     background-color: rgba(242,242,242,0.5);
+}
+
+.bg-pattern {
+    background-color: rgba(30,27,75,1);
+    opacity: 1;
+    background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, rgba(30,27,75,1) 20px ), repeating-linear-gradient( #28255c55, #28255c );
 }

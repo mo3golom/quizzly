@@ -28,7 +28,6 @@ type (
 		ID        uuid.UUID
 		Status    model.GameStatus
 		Title     *string
-		Link      string
 		CreatedAt time.Time
 	}
 

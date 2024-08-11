@@ -3,28 +3,16 @@ package frontend_admin_game
 import "quizzly/web/frontend/handlers"
 
 templ Settings(settings *handlers.GameSettings) {
-    <div class="mb-4">
-        <div class="stats w-full bg-blue-500 rounded-2xl">
-              <div class="stat">
-                <div class="stat-title text-white">Перемешать вопросы</div>
-                <div class="stat-value text-big-noodle text-white">
-                    if settings.ShuffleQuestions {
-                        Да
-                    } else {
-                        Нет
-                    }
-                </div>
-              </div>
-              <div class="stat">
-                <div class="stat-title text-white">Перемешать ответы</div>
-                <div class="stat-value text-big-noodle text-white">
-                    if settings.ShuffleAnswers {
-                       Да
-                    } else {
-                       Нет
-                    }
-                </div>
-              </div>
+   <div class="mb-4">
+   if settings.ShuffleQuestions {
+        <div class="badge badge-lg badge-ghost mr-2 p-4">
+            Вопросы перемешаны
         </div>
-    </div>
+   }
+   if settings.ShuffleAnswers {
+           <div class="badge badge-lg badge-ghost mr-2 p-4">
+               Ответы перемешаны
+           </div>
+   }
+   </div>
 }

@@ -86,22 +86,21 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 					ID:        game.ID,
 					Status:    game.Status,
 					Title:     game.Title,
-					Link:      getGameLink(game.ID, request),
 					CreatedAt: game.CreatedAt,
-				},
-			),
-			frontendAdminGame.Statistics(
-				getGameLink(game.ID, request),
-				&handlers.GameStatistics{
-					QuestionsCount:    int(stats.QuestionsCount),
-					ParticipantsCount: int(stats.ParticipantsCount),
-					CompletionRate:    int(stats.CompletionRate),
 				},
 			),
 			frontendAdminGame.Settings(&handlers.GameSettings{
 				ShuffleQuestions: game.Settings.ShuffleQuestions,
 				ShuffleAnswers:   game.Settings.ShuffleAnswers,
 			}),
+			frontendAdminGame.Invite(getGameLink(game.ID, request)),
+			frontendAdminGame.Statistics(
+				&handlers.GameStatistics{
+					QuestionsCount:    int(stats.QuestionsCount),
+					ParticipantsCount: int(stats.ParticipantsCount),
+					CompletionRate:    int(stats.CompletionRate),
+				},
+			),
 			frontendComponents.Tabs(
 				uuid.New(),
 				frontendComponents.Tab{
