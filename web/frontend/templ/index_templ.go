@@ -172,7 +172,7 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-pattern\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-indigo-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -180,7 +180,7 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><div class=\"flex flex-col min-h-screen\"><div class=\"flex flex-row mb-auto relative\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-big-noodle p-8 mt-4 min-w-min\"><span class=\"text-5xl\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-pattern\"><div class=\"flex flex-col min-h-screen\"><div class=\"flex flex-row mb-auto relative\"><div class=\"basis-56 pl-4\"><div class=\"card bg-white text-bold text-big-noodle p-8 mt-4 min-w-min\"><span class=\"text-5xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -237,7 +237,7 @@ func PublicPageComponent(title string, body templ.Component) templ.Component {
 			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-pattern\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-indigo-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -245,7 +245,7 @@ func PublicPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><div class=\"flex flex-col min-h-screen\"><div class=\"text-bold text-left text-big-noodle text-white p-4 pb-8\"><span class=\"text-5xl\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-pattern\"><div class=\"flex flex-col min-h-screen\"><div class=\"text-bold text-left text-big-noodle text-white p-4 pb-8\"><span class=\"text-5xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
