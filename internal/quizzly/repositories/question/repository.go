@@ -4,13 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/transactional"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+)
+
+const (
+	defaultLimit int64 = 10_000_000
 )
 
 type (
@@ -72,15 +78,32 @@ func (r *DefaultRepository) Delete(ctx context.Context, tx transactional.Tx, id 
 	return err
 }
 
-func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
-	const query = ` 
-		select q.id, q.text, q.type, q.image_id, q.created_at, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct
-		from question as q
-		inner join question_answer_option as qao on qao.question_id = q.id
-		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or q.id = ANY($1::UUID[]))
-		and ($2::UUID is null or q.author_id = $2::UUID)
-		and ($3::bool = true or deleted_at is null)
-	`
+func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) (*GetBySpecOut, error) {
+	total, err := r.getBySpecTotalCount(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := r.getBySpec(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetBySpecOut{
+		Result:     out,
+		TotalCount: total,
+	}, nil
+}
+
+func (r *DefaultRepository) getBySpec(ctx context.Context, spec *Spec) ([]model.Question, error) {
+	query := buildBaseGetBySpecQuery("q.id, q.text, q.type, q.image_id, q.created_at, qao.id as answer_option_id, qao.answer as answer_option_answer, qao.is_correct as answer_option_is_correct")
+
+	limit := defaultLimit
+	offset := int64(0)
+	if spec.Page != nil {
+		limit = spec.Page.Limit
+		offset = (spec.Page.Number - 1) * spec.Page.Limit
+	}
 
 	var result []sqlxQuestion
 	if err := r.db.SelectContext(
@@ -90,11 +113,51 @@ func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.
 		pq.Array(spec.IDs),
 		spec.AuthorID,
 		len(spec.IDs) > 0,
+		limit,
+		offset,
 	); err != nil {
 		return nil, err
 	}
 
 	return convert(result), nil
+}
+
+func (r *DefaultRepository) getBySpecTotalCount(ctx context.Context, spec *Spec) (int64, error) {
+	query := buildBaseGetBySpecQuery("count(distinct(q.id))")
+
+	var result int64
+	if err := r.db.GetContext(
+		ctx,
+		&result,
+		query,
+		pq.Array(spec.IDs),
+		spec.AuthorID,
+		len(spec.IDs) > 0,
+		defaultLimit,
+		0,
+	); err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+
+func buildBaseGetBySpecQuery(fields string) string {
+	return fmt.Sprintf(` 
+        with question_ids as (
+    		select id from question
+    		where ($1::UUID[] is null or cardinality($1::UUID[]) = 0 or id = ANY($1::UUID[]))
+			and ($2::UUID is null or author_id = $2::UUID)
+			and ($3::bool = true or deleted_at is null)
+			order by created_at desc
+    		limit $4 
+	    	offset $5
+		)
+		select %s
+		from question as q
+		inner join question_answer_option as qao on qao.question_id = q.id
+        inner join question_ids on q.id = question_ids.id
+	`, fields)
 }
 
 func convert(in []sqlxQuestion) []model.Question {
@@ -134,6 +197,10 @@ func convert(in []sqlxQuestion) []model.Question {
 		}
 		out = append(out, *result)
 	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].CreatedAt.After(out[j].CreatedAt)
+	})
 
 	return out
 }

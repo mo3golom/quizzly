@@ -3,11 +3,9 @@ package game
 import (
 	"github.com/a-h/templ"
 	"net/http"
-	"quizzly/pkg/auth"
-	"quizzly/pkg/structs"
-	"quizzly/web/frontend/services/question"
 	frontendIndex "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
+	frontendAdminQuestion "quizzly/web/frontend/templ/admin/question"
 	frontendComponents "quizzly/web/frontend/templ/components"
 )
 
@@ -17,31 +15,17 @@ const (
 
 type (
 	GetFormHandler struct {
-		questionService question.Service
 	}
 )
 
-func NewGetFormHandler(questionService question.Service) *GetFormHandler {
-	return &GetFormHandler{
-		questionService: questionService,
-	}
+func NewGetFormHandler() *GetFormHandler {
+	return &GetFormHandler{}
 }
 
-func (h *GetFormHandler) Handle(_ http.ResponseWriter, request *http.Request, _ struct{}) (templ.Component, error) {
-	authContext := request.Context().(auth.Context)
-	questionList, err := h.questionService.List(
-		request.Context(),
-		&question.Spec{
-			AuthorID: structs.Pointer(authContext.UserID()),
-		},
-		&question.ListOptions{
-			Type:            question.ListTypeCompact,
-			SelectIsEnabled: true,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
+func (h *GetFormHandler) Handle(_ http.ResponseWriter, _ *http.Request, _ struct{}) (templ.Component, error) {
+	questionList := frontendAdminQuestion.QuestionListContainer(frontendAdminQuestion.ContainerOptions{
+		WithSelect: true,
+	})
 
 	return frontendIndex.AdminPageComponent(
 		title,

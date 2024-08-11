@@ -5,12 +5,39 @@ import "fmt"
 import "github.com/google/uuid"
 import "quizzly/pkg/structs"
 
+type ContainerOptions struct {
+    WithSelect bool
+    WithActions bool
+    QuestionIDs []uuid.UUID
+}
+
 type Options struct {
   WithSelect bool
   WithActions bool
   WithDisabledOverlay bool
 }
 
+templ QuestionListContainer(options ContainerOptions) {
+    <form
+        hx-get="/question/list"
+        hx-target="#question-list-container"
+        hx-swap="innerHTML"
+        hx-trigger="load, submit"
+    >
+    if options.WithSelect {
+        <input type="hidden" name="with_select" value="1"/>
+    }
+    if options.WithActions {
+        <input type="hidden" name="with_actions" value="1"/>
+    }
+    for _, id := range options.QuestionIDs {
+            <input type="hidden" name="question_id" value={id.String()}/>
+    }
+    <input type="hidden" name="in_container" value="1"/>
+    <div id="question-list-container">
+    </div>
+    </form>
+}
 
 templ QuestionListItem(question handlers.Question, answerOptions []templ.Component, options Options) {
        <div
@@ -73,9 +100,10 @@ templ QuestionSelect(id uuid.UUID) {
    <div class="flex-col basis-auto">
     <input
         value={ id.String() }
-        name="question"
+        id={id.String()}
         type="checkbox"
         class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
+        onchange="selectQuestion(this)"
     />
    </div>
 }
