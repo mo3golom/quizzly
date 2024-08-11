@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/web/frontend/handlers"
-	"quizzly/web/frontend/services/question"
 	"quizzly/web/frontend/services/session"
 	frontend "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
+	frontendAdminQuestion "quizzly/web/frontend/templ/admin/question"
 	frontendComponents "quizzly/web/frontend/templ/components"
 )
 
@@ -24,21 +24,18 @@ type (
 	}
 
 	GetAdminPageHandler struct {
-		uc              contracts.GameUsecase
-		questionService question.Service
-		sessionService  session.Service
+		uc             contracts.GameUsecase
+		sessionService session.Service
 	}
 )
 
 func NewGetPageHandler(
 	uc contracts.GameUsecase,
-	questionService question.Service,
 	sessionService session.Service,
 ) *GetAdminPageHandler {
 	return &GetAdminPageHandler{
-		uc:              uc,
-		questionService: questionService,
-		sessionService:  sessionService,
+		uc:             uc,
+		sessionService: sessionService,
 	}
 }
 
@@ -65,19 +62,9 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 		return nil, err
 	}
 
-	questionList, err := h.questionService.List(
-		request.Context(),
-		&question.Spec{
-			QuestionIDs: questionIDs,
-		},
-		&question.ListOptions{
-			Type:            question.ListTypeCompact,
-			SelectIsEnabled: false,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
+	questionList := frontendAdminQuestion.QuestionListContainer(frontendAdminQuestion.ContainerOptions{
+		QuestionIDs: questionIDs,
+	})
 
 	sessionList, err := h.sessionService.List(
 		request.Context(),

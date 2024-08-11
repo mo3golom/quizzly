@@ -49,14 +49,31 @@ func (u *Usecase) Delete(ctx context.Context, id uuid.UUID) error {
 	})
 }
 
-func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Question, error) {
-	return u.questions.GetBySpec(ctx, &question.Spec{
+func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID, page int64, limit int64) (*contracts.GetByAuthorOut, error) {
+	result, err := u.questions.GetBySpec(ctx, &question.Spec{
 		AuthorID: &authorID,
+		Page: &question.Page{
+			Number: page,
+			Limit:  limit,
+		},
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &contracts.GetByAuthorOut{
+		Result:     result.Result,
+		TotalCount: result.TotalCount,
+	}, nil
 }
 
 func (u *Usecase) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Question, error) {
-	return u.questions.GetBySpec(ctx, &question.Spec{
+	result, err := u.questions.GetBySpec(ctx, &question.Spec{
 		IDs: ids,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Result, nil
 }

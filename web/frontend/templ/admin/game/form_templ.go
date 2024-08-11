@@ -25,10 +25,6 @@ func Form(questionsList templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form method=\"post\" action=\"/game\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		templ_7745c5c3_Err = frontend_components.Header("Новая игра").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -41,7 +37,7 @@ func Form(questionsList templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать вопросы</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_questions\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control mb-4\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать ответы в вопросе</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_answers\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control\"><button id=\"create-game-submit\" type=\"submit\" class=\"btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0\">Создать</button></div></div></div></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><form id=\"new-game-form\" method=\"post\" action=\"/game\"><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать вопросы</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_questions\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control mb-4\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать ответы в вопросе</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_answers\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control\"><button id=\"create-game-submit\" type=\"submit\" class=\"btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0\">Создать</button></div></form><script type=\"text/javascript\">\n                enrichRequestByQuestions(\"new-game-form\")\n            </script></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

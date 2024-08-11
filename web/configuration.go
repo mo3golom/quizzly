@@ -18,7 +18,6 @@ import (
 	"quizzly/web/frontend/handlers/admin/question"
 	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
-	questionService "quizzly/web/frontend/services/question"
 	sessionService "quizzly/web/frontend/services/session"
 	"syscall"
 	"time"
@@ -30,8 +29,7 @@ const (
 
 type (
 	configuration struct {
-		questions structs.Singleton[questionService.Service]
-		sessions  structs.Singleton[sessionService.Service]
+		sessions structs.Singleton[sessionService.Service]
 	}
 
 	serverSettings struct {
@@ -67,13 +65,12 @@ func routes(
 	mux.HandleFunc("DELETE /question", security.WithAuth(handlers.Templ[question.GetDeleteData](question.NewPostDeleteHandler(
 		quizzlyConfig.Question.MustGet(),
 	), log)))
-	mux.HandleFunc("GET /question/list", security.WithAuth(handlers.Templ[struct{}](question.NewGetHandler(config.questions.MustGet()), log)))
+	mux.HandleFunc("GET /question/list", security.WithAuth(handlers.Templ[question.GetListData](question.NewGetHandler(quizzlyConfig.Question.MustGet()), log)))
 
-	mux.HandleFunc("GET /game/new", security.WithAuth(handlers.Templ[struct{}](game.NewGetFormHandler(config.questions.MustGet()), log)))
+	mux.HandleFunc("GET /game/new", security.WithAuth(handlers.Templ[struct{}](game.NewGetFormHandler(), log)))
 	mux.HandleFunc("POST /game", security.WithAuth(handlers.Templ[game.PostCreateData](game.NewPostCreateHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("GET /game", security.WithAuth(handlers.Templ[game.GetAdminPageData](game.NewGetPageHandler(
 		quizzlyConfig.Game.MustGet(),
-		config.questions.MustGet(),
 		config.sessions.MustGet(),
 	), log)))
 	mux.HandleFunc("POST /game/start", security.WithAuth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(quizzlyConfig.Game.MustGet()), log)))
@@ -100,9 +97,6 @@ func ServerRun(
 	filesManager files.Manager,
 ) {
 	config := &configuration{
-		questions: structs.NewSingleton(func() (questionService.Service, error) {
-			return questionService.NewService(quizzlyConfig.Question.MustGet()), nil
-		}),
 		sessions: structs.NewSingleton(func() (sessionService.Service, error) {
 			return sessionService.NewService(
 				quizzlyConfig.Session.MustGet(),

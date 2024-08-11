@@ -53,11 +53,11 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 		if err != nil {
 			return err
 		}
-		if len(specificQuestions) == 0 {
+		if len(specificQuestions.Result) == 0 {
 			return errors.New("question not found")
 		}
 
-		result, err = u.acceptAnswers(&specificQuestions[0], in.Answers)
+		result, err = u.acceptAnswers(&specificQuestions.Result[0], in.Answers)
 		if err != nil {
 			return err
 		}

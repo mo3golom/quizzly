@@ -108,7 +108,7 @@ func (u *Usecase) AddQuestion(ctx context.Context, gameID uuid.UUID, questionID 
 			ctx,
 			tx,
 			specificGame.ID,
-			slices.SafeMap(specificQuestions, func(question model.Question) uuid.UUID {
+			slices.SafeMap(specificQuestions.Result, func(question model.Question) uuid.UUID {
 				return question.ID
 			}),
 		)

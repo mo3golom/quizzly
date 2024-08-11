@@ -67,11 +67,11 @@ func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerI
 		if err != nil {
 			return err
 		}
-		if len(specificQuestions) == 0 {
+		if len(specificQuestions.Result) == 0 {
 			return errors.New("question not found")
 		}
 
-		currentQuestion := specificQuestions[0]
+		currentQuestion := specificQuestions.Result[0]
 		if specificGame.Settings.ShuffleAnswers {
 			tempAnswerOptions := currentQuestion.AnswerOptions
 			rand.Shuffle(len(tempAnswerOptions), func(i, j int) {
