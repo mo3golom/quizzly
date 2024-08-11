@@ -3,34 +3,21 @@ package frontend_admin_game
 import "strconv"
 import "quizzly/web/frontend/handlers"
 
-templ Statistics(gameLink string, stats *handlers.GameStatistics) {
-    <div class="mb-4">
-        <div class="p-6 bg-amber-500 w-full rounded-t-2xl rounded-b-none border-stat-grey border-b">
-            <div class="text-white stat-title mb-2">Ссылка на игру</div>
-            <div class="join w-full">
-                <input id="game-page-game-link" type="text" value={gameLink} class="input join-item w-full select-all" disabled/>
-                <button
-                    class="btn join-item bg-blue-500 hover:bg-blue-600 text-white border-0"
-                    data-copy-target="game-page-game-link"
-                    onclick="copy(this)"
-                >скопировать</button>
-            </div>
-        </div>
-        <div class="stats w-full bg-amber-500 rounded-b-2xl rounded-t-none">
-              <div class="stat">
-                <div class="stat-title text-white">Всего вопросов</div>
-                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.QuestionsCount)}</div>
-              </div>
+templ Statistics(stats *handlers.GameStatistics) {
+    <div class="stats w-full bg-amber-500 rounded-2xl mb-4">
+          <div class="stat">
+            <div class="stat-title text-white">Всего вопросов</div>
+            <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.QuestionsCount)}</div>
+          </div>
 
-              <div class="stat">
-                <div class="stat-title text-white">Участников</div>
-                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.ParticipantsCount)}</div>
-              </div>
+          <div class="stat">
+            <div class="stat-title text-white">Участников</div>
+            <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.ParticipantsCount)}</div>
+          </div>
 
-              <div class="stat">
-                <div class="stat-title text-white">Процент прохождения</div>
-                <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.CompletionRate)}%</div>
-              </div>
-        </div>
+          <div class="stat">
+            <div class="stat-title text-white">Процент прохождения</div>
+            <div class="stat-value text-big-noodle text-white">{strconv.Itoa(stats.CompletionRate)}%</div>
+          </div>
     </div>
 }

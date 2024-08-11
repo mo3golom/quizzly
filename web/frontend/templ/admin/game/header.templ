@@ -14,8 +14,8 @@ templ Header(game *handlers.Game) {
                             Игра от { game.CreatedAt.Format("02.01.2006") }
                         }
                         </h1>
-                        <p class="text-sm text-gray-400 mb-2">{ game.ID.String() }</p>
-                        <h2 class="mb-4">
+                        <p class="text-sm text-gray-400">{ game.ID.String() }</p>
+                        <h2>
                         switch game.Status {
                         		case "created":
                         			<span class="badge bg-blue-500 text-white">{ "Создана" }</span>
@@ -37,7 +37,7 @@ templ Header(game *handlers.Game) {
                     </div>
                 </div>
                 if  game.Status == "created" {
-                    <div class="card bg-base-200">
+                    <div class="card bg-base-200 mt-4">
                         <div class="card-body font-bold">
                             <div class="flex gap-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
