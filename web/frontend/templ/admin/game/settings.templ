@@ -10,9 +10,14 @@ templ Settings(settings *handlers.GameSettings) {
         </div>
    }
    if settings.ShuffleAnswers {
-           <div class="badge badge-lg badge-ghost mr-2 p-4">
+          <div class="badge badge-lg badge-ghost mr-2 p-4">
                Ответы перемешаны
-           </div>
+          </div>
+   }
+   if settings.ShowRightAnswers {
+          <div class="badge badge-lg badge-ghost mr-2 p-4">
+              Правильный ответ показывается после неудачи
+          </div>
    }
    </div>
 }

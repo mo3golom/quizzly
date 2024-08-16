@@ -39,7 +39,7 @@ func NewGetHandler(uc contracts.QuestionUsecase) *GetHandler {
 }
 
 func (h *GetHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetListData) (templ.Component, error) {
-	if in.InContainer == false {
+	if !in.InContainer {
 		return frontend.AdminPageComponent(
 			listTitle,
 			frontendComponents.Composition(

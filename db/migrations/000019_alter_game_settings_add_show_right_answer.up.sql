@@ -1,0 +1,1 @@
+alter table game_settings add column if not exists show_right_answers boolean not null default false;

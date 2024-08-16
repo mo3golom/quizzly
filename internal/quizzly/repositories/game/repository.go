@@ -26,6 +26,7 @@ type (
 		SettingsIsPrivate        bool      `db:"settings_is_private"`
 		SettingsShuffleQuestions bool      `db:"settings_shuffle_questions"`
 		SettingsShuffleAnswers   bool      `db:"settings_shuffle_answers"`
+		SettingsShowRightAnswers bool      `db:"settings_show_right_answers"`
 		CreatedAt                time.Time `db:"created_at"`
 	}
 
@@ -59,8 +60,9 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 	    	game_id,
 			is_private,
 		    shuffle_questions, 
-		    shuffle_answers
-		) values ($1, $2, $3, $4) 
+		    shuffle_answers,
+		    show_right_answers
+		) values ($1, $2, $3, $4, $5) 
 		on conflict (game_id) do nothing
 	`
 
@@ -71,6 +73,7 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		in.Settings.IsPrivate,
 		in.Settings.ShuffleQuestions,
 		in.Settings.ShuffleAnswers,
+		in.Settings.ShowRightAnswers,
 	)
 	return err
 }
@@ -106,7 +109,8 @@ func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUI
 			g.title,
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
-			gs.shuffle_answers as settings_shuffle_answers
+			gs.shuffle_answers as settings_shuffle_answers,
+			gs.show_right_answers as settings_show_right_answers
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
 		where g.author_id = $1
@@ -159,7 +163,8 @@ func (r *DefaultRepository) get(ctx context.Context, db transactional.Tx, id uui
 			g.title,
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
-			gs.shuffle_answers as settings_shuffle_answers
+			gs.shuffle_answers as settings_shuffle_answers,
+			gs.show_right_answers as settings_show_right_answers
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
 		where g.id = $1
@@ -189,6 +194,7 @@ func convertToGame(in sqlxGame) model.Game {
 			IsPrivate:        in.SettingsIsPrivate,
 			ShuffleQuestions: in.SettingsShuffleQuestions,
 			ShuffleAnswers:   in.SettingsShuffleAnswers,
+			ShowRightAnswers: in.SettingsShowRightAnswers,
 		},
 		CreatedAt: in.CreatedAt,
 	}

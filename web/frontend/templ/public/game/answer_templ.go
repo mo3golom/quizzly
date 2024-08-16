@@ -10,7 +10,10 @@ import "context"
 import "io"
 import "bytes"
 
-func Answer(isCorrect bool) templ.Component {
+import "quizzly/pkg/helper"
+import "fmt"
+
+func Answer(isCorrect bool, rightAnswers ...string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -23,17 +26,69 @@ func Answer(isCorrect bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"fixed top-0 left-0 w-full h-full z-20 transition transition-opacity duration-500 animate-duration-500 opacity-0\"><div class=\"flex h-screen\"><div class=\"m-auto\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"fixed top-0 left-0 w-full h-full z-20 transition transition-opacity duration-300 animate-duration-300 opacity-0\"><div class=\"flex h-screen overflow-y-auto relative\"><div class=\"m-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isCorrect {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Правильный ответ!</span><script type=\"text/javascript\">\n                        fire();\n                </script>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-center\"><span class=\"text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Правильный ответ!</span></div><script type=\"text/javascript\">\n                        fire();\n                    </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"animate-tada animate-duration-1000\"><span class=\"text-red-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Неудача!</span></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full\"><div class=\"animate-tada animate-duration-1500 text-center\"><span class=\"text-red-500 font-bold text-big-noodle text-6xl sm:text-8xl\">Неудача!</span></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if len(rightAnswers) > 0 {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"card max-w-xs sm:max-w-md bg-green-500 text-white rounded-2xl shadow-lg mt-8 mb-2\"><input type=\"hidden\" id=\"game-page-answer-read-estimation\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var2 string
+				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", helper.ReadEstimation(rightAnswers...).Milliseconds()))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/public/game/answer.templ`, Line: 31, Col: 106}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-4\"><div class=\"text-xl text-center font-bold\">Правильный ответ</div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				for _, rightAnswer := range rightAnswers {
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-left\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					if len(rightAnswers) > 1 {
+						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("- ")
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					var templ_7745c5c3_Var3 string
+					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(rightAnswer)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/public/game/answer.templ`, Line: 40, Col: 45}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-skip-answer\" class=\"hidden sticky bottom-2\"><button type=\"button\" class=\"btn bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl\" onclick=\"hideAnswerResult(300, 300)\">Продолжить</button></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

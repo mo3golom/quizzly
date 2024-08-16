@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
@@ -70,9 +71,11 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 		return nil, err
 	}
 
+	answerComponent := buildAnswerComponent(answerResult, game.Settings.ShowRightAnswers)
+
 	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
-		return h.finish(request.Context(), game, playerID, answerResult.IsCorrect)
+		return h.finish(request.Context(), game, playerID, answerComponent)
 	}
 	if err != nil {
 		return nil, err
@@ -128,7 +131,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 			frontendPublicGame.Player(playerName),
 		),
 		question,
-		frontendPublicGame.Answer(answerResult.IsCorrect),
+		answerComponent,
 	), nil
 }
 
@@ -136,7 +139,7 @@ func (h *PostPlayPageHandler) finish(
 	ctx context.Context,
 	game *model.Game,
 	playerID uuid.UUID,
-	answerResult bool,
+	answerComponent templ.Component,
 ) (templ.Component, error) {
 	err := h.sessionUC.Finish(context.Background(), game.ID, playerID)
 	if err != nil {
@@ -159,6 +162,17 @@ func (h *PostPlayPageHandler) finish(
 			),
 			frontendPublicGame.ActionRestartGame(game.ID),
 		),
-		frontendPublicGame.Answer(answerResult),
+		answerComponent,
 	), nil
+}
+
+func buildAnswerComponent(answerResult *contracts.AcceptAnswersOut, displayRightAnswers bool) templ.Component {
+	var rightAnswers []string
+	if displayRightAnswers {
+		rightAnswers = slices.SafeMap(answerResult.RightAnswers, func(in model.AnswerOption) string {
+			return in.Answer
+		})
+	}
+
+	return frontendPublicGame.Answer(answerResult.IsCorrect, rightAnswers...)
 }

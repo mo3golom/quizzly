@@ -58,6 +58,7 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 		}
 
 		result, err = u.acceptAnswers(&specificQuestions.Result[0], in.Answers)
+		result.RightAnswers = specificQuestions.Result[0].GetCorrectAnswers()
 		if err != nil {
 			return err
 		}
