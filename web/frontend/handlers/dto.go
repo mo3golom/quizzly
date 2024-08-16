@@ -34,6 +34,7 @@ type (
 	GameSettings struct {
 		ShuffleQuestions bool
 		ShuffleAnswers   bool
+		ShowRightAnswers bool
 	}
 
 	GameStatistics struct {

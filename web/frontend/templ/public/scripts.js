@@ -11,12 +11,36 @@ function submitAnswer() {
 }
 
 function showAnswerResult() {
+    let fullAnimationDuration = 1300
+    let stepAnimationDuration = 300
+    let skipButtonEnabled= false
     let result  = document.getElementById("game-page-answer-result");
-    let overlay = document.getElementById("game-page-overlay");
+
+    let readEstimation = document.getElementById("game-page-answer-read-estimation");
+    if (readEstimation !== null) {
+        let readEstimationValue = parseInt(readEstimation.value)
+
+        if (readEstimationValue > fullAnimationDuration) {
+            fullAnimationDuration = readEstimationValue
+            skipButtonEnabled = true
+        }
+
+    }
+
     setTimeout(() => {
         result.classList.add("opacity-100", "animate-pulse-fade-in");
         result.classList.remove("opacity-0");
-    }, 100);
+    }, 10);
+
+    hideAnswerResult(fullAnimationDuration, stepAnimationDuration);
+    if (skipButtonEnabled) {
+        document.getElementById("game-page-skip-answer").classList.remove("hidden")
+    }
+}
+
+function hideAnswerResult(fullDuration, stepDuration) {
+    let result  = document.getElementById("game-page-answer-result");
+    let overlay = document.getElementById("game-page-overlay");
 
     setTimeout(() => {
         result.classList.add("opacity-0");
@@ -24,11 +48,11 @@ function showAnswerResult() {
 
         overlay.classList.add("opacity-0");
         overlay.classList.remove("opacity-100");
-    }, 1500);
+    }, fullDuration - stepDuration);
     setTimeout(() => {
         result.classList.add("hidden");
         overlay.classList.add("hidden");
-    }, 2000);
+    }, fullDuration);
 }
 
 function chooseAnswer(element) {
@@ -84,7 +108,6 @@ function writeAnswer(element) {
         document.getElementById("play-page-submit").classList.add("animate-fade-in-up", "sm:animate-fade-in")
     }
 
-    console.log(element.value, element.value.length)
     if (element.value.length > 0) {
         showSubmitButton()
         return
@@ -140,35 +163,6 @@ function fire() {
         },
         particleCount: Math.floor(count * 0.1)
     });
-}
-
-function timer() {
-    let duration =  document.getElementById("timer").getAttribute("data-duration");
-    let countdown = new Date();
-    countdown.setSeconds(countdown.getSeconds() + Number(duration));
-
-    console.log(duration)
-    let x = setInterval(function() {
-        let distance = countdown - (new Date().getTime());
-
-        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        let timer = document.getElementById("timer")
-        if (minutes <= 0 && seconds <= 5 && !timer.classList.contains("animate-pulsing")) {
-            timer.classList.add("animate-pulsing", "animate-duration-500");
-            timer.style.setProperty("animation-iteration-count", "infinite");
-        }
-
-        document.getElementById("timer-minutes").style.setProperty('--value', minutes);
-        document.getElementById("timer-seconds").style.setProperty('--value',seconds);
-
-        if (distance < 0) {
-            clearInterval(x);
-            document.getElementById("timer-minutes").style.setProperty('--value', 0);
-            document.getElementById("timer-seconds").style.setProperty('--value',0);
-        }
-    }, 1000);
 }
 
 function connectToGame() {

@@ -37,6 +37,8 @@ type (
 	AcceptAnswersOut struct {
 		IsCorrect bool
 		Details   []AnswerResult
+
+		RightAnswers []model.AnswerOption
 	}
 
 	AnswerResult struct {

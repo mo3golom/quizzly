@@ -39,6 +39,7 @@ type (
 		IsPrivate        bool
 		ShuffleQuestions bool
 		ShuffleAnswers   bool
+		ShowRightAnswers bool
 	}
 
 	GameStatistics struct {

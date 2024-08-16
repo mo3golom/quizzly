@@ -37,7 +37,73 @@ func Form(questionsList templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><form id=\"new-game-form\" method=\"post\" action=\"/game\"><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать вопросы</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_questions\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control mb-4\"><label class=\"label cursor-pointer\"><span class=\"label-text\">Перемешать ответы в вопросе</span> <input type=\"checkbox\" value=\"1\" name=\"shuffle_answers\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div><div class=\"form-control\"><button id=\"create-game-submit\" type=\"submit\" class=\"btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0\">Создать</button></div></form><script type=\"text/javascript\">\n                enrichRequestByQuestions(\"new-game-form\")\n            </script></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><form id=\"new-game-form\" method=\"post\" action=\"/game\"><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"mb-4\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = toggleOption("Перемешать вопросы", "shuffle_questions").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = toggleOption("Перемешать ответы в вопросе", "shuffle_answers").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = toggleOption("Показывать правильный ответ в случае неудачи", "show_right_answers").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"form-control\"><button id=\"create-game-submit\" type=\"submit\" class=\"btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0\">Создать</button></div></form><script type=\"text/javascript\">\n                enrichRequestByQuestions(\"new-game-form\")\n            </script></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if !templ_7745c5c3_IsBuffer {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
+		}
+		return templ_7745c5c3_Err
+	})
+}
+
+func toggleOption(title string, name string) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+		if !templ_7745c5c3_IsBuffer {
+			templ_7745c5c3_Buffer = templ.GetBuffer()
+			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 40, Col: 44}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <input type=\"checkbox\" value=\"1\" name=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(name)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 44, Col: 26}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500\"></label></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

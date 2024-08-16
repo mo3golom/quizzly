@@ -17,6 +17,7 @@ type (
 		Questions        []string `schema:"question"`
 		ShuffleQuestions bool     `schema:"shuffle_questions"`
 		ShuffleAnswers   bool     `schema:"shuffle_answers"`
+		ShowRightAnswers bool     `schema:"show_right_answers"`
 		Title            *string  `schema:"title"`
 	}
 
@@ -47,6 +48,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 				IsPrivate:        false,
 				ShuffleQuestions: in.ShuffleQuestions,
 				ShuffleAnswers:   in.ShuffleAnswers,
+				ShowRightAnswers: in.ShowRightAnswers,
 			},
 		},
 	)

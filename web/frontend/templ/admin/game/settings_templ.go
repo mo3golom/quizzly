@@ -41,6 +41,12 @@ func Settings(settings *handlers.GameSettings) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
+		if settings.ShowRightAnswers {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"badge badge-lg badge-ghost mr-2 p-4\">Правильный ответ показывается после неудачи</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
