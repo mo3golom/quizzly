@@ -1,17 +1,25 @@
 let chosenAnswers = [];
 let maxPossibleChosenAnswers = 1;
+let timeouts = [];
+
+function clearTimeouts() {
+    timeouts.forEach(timeout => clearTimeout(timeout));
+    timeouts = [];
+}
 
 function submitAnswer() {
     let overlay = document.getElementById("game-page-overlay");
     overlay.classList.remove("hidden");
-    setTimeout(() => {
+
+    clearTimeouts()
+    timeouts.push(setTimeout(() => {
         overlay.classList.add("opacity-100");
         overlay.classList.remove("opacity-0");
-    }, 10);
+    }, 10));
 }
 
 function showAnswerResult() {
-    let fullAnimationDuration = 1300
+    let fullAnimationDuration = 1500
     let stepAnimationDuration = 300
     let skipButtonEnabled= false
     let result  = document.getElementById("game-page-answer-result");
@@ -27,10 +35,11 @@ function showAnswerResult() {
 
     }
 
-    setTimeout(() => {
+    clearTimeouts()
+    timeouts.push(setTimeout(() => {
         result.classList.add("opacity-100", "animate-pulse-fade-in");
         result.classList.remove("opacity-0");
-    }, 10);
+    }, 10));
 
     hideAnswerResult(fullAnimationDuration, stepAnimationDuration);
     if (skipButtonEnabled) {
@@ -42,17 +51,17 @@ function hideAnswerResult(fullDuration, stepDuration) {
     let result  = document.getElementById("game-page-answer-result");
     let overlay = document.getElementById("game-page-overlay");
 
-    setTimeout(() => {
+    timeouts.push(setTimeout(() => {
         result.classList.add("opacity-0");
         result.classList.remove("opacity-100", "animate-pulse-fade-in");
 
         overlay.classList.add("opacity-0");
         overlay.classList.remove("opacity-100");
-    }, fullDuration - stepDuration);
-    setTimeout(() => {
+    }, fullDuration - stepDuration));
+    timeouts.push(setTimeout(() => {
         result.classList.add("hidden");
         overlay.classList.add("hidden");
-    }, fullDuration);
+    }, fullDuration));
 }
 
 function chooseAnswer(element) {
