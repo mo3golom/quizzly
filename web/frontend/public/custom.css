@@ -16,3 +16,12 @@
     opacity: 1;
     background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, rgba(30,27,75,1) 20px ), repeating-linear-gradient( #28255c55, #28255c );
 }
+
+.lazyload,
+.lazyloading {
+    opacity: 0;
+}
+.lazyloaded {
+    opacity: 1;
+    transition: opacity 300ms;
+}

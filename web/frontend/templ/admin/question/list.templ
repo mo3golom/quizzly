@@ -110,7 +110,7 @@ templ QuestionSelect(id uuid.UUID) {
 
 templ QuestionImage(imageID string) {
     <div class="flex-col basis-1/4">
-        <img src="/image_not_available.png" data-src={fmt.Sprintf("/file/%s", imageID)} class="lazyload rounded-lg min-w-16 max-w-40"/>
+        <img  data-src={fmt.Sprintf("/file/%s", imageID)} class="lazyload rounded-lg min-w-16 max-w-40"/>
     </div>
 }
 
