@@ -24,8 +24,7 @@ const (
 
 type (
 	GetPlayPageData struct {
-		GameID  uuid.UUID `schema:"id"`
-		Restart *bool     `schema:"restart"`
+		GameID uuid.UUID `schema:"id"`
 	}
 
 	GetPlayPageHandler struct {
@@ -77,13 +76,6 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	}
 	setPlayerID(writer, playerID)
 
-	if in.Restart != nil && *in.Restart {
-		err = h.sessionUC.Restart(request.Context(), game.ID, playerID)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
 		err = h.sessionUC.Finish(context.Background(), game.ID, playerID)
@@ -91,14 +83,14 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 			return nil, err
 		}
 
-		return h.statistics(request.Context(), game, playerID)
+		return frontendComponents.Redirect(getResultsLink(game.ID, playerID)), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if session.Status == model.SessionStatusFinished {
-		return h.statistics(request.Context(), game, playerID)
+		return frontendComponents.Redirect(getResultsLink(game.ID, playerID)), nil
 	}
 
 	specificQuestionColor := handlers.QuestionTypePublicColors
@@ -175,25 +167,4 @@ func (h *GetPlayPageHandler) getPlayerID(request *http.Request) (uuid.UUID, erro
 	}
 
 	return playerID, nil
-}
-
-func (h *GetPlayPageHandler) statistics(ctx context.Context, game *model.Game, playerID uuid.UUID) (templ.Component, error) {
-	stats, err := h.sessionUC.GetStatistics(ctx, game.ID, playerID)
-	if err != nil {
-		return nil, err
-	}
-
-	return frontend.PublicPageComponent(
-		fmt.Sprintf("%s #%s", getPlayPageTitle, game.ID.String()),
-		frontendComponents.CompositionMD(
-			frontendPublicGame.ResultHeader(game.Title),
-			frontendPublicGame.ResultStatistics(
-				&handlers.SessionStatistics{
-					QuestionsCount:      int(stats.QuestionsCount),
-					CorrectAnswersCount: int(stats.CorrectAnswersCount),
-				},
-			),
-			frontendPublicGame.ActionRestartGame(game.ID),
-		),
-	), nil
 }

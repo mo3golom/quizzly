@@ -65,6 +65,6 @@ type (
 		AcceptAnswers(ctx context.Context, in *AcceptAnswersIn) (*AcceptAnswersOut, error)
 		GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*SessionState, error)
 		GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error)
-		GetSessions(ctx context.Context, gameID uuid.UUID) ([]model.SessionExtended, error)
+		GetExtendedSessions(ctx context.Context, gameID uuid.UUID) ([]model.ExtendedSession, error)
 	}
 )

@@ -64,5 +64,4 @@ func (h *GetFileHandler) thumbnail(w http.ResponseWriter) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		h.log.Error("handle request error", err)
 	}
-	return
 }

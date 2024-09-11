@@ -32,14 +32,14 @@ func NewService(
 }
 
 func (s *DefaultService) List(ctx context.Context, spec *Spec, _ *ListOptions) ([]templ.Component, error) {
-	specificSessions, err := s.sessions.GetSessions(ctx, spec.GameID)
+	specificSessions, err := s.sessions.GetExtendedSessions(ctx, spec.GameID)
 	if err != nil {
 		return nil, err
 	}
 
 	specificPlayers, err := s.players.Get(
 		ctx,
-		slices.SafeMap(specificSessions, func(session model.SessionExtended) uuid.UUID {
+		slices.SafeMap(specificSessions, func(session model.ExtendedSession) uuid.UUID {
 			return session.PlayerID
 		}),
 	)
@@ -55,7 +55,7 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, _ *ListOptions) (
 	sort.Slice(specificSessions, func(i, j int) bool {
 		return specificSessions[i].ID < specificSessions[j].ID
 	})
-	return slices.SafeMap(specificSessions, func(session model.SessionExtended) templ.Component {
+	return slices.SafeMap(specificSessions, func(session model.ExtendedSession) templ.Component {
 		sessionStartedAt := findSessionStart(session.Items)
 		sessionLastQuestionAnsweredAt := findSessionLastAnswerTime(session.Items)
 		moscowLocation, _ := time.LoadLocation("Europe/Moscow")

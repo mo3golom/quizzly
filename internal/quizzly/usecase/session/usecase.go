@@ -141,6 +141,17 @@ func (u *Usecase) Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.U
 func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error) {
 	var result *model.SessionStatistics
 	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
+		specificPlayerGame, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+			PlayerID: playerID,
+			GameID:   gameID,
+		})
+		if err != nil {
+			return err
+		}
+		if specificPlayerGame.Status != model.SessionStatusFinished {
+			return contracts.ErrSessionNotFinished
+		}
+
 		sessionItems, err := u.sessions.GetSessionBySpecWithTx(
 			ctx,
 			tx,
@@ -174,8 +185,10 @@ func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID 
 	})
 }
 
-func (u *Usecase) GetSessions(ctx context.Context, gameID uuid.UUID) ([]model.SessionExtended, error) {
-	sessions, err := u.sessions.GetSessionsByGameID(ctx, gameID)
+func (u *Usecase) GetExtendedSessions(ctx context.Context, gameID uuid.UUID) ([]model.ExtendedSession, error) {
+	sessions, err := u.sessions.GetSessionsExtendedBySpec(ctx, &session.GetSessionExtendedSpec{
+		GameID: gameID,
+	})
 	if err != nil {
 		return nil, err
 	}

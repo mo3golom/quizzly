@@ -57,7 +57,7 @@ type (
 		Status   SessionStatus
 	}
 
-	SessionExtended struct {
+	ExtendedSession struct {
 		Session
 		Items []SessionItem
 	}
@@ -78,7 +78,7 @@ type (
 	}
 )
 
-func (s *SessionExtended) CompletionRate() int64 {
+func (s *ExtendedSession) CompletionRate() int64 {
 	if len(s.Items) == 0 {
 		return 0
 	}

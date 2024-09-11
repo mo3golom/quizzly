@@ -1,12 +1,10 @@
 let chosenQuestions = [];
 
 function copy(element) {
-    let copyText = document.getElementById(element.getAttribute("data-copy-target"));
-
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); // For mobile devices
-
-    navigator.clipboard.writeText(copyText.value);
+    copyTextToClipboard(
+        document.getElementById(element.getAttribute("data-copy-target")).value,
+        "Ссылка скопирована"
+    )
 }
 
 function showChoiceInput(element) {

@@ -7,6 +7,10 @@ function clearTimeouts() {
     timeouts = [];
 }
 
+function scrollToTop() {
+    window.scrollTo(0, 0);
+}
+
 function submitAnswer() {
     let overlay = document.getElementById("game-page-overlay");
     overlay.classList.remove("hidden");
@@ -61,6 +65,11 @@ function hideAnswerResult(fullDuration, stepDuration) {
     timeouts.push(setTimeout(() => {
         result.classList.add("hidden");
         overlay.classList.add("hidden");
+
+        let resultsLink = document.getElementById("game-page-results-link")
+        if (resultsLink !== null) {
+            window.location = resultsLink.value
+        }
     }, fullDuration));
 }
 
@@ -180,4 +189,8 @@ function connectToGame() {
         return
     }
     window.location = "/game/play?id=" + gameId
+}
+
+function copyShareResultsBlock() {
+    copyTextToClipboard(window.location.href, "Ссылка скопирована")
 }

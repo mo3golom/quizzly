@@ -52,6 +52,18 @@ type (
 		Statistics      *SessionStatistics
 	}
 
+	SessionItem struct {
+		QuestionText  string
+		QuestionImage *string
+		Answers       []SessionItemAnswer
+	}
+
+	SessionItemAnswer struct {
+		AnswerText       string
+		IsCorrect        bool
+		IsPlayerAnswered bool
+	}
+
 	Participant struct {
 		PlayerID       uuid.UUID
 		SessionStatus  model.SessionStatus

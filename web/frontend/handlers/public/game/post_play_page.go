@@ -47,7 +47,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 	if err != nil {
 		return nil, err
 	}
-	if game == nil || game.Status == model.GameStatusFinished {
+	if game.Status == model.GameStatusFinished {
 		return frontendPublicGame.StartPage(), nil
 	}
 
@@ -75,7 +75,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 
 	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
-		return h.finish(request.Context(), game, playerID, answerComponent)
+		return h.finish(game, playerID, answerComponent)
 	}
 	if err != nil {
 		return nil, err
@@ -136,7 +136,6 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 }
 
 func (h *PostPlayPageHandler) finish(
-	ctx context.Context,
 	game *model.Game,
 	playerID uuid.UUID,
 	answerComponent templ.Component,
@@ -146,22 +145,8 @@ func (h *PostPlayPageHandler) finish(
 		return nil, err
 	}
 
-	stats, err := h.sessionUC.GetStatistics(ctx, game.ID, playerID)
-	if err != nil {
-		return nil, err
-	}
-
 	return frontendComponents.Composition(
-		frontendComponents.CompositionMD(
-			frontendPublicGame.ResultHeader(game.Title),
-			frontendPublicGame.ResultStatistics(
-				&handlers.SessionStatistics{
-					QuestionsCount:      int(stats.QuestionsCount),
-					CorrectAnswersCount: int(stats.CorrectAnswersCount),
-				},
-			),
-			frontendPublicGame.ActionRestartGame(game.ID),
-		),
+		frontendPublicGame.ResultLinkInput(getResultsLink(game.ID, playerID)),
 		answerComponent,
 	), nil
 }
