@@ -155,7 +155,7 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 	})
 }
 
-func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUID) ([]model.SessionExtended, error) {
+func (r *DefaultRepository) GetSessionsExtendedBySpec(ctx context.Context, spec *GetSessionExtendedSpec) ([]model.ExtendedSession, error) {
 	const query = `
 		select 
 		    ps.id, 
@@ -174,15 +174,15 @@ func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUI
 	`
 
 	var result []sqlxSessionExtended
-	if err := r.db.SelectContext(ctx, &result, query, id); err != nil {
+	if err := r.db.SelectContext(ctx, &result, query, spec.GameID); err != nil {
 		return nil, err
 	}
 
-	resultMap := make(map[int64]model.SessionExtended, len(result))
+	resultMap := make(map[int64]model.ExtendedSession, len(result))
 	for _, item := range result {
 		session, ok := resultMap[item.ID]
 		if !ok {
-			session = model.SessionExtended{
+			session = model.ExtendedSession{
 				Session: model.Session{
 					ID:       item.ID,
 					GameID:   item.GameID,
@@ -208,7 +208,7 @@ func (r *DefaultRepository) GetSessionsByGameID(ctx context.Context, id uuid.UUI
 		resultMap[item.ID] = session
 	}
 
-	out := make([]model.SessionExtended, 0, len(resultMap))
+	out := make([]model.ExtendedSession, 0, len(resultMap))
 	for _, item := range resultMap {
 		item := item
 		out = append(out, item)

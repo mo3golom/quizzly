@@ -20,6 +20,10 @@ type (
 		QuestionID *uuid.UUID
 	}
 
+	GetSessionExtendedSpec struct {
+		GameID uuid.UUID
+	}
+
 	Repository interface {
 		Insert(ctx context.Context, tx transactional.Tx, in *model.Session) error
 		Update(ctx context.Context, tx transactional.Tx, in *model.Session) error
@@ -29,6 +33,6 @@ type (
 		UpdateSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error
 		DeleteSessionItemsBySessionID(ctx context.Context, tx transactional.Tx, sessionID int64) error
 		GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error)
-		GetSessionsByGameID(ctx context.Context, id uuid.UUID) ([]model.SessionExtended, error)
+		GetSessionsExtendedBySpec(ctx context.Context, spec *GetSessionExtendedSpec) ([]model.ExtendedSession, error)
 	}
 )

@@ -144,7 +144,9 @@ func (u *Usecase) GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameS
 		return nil, err
 	}
 
-	sessions, err := u.sessions.GetSessionsByGameID(ctx, id)
+	sessions, err := u.sessions.GetSessionsExtendedBySpec(ctx, &session.GetSessionExtendedSpec{
+		GameID: id,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +160,7 @@ func (u *Usecase) GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameS
 	}, nil
 }
 
-func calculateCompletionRate(sessions []model.SessionExtended) int64 {
+func calculateCompletionRate(sessions []model.ExtendedSession) int64 {
 	if len(sessions) == 0 {
 		return 0
 	}

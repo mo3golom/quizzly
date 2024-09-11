@@ -88,6 +88,15 @@ func routes(
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
 	), log))
+	mux.HandleFunc("GET /game/restart", handlers.Templ[gamePublic.GetRestartPageData](gamePublic.NewGetRestartPageHandler(
+		quizzlyConfig.Game.MustGet(),
+		quizzlyConfig.Session.MustGet(),
+	), log))
+	mux.HandleFunc("GET /game/results", handlers.Templ[gamePublic.GetPlayResultsPageData](gamePublic.NewGetPlayResultsPageHandler(
+		quizzlyConfig.Game.MustGet(),
+		quizzlyConfig.Session.MustGet(),
+		quizzlyConfig.Player.MustGet(),
+	), log))
 }
 
 func ServerRun(

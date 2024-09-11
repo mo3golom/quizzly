@@ -35,6 +35,9 @@ templ Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Co
             <input name="question-id" type="hidden" value={ id.String() }/>
             @questionBlock
             @answerBlock
+            <script type="text/javascript">
+                scrollToTop();
+            </script>
         </div>
     </div>
 }
@@ -133,7 +136,7 @@ templ AnswerTextInput() {
 templ Progress(progress *handlers.SessionProgress) {
     <div class="self-center justify-self-start">
         <progress
-            class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800"
+            class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800 drop-shadow-lg"
             value={strconv.Itoa(progress.Answered)}
             max={strconv.Itoa(progress.Total)}
         ></progress>
