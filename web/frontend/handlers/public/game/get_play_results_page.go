@@ -15,7 +15,7 @@ import (
 
 const (
 	getPlayResultsTitle            = "Результат игры"
-	getPlayResultsShareDescription = "Я сыграл в игру %s, и вот мой результат!"
+	getPlayResultsShareDescription = "Мой результат %d из %d в игре %s. Сыграй и ты!"
 )
 
 type (
@@ -65,7 +65,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 	actions := make([]templ.Component, 0, 2)
 	if playerID == in.PlayerID {
 		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
-		actions = append(actions, frontendPublicGame.ActionShareResult(getResultsLink(game.ID, in.PlayerID, request), h.getShareTitle(game.Title)))
+		actions = append(actions, frontendPublicGame.ActionShareResult())
 	} else {
 		actions = append(actions, frontendPublicGame.ActionPlayGame(game.ID))
 	}
@@ -93,7 +93,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 			frontendComponents.GridLine(actions...),
 		),
 		frontend.OpenGraph{
-			Title: h.getShareTitle(game.Title),
+			Title: h.getShareTitle(game.Title, stats.CorrectAnswersCount, stats.QuestionsCount),
 			URL:   getResultsLink(game.ID, in.PlayerID, request),
 		}), nil
 }
@@ -106,13 +106,11 @@ func (h *GetPlayResultsPageHandler) getTitle(gameTitle *string) string {
 	return fmt.Sprintf(`%s "%s"`, getPlayResultsTitle, *gameTitle)
 }
 
-func (h *GetPlayResultsPageHandler) getShareTitle(gameTitle *string) string {
+func (h *GetPlayResultsPageHandler) getShareTitle(gameTitle *string, correctAnswersCount int64, answersCount int64) string {
+	title := ""
 	if gameTitle != nil {
-		return fmt.Sprintf(
-			getPlayResultsShareDescription,
-			fmt.Sprintf(`"%s"`, *gameTitle),
-		)
+		title = fmt.Sprintf(`"%s"`, *gameTitle)
 	}
 
-	return fmt.Sprintf(getPlayResultsShareDescription, "")
+	return fmt.Sprintf(getPlayResultsShareDescription, correctAnswersCount, answersCount, title)
 }
