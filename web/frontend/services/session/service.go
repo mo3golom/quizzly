@@ -10,6 +10,7 @@ import (
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	frontend_admin_game "quizzly/web/frontend/templ/admin/game"
+	"sort"
 	"time"
 )
 
@@ -51,6 +52,9 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, page int64, limit
 		specificPlayersMap[player.ID] = player
 	}
 
+	sort.Slice(specificSessions.Result, func(i, j int) bool {
+		return specificSessions.Result[i].Session.ID > specificSessions.Result[j].ID
+	})
 	return &ListOut{
 		Result: slices.SafeMap(specificSessions.Result, func(session model.ExtendedSession) templ.Component {
 			sessionStartedAt := findSessionStart(session.Items)
