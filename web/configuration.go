@@ -76,6 +76,7 @@ func routes(
 	mux.HandleFunc("POST /game/start", security.WithAuth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("POST /game/finish", security.WithAuth(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("GET /game/list", security.WithAuth(handlers.Templ[struct{}](game.NewGetListHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("GET /game/session/list", security.WithAuth(handlers.Templ[game.GetSessionListData](game.NewGetSessionListHandler(config.sessions.MustGet()), log)))
 
 	// PUBLIC ROUTES
 	mux.HandleFunc("GET /game/play", handlers.Templ[gamePublic.GetPlayPageData](gamePublic.NewGetPlayPageHandler(

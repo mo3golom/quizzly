@@ -10,7 +10,6 @@ import (
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	frontend_admin_game "quizzly/web/frontend/templ/admin/game"
-	"sort"
 	"time"
 )
 
@@ -31,15 +30,15 @@ func NewService(
 	}
 }
 
-func (s *DefaultService) List(ctx context.Context, spec *Spec, _ *ListOptions) ([]templ.Component, error) {
-	specificSessions, err := s.sessions.GetExtendedSessions(ctx, spec.GameID)
+func (s *DefaultService) List(ctx context.Context, spec *Spec, page int64, limit int64) (*ListOut, error) {
+	specificSessions, err := s.sessions.GetExtendedSessions(ctx, spec.GameID, page, limit)
 	if err != nil {
 		return nil, err
 	}
 
 	specificPlayers, err := s.players.Get(
 		ctx,
-		slices.SafeMap(specificSessions, func(session model.ExtendedSession) uuid.UUID {
+		slices.SafeMap(specificSessions.Result, func(session model.ExtendedSession) uuid.UUID {
 			return session.PlayerID
 		}),
 	)
@@ -52,29 +51,29 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, _ *ListOptions) (
 		specificPlayersMap[player.ID] = player
 	}
 
-	sort.Slice(specificSessions, func(i, j int) bool {
-		return specificSessions[i].ID < specificSessions[j].ID
-	})
-	return slices.SafeMap(specificSessions, func(session model.ExtendedSession) templ.Component {
-		sessionStartedAt := findSessionStart(session.Items)
-		sessionLastQuestionAnsweredAt := findSessionLastAnswerTime(session.Items)
-		moscowLocation, _ := time.LoadLocation("Europe/Moscow")
-		if sessionStartedAt != nil {
-			sessionStartedAt = structs.Pointer(sessionStartedAt.In(moscowLocation))
-		}
-		if sessionLastQuestionAnsweredAt != nil {
-			sessionLastQuestionAnsweredAt = structs.Pointer(sessionLastQuestionAnsweredAt.In(moscowLocation))
-		}
+	return &ListOut{
+		Result: slices.SafeMap(specificSessions.Result, func(session model.ExtendedSession) templ.Component {
+			sessionStartedAt := findSessionStart(session.Items)
+			sessionLastQuestionAnsweredAt := findSessionLastAnswerTime(session.Items)
+			moscowLocation, _ := time.LoadLocation("Europe/Moscow")
+			if sessionStartedAt != nil {
+				sessionStartedAt = structs.Pointer(sessionStartedAt.In(moscowLocation))
+			}
+			if sessionLastQuestionAnsweredAt != nil {
+				sessionLastQuestionAnsweredAt = structs.Pointer(sessionLastQuestionAnsweredAt.In(moscowLocation))
+			}
 
-		return frontend_admin_game.SessionListItem(handlers.SessionItemStatistics{
-			PlayerName:                    specificPlayersMap[session.PlayerID].Name,
-			CompletionRate:                int(session.CompletionRate()),
-			SessionStatus:                 session.Status,
-			SessionStartedAt:              sessionStartedAt,
-			SessionLastQuestionAnsweredAt: sessionLastQuestionAnsweredAt,
-		},
-		)
-	}), nil
+			return frontend_admin_game.SessionListItem(handlers.SessionItemStatistics{
+				PlayerName:                    specificPlayersMap[session.PlayerID].Name,
+				CompletionRate:                int(session.CompletionRate()),
+				SessionStatus:                 session.Status,
+				SessionStartedAt:              sessionStartedAt,
+				SessionLastQuestionAnsweredAt: sessionLastQuestionAnsweredAt,
+			},
+			)
+		}),
+		TotalCount: specificSessions.TotalCount,
+	}, nil
 }
 
 func findSessionStart(in []model.SessionItem) *time.Time {

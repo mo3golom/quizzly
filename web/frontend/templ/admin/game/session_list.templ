@@ -3,6 +3,20 @@ package frontend_admin_game
 import "quizzly/internal/quizzly/model"
 import "quizzly/web/frontend/handlers"
 import "strconv"
+import "github.com/google/uuid"
+
+templ SessionListContainer(gameID uuid.UUID) {
+    <form
+        hx-get="game/session/list"
+        hx-target="#session-list-container"
+        hx-swap="innerHTML"
+        hx-trigger="load, submit"
+    >
+        <input type="hidden" name="game_id" value={gameID.String()}/>
+        <div id="session-list-container">
+        </div>
+    </form>
+}
 
 templ SessionListItem(item handlers.SessionItemStatistics) {
     <tr>

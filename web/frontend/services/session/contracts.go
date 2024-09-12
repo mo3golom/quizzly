@@ -7,7 +7,9 @@ import (
 )
 
 type (
-	ListOptions struct {
+	ListOut struct {
+		Result     []templ.Component
+		TotalCount int64
 	}
 
 	Spec struct {
@@ -15,6 +17,6 @@ type (
 	}
 
 	Service interface {
-		List(ctx context.Context, spec *Spec, options *ListOptions) ([]templ.Component, error)
+		List(ctx context.Context, spec *Spec, page int64, limit int64) (*ListOut, error)
 	}
 )
