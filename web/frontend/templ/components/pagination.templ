@@ -6,11 +6,15 @@ import "fmt"
 
 templ PaginationComposition(buttons ...templ.Component) {
     <div class="mx-auto max-w-max">
-        <div class="join">
-        for _, button := range buttons {
-            @button
+        if len(buttons) == 1 {
+            @buttons[0]
+        } else {
+            <div class="join">
+            for _, button := range buttons {
+                @button
+            }
+            </div>
         }
-        </div>
     </div>
 }
 

@@ -57,6 +57,11 @@ type (
 		Total    int64
 	}
 
+	GetExtendedSessionsOut struct {
+		Result     []model.ExtendedSession
+		TotalCount int64
+	}
+
 	SessionUsecase interface {
 		Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
 		Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error
@@ -65,6 +70,6 @@ type (
 		AcceptAnswers(ctx context.Context, in *AcceptAnswersIn) (*AcceptAnswersOut, error)
 		GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*SessionState, error)
 		GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error)
-		GetExtendedSessions(ctx context.Context, gameID uuid.UUID) ([]model.ExtendedSession, error)
+		GetExtendedSessions(ctx context.Context, gameID uuid.UUID, page int64, limit int64) (*GetExtendedSessionsOut, error)
 	}
 )

@@ -66,17 +66,6 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 		QuestionIDs: questionIDs,
 	})
 
-	sessionList, err := h.sessionService.List(
-		request.Context(),
-		&session.Spec{
-			GameID: game.ID,
-		},
-		&session.ListOptions{},
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return frontend.AdminPageComponent(
 		getPageTitle,
 		frontendAdminGame.Page(
@@ -109,16 +98,8 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 					Content: questionList,
 				},
 				frontendComponents.Tab{
-					Name: "Участники",
-					Content: frontendComponents.Table(
-						[]string{
-							"Имя",
-							"Процент прохождения",
-							"Дата старта",
-							"Дата последнего ответа",
-							"Статус прохождения"},
-						sessionList...,
-					),
+					Name:    "Участники",
+					Content: frontendAdminGame.SessionListContainer(game.ID),
 				},
 			),
 		),

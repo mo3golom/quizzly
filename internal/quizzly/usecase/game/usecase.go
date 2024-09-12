@@ -144,19 +144,19 @@ func (u *Usecase) GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameS
 		return nil, err
 	}
 
-	sessions, err := u.sessions.GetSessionsExtendedBySpec(ctx, &session.GetSessionExtendedSpec{
+	sessions, err := u.sessions.GetExtendedSessionsBySpec(ctx, &session.GetExtendedSessionSpec{
 		GameID: id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	participantsCount = int64(len(sessions))
+	participantsCount = int64(len(sessions.Result))
 
 	return &model.GameStatistics{
 		QuestionsCount:    questionsCount,
 		ParticipantsCount: participantsCount,
-		CompletionRate:    calculateCompletionRate(sessions),
+		CompletionRate:    calculateCompletionRate(sessions.Result),
 	}, nil
 }
 

@@ -185,15 +185,22 @@ func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID 
 	})
 }
 
-func (u *Usecase) GetExtendedSessions(ctx context.Context, gameID uuid.UUID) ([]model.ExtendedSession, error) {
-	sessions, err := u.sessions.GetSessionsExtendedBySpec(ctx, &session.GetSessionExtendedSpec{
+func (u *Usecase) GetExtendedSessions(ctx context.Context, gameID uuid.UUID, page int64, limit int64) (*contracts.GetExtendedSessionsOut, error) {
+	sessions, err := u.sessions.GetExtendedSessionsBySpec(ctx, &session.GetExtendedSessionSpec{
 		GameID: gameID,
+		Page: &session.Page{
+			Number: page,
+			Limit:  limit,
+		},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return sessions, nil
+	return &contracts.GetExtendedSessionsOut{
+		Result:     sessions.Result,
+		TotalCount: sessions.TotalCount,
+	}, nil
 }
 
 func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID uuid.UUID) (*model.Game, error) {

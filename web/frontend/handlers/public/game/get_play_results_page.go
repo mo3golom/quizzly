@@ -51,7 +51,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 		return nil, err
 	}
 
-	stats, err := h.sessionUC.GetStatistics(request.Context(), in.GameID, in.PlayerID)
+	stats, err := h.sessionUC.GetStatistics(request.Context(), game.ID, in.PlayerID)
 	if errors.Is(err, contracts.ErrSessionNotFinished) {
 		return frontend.PublicPageComponent(
 			h.getTitle(game.Title),
@@ -64,10 +64,10 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 
 	actions := make([]templ.Component, 0, 2)
 	if playerID == in.PlayerID {
-		actions = append(actions, frontendPublicGame.ActionRestartGame(in.GameID))
-		actions = append(actions, frontendPublicGame.ActionShareResult(getResultsLink(in.GameID, in.PlayerID, request), h.getShareTitle(game.Title)))
+		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
+		actions = append(actions, frontendPublicGame.ActionShareResult(getResultsLink(game.ID, in.PlayerID, request), h.getShareTitle(game.Title)))
 	} else {
-		actions = append(actions, frontendPublicGame.ActionPlayGame(in.GameID))
+		actions = append(actions, frontendPublicGame.ActionPlayGame(game.ID))
 	}
 
 	var playerName string
@@ -94,7 +94,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 		),
 		frontend.OpenGraph{
 			Title: h.getShareTitle(game.Title),
-			URL:   getResultsLink(in.GameID, in.PlayerID, request),
+			URL:   getResultsLink(game.ID, in.PlayerID, request),
 		}), nil
 }
 

@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
@@ -10,6 +11,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+)
+
+const (
+	defaultLimit int64 = 10_000_000
 )
 
 type (
@@ -155,26 +160,35 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 	})
 }
 
-func (r *DefaultRepository) GetSessionsExtendedBySpec(ctx context.Context, spec *GetSessionExtendedSpec) ([]model.ExtendedSession, error) {
-	const query = `
-		select 
-		    ps.id, 
-		    ps.game_id, 
-		    ps.player_id, 
-		    ps.status, 
-		    psi.id as item_id, 
-		    psi.question_id as item_question_id, 
-		    psi.answers as item_answers, 
-		    psi.is_correct as item_is_correct, 
-		    psi.answered_at as item_answered_at,
-		    psi.created_at as item_created_at
-		from player_session ps
-		left join player_session_item as psi on psi.session_id = ps.id
-		where ps.game_id = $1
-	`
+func (r *DefaultRepository) GetExtendedSessionsBySpec(ctx context.Context, spec *GetExtendedSessionSpec) (*GetExtendedSessionsBySpecOut, error) {
+	total, err := r.getBySpecTotalCount(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := r.getExtendedSessionsBySpec(ctx, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	return &GetExtendedSessionsBySpecOut{
+		Result:     out,
+		TotalCount: total,
+	}, nil
+}
+
+func (r *DefaultRepository) getExtendedSessionsBySpec(ctx context.Context, spec *GetExtendedSessionSpec) ([]model.ExtendedSession, error) {
+	query := buildBaseGetExtendedSessionsBySpecQuery("ps.id, ps.game_id, ps.player_id, ps.status, psi.id as item_id, psi.question_id as item_question_id, psi.answers as item_answers, psi.is_correct as item_is_correct, psi.answered_at as item_answered_at, psi.created_at as item_created_at")
+
+	limit := defaultLimit
+	offset := int64(0)
+	if spec.Page != nil {
+		limit = spec.Page.Limit
+		offset = (spec.Page.Number - 1) * spec.Page.Limit
+	}
 
 	var result []sqlxSessionExtended
-	if err := r.db.SelectContext(ctx, &result, query, spec.GameID); err != nil {
+	if err := r.db.SelectContext(ctx, &result, query, spec.GameID, limit, offset); err != nil {
 		return nil, err
 	}
 
@@ -215,6 +229,40 @@ func (r *DefaultRepository) GetSessionsExtendedBySpec(ctx context.Context, spec 
 	}
 
 	return out, nil
+}
+
+func (r *DefaultRepository) getBySpecTotalCount(ctx context.Context, spec *GetExtendedSessionSpec) (int64, error) {
+	query := buildBaseGetExtendedSessionsBySpecQuery("count(distinct(ps.id))")
+
+	var result int64
+	if err := r.db.GetContext(
+		ctx,
+		&result,
+		query,
+		spec.GameID,
+		defaultLimit,
+		0,
+	); err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+
+func buildBaseGetExtendedSessionsBySpecQuery(fields string) string {
+	return fmt.Sprintf(` 
+        with session_ids as (
+    		select id from player_session
+			where game_id = $1
+			order by created_at desc
+    		limit $2 
+	    	offset $3
+		)
+		select %s
+		from player_session ps
+		inner join session_ids on ps.id = session_ids.id
+		left join player_session_item as psi on psi.session_id = ps.id
+	`, fields)
 }
 
 func convertSessionItem(in *sqlxSessionItem) (*model.SessionItem, error) {
