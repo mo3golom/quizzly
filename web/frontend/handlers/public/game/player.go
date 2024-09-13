@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	cookiePlayerID = "player-id"
+)
+
 func getPlayerID(request *http.Request) uuid.UUID {
 	cookie, err := request.Cookie(cookiePlayerID)
 	if err != nil {

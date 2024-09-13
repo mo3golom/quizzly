@@ -1,5 +1,7 @@
 package frontend_components
 
+import "strconv"
+
 templ Table(headers []string, components ...templ.Component) {
     <div class="overflow-x-auto">
       <table class="table table-lg bordered">
@@ -11,6 +13,11 @@ templ Table(headers []string, components ...templ.Component) {
             </tr>
         </thead>
         <tbody>
+           if len(components) == 0 {
+            <tr>
+                <td class="text-center text-gray-500" colspan={strconv.Itoa(len(headers))}> Данных нет :( </td>
+            </tr>
+           }
            @Composition(components...)
         </tbody>
       </table>

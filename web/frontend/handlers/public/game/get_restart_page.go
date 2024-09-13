@@ -13,6 +13,10 @@ import (
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
 )
 
+const (
+	getRestartPageTitle = "Перезапуск игры"
+)
+
 type (
 	GetRestartPageData struct {
 		GameID uuid.UUID `schema:"id"`
@@ -38,7 +42,7 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 	game, err := h.gameUC.Get(request.Context(), in.GameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра не найдена."),
 		), nil
 	}
@@ -47,13 +51,13 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 	}
 	if game.Status == model.GameStatusFinished {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра уже завершена."),
 		), nil
 	}
 	if game.Status == model.GameStatusCreated {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
 		), nil
 	}
