@@ -17,11 +17,6 @@ import (
 	"time"
 )
 
-const (
-	cookiePlayerID   = "player-id"
-	getPlayPageTitle = "Play"
-)
-
 type (
 	GetPlayPageData struct {
 		GameID uuid.UUID `schema:"id"`
@@ -50,7 +45,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	game, err := h.gameUC.Get(request.Context(), in.GameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра не найдена."),
 		), nil
 	}
@@ -59,13 +54,13 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	}
 	if game.Status == model.GameStatusFinished {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра уже завершена."),
 		), nil
 	}
 	if game.Status == model.GameStatusCreated {
 		return frontend.PublicPageComponent(
-			getPlayPageTitle,
+			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
 		), nil
 	}
@@ -132,7 +127,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	}
 
 	return frontend.PublicPageComponent(
-		fmt.Sprintf("%s #%s", getPlayPageTitle, game.ID.String()),
+		h.getTitle(game),
 		frontendPublicGame.Page(
 			frontendPublicGame.QuestionForm(
 				game.ID,
@@ -167,4 +162,17 @@ func (h *GetPlayPageHandler) getPlayerID(request *http.Request) (uuid.UUID, erro
 	}
 
 	return playerID, nil
+}
+
+func (h *GetPlayPageHandler) getTitle(game *model.Game) string {
+	if game == nil {
+		return "Игра не найдена"
+	}
+
+	title := fmt.Sprintf("Игра от %s", game.CreatedAt.Format("02.01.2006"))
+	if game.Title != nil {
+		title = fmt.Sprintf(`Игра "%s"`, *game.Title)
+	}
+
+	return title
 }
