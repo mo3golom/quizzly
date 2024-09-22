@@ -78,7 +78,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		return nil, err
 	}
 
-	return frontend_components.Redirect("/question/list"), nil
+	return frontend_components.Redirect("/admin/question/list"), nil
 }
 
 func convert(in *NewPostData) (*model.Question, error) {

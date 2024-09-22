@@ -188,7 +188,7 @@ function connectToGame() {
     if (gameId === "") {
         return
     }
-    window.location = "/game/play?id=" + gameId
+    window.location = "/game/" + gameId
 }
 
 function copyShareResultsBlock() {

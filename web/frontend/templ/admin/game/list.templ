@@ -1,10 +1,11 @@
 package frontend_admin_game
 
 import "quizzly/web/frontend/handlers"
+import "fmt"
 
 templ GameListItem(game *handlers.Game) {
        <div>
-       <a href={templ.SafeURL("/game?id=" + game.ID.String())}>
+       <a href={templ.SafeURL(fmt.Sprintf("/admin/game/%s",game.ID.String()))}>
        <div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4">
                  <span class="text-xl font-medium">
                      if game.Title != nil {

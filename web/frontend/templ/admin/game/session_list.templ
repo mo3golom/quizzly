@@ -7,7 +7,7 @@ import "github.com/google/uuid"
 
 templ SessionListContainer(gameID uuid.UUID) {
     <form
-        hx-get="game/session/list"
+        hx-get="/admin/game/session/list"
         hx-target="#session-list-container"
         hx-swap="innerHTML"
         hx-trigger="load, submit"

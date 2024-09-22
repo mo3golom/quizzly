@@ -15,7 +15,7 @@ import (
 
 const (
 	getPageTitle = "Управление игрой"
-	listUrl      = "/game/list"
+	listUrl      = "/admin/game/list"
 )
 
 type (
@@ -40,14 +40,24 @@ func NewGetPageHandler(
 }
 
 func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetAdminPageData) (templ.Component, error) {
-	if in.GameID == nil {
+	gameID := in.GameID
+	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
+		tempGameID, err := uuid.Parse(pathGameID)
+		if err != nil {
+			return nil, err
+		}
+
+		gameID = &tempGameID
+	}
+
+	if gameID == nil {
 		return frontend.AdminPageComponent(
 			getPageTitle,
 			frontendAdminGame.NotFound(),
 		), nil
 	}
 
-	game, err := h.uc.Get(request.Context(), *in.GameID)
+	game, err := h.uc.Get(request.Context(), *gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +93,7 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 				ShuffleAnswers:   game.Settings.ShuffleAnswers,
 				ShowRightAnswers: game.Settings.ShowRightAnswers,
 			}),
-			frontendAdminGame.Invite(getGameLink(game.ID, request)),
+			frontendAdminGame.Invite(gameLink(game.ID, request)),
 			frontendAdminGame.Statistics(
 				&handlers.GameStatistics{
 					QuestionsCount:    int(stats.QuestionsCount),

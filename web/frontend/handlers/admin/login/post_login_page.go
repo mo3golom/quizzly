@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	mainPageUrl = "/game/list"
+	mainPageUrl = "/admin/game/list"
 )
 
 type (

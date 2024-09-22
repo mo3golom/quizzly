@@ -6,6 +6,11 @@ import (
 	"net/http"
 )
 
-func getGameLink(gameID uuid.UUID, request *http.Request) string {
-	return fmt.Sprintf("%s/game/play?id=%s", request.Host, gameID.String())
+func gameLink(gameID uuid.UUID, request ...*http.Request) string {
+	link := fmt.Sprintf("/game/%s", gameID.String())
+	if len(request) > 0 {
+		return fmt.Sprintf("%s%s", request[0].Host, link)
+	}
+
+	return link
 }

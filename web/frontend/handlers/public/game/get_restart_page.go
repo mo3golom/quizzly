@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"net/http"
@@ -19,7 +18,7 @@ const (
 
 type (
 	GetRestartPageData struct {
-		GameID uuid.UUID `schema:"id"`
+		GameID *uuid.UUID `schema:"id"`
 	}
 
 	GetRestartPageHandler struct {
@@ -39,7 +38,17 @@ func NewGetRestartPageHandler(
 }
 
 func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetRestartPageData) (templ.Component, error) {
-	game, err := h.gameUC.Get(request.Context(), in.GameID)
+	gameID := in.GameID
+	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
+		tempGameID, err := uuid.Parse(pathGameID)
+		if err != nil {
+			return nil, err
+		}
+
+		gameID = &tempGameID
+	}
+
+	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
 		return frontend.PublicPageComponent(
 			getRestartPageTitle,
@@ -64,7 +73,7 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 
 	playerID := getPlayerID(request)
 	if playerID == uuid.Nil {
-		return frontendComponents.Redirect(h.getGameLink(game.ID)), nil
+		return frontendComponents.Redirect(gameLink(game.ID)), nil
 	}
 
 	err = h.sessionUC.Restart(request.Context(), game.ID, playerID)
@@ -72,9 +81,5 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 		return nil, err
 	}
 
-	return frontendComponents.Redirect(h.getGameLink(game.ID)), nil
-}
-
-func (h *GetRestartPageHandler) getGameLink(gameID uuid.UUID) string {
-	return fmt.Sprintf("/game/play?id=%s", gameID.String())
+	return frontendComponents.Redirect(gameLink(game.ID)), nil
 }
