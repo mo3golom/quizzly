@@ -19,7 +19,7 @@ import (
 
 type (
 	GetPlayPageData struct {
-		GameID uuid.UUID `schema:"id"`
+		GameID *uuid.UUID `schema:"id"`
 	}
 
 	GetPlayPageHandler struct {
@@ -42,7 +42,17 @@ func NewGetPlayPageHandler(
 }
 
 func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in GetPlayPageData) (templ.Component, error) {
-	game, err := h.gameUC.Get(request.Context(), in.GameID)
+	gameID := in.GameID
+	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
+		tempGameID, err := uuid.Parse(pathGameID)
+		if err != nil {
+			return nil, err
+		}
+
+		gameID = &tempGameID
+	}
+
+	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
 		return frontend.PublicPageComponent(
 			h.getTitle(game),
@@ -71,21 +81,21 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	}
 	setPlayerID(writer, playerID)
 
-	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
+	session, err := h.sessionUC.GetCurrentState(request.Context(), *gameID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
 		err = h.sessionUC.Finish(context.Background(), game.ID, playerID)
 		if err != nil {
 			return nil, err
 		}
 
-		return frontendComponents.Redirect(getResultsLink(game.ID, playerID)), nil
+		return frontendComponents.Redirect(resultsLink(game.ID, playerID)), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if session.Status == model.SessionStatusFinished {
-		return frontendComponents.Redirect(getResultsLink(game.ID, playerID)), nil
+		return frontendComponents.Redirect(resultsLink(game.ID, playerID)), nil
 	}
 
 	specificQuestionColor := handlers.QuestionTypePublicColors

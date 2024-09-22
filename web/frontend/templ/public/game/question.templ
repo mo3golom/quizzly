@@ -9,7 +9,7 @@ import "quizzly/web/frontend/templ/components"
 
 templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
    <form
-     hx-post="/game/play"
+     hx-post={fmt.Sprintf("/game/%s", gameID.String())}
      hx-target="this"
      hx-swap="outerHTML"
      hx-trigger="submit delay:500ms"
@@ -46,7 +46,7 @@ templ QuestionBlock(text string, imageID *string) {
     if imageID != nil {
         <div class="flex flex-col sm:flex-row gap-4 pb-4">
             <div class="flex-col basis-full sm:basis-1/4">
-                <img src={fmt.Sprintf("/file/%s", *imageID)} class="rounded-xl"/>
+                <img src={fmt.Sprintf("/files/images/%s", *imageID)} class="rounded-xl"/>
             </div>
              <div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
                 { text }

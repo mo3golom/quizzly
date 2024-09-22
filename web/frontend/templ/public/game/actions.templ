@@ -5,7 +5,7 @@ import "fmt"
 
 templ ActionRestartGame(gameID uuid.UUID) {
     <a
-        href={templ.SafeURL(fmt.Sprintf("/game/restart?id=%s", gameID.String()))}
+        href={templ.SafeURL(fmt.Sprintf("/game/%s/restart", gameID.String()))}
         class="w-max btn bg-amber-500 hover:bg-amber-600 border-0 text-white rounded-2xl drop-shadow-lg"
     >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -17,7 +17,7 @@ templ ActionRestartGame(gameID uuid.UUID) {
 
 templ ActionPlayGame(gameID uuid.UUID) {
     <a
-            href={templ.SafeURL(fmt.Sprintf("/game/play?id=%s", gameID.String()))}
+            href={templ.SafeURL(fmt.Sprintf("/game/%s", gameID.String()))}
             class="w-max btn bg-amber-500 hover:bg-amber-600 border-0 text-white rounded-2xl drop-shadow-lg text-xl"
     >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-7">

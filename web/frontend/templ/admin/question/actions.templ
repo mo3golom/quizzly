@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 import "fmt"
 
 templ ActionAddNewQuestion() {
-    <a href="/question/new" class="btn bg-green-500 hover:bg-green-600 border-0 text-white btn-sm">
+    <a href="/admin/question/new" class="btn bg-green-500 hover:bg-green-600 border-0 text-white btn-sm">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
@@ -16,7 +16,7 @@ templ ActionAddNewQuestion() {
 templ ActionDeleteQuestion(questionID uuid.UUID) {
     <button
         class="btn btn-square btn-ghost btn-sm"
-        hx-delete={fmt.Sprintf("/question?id=%s", questionID.String())}
+        hx-delete={fmt.Sprintf("/admin/question?id=%s", questionID.String())}
         hx-confirm="Вы уверены, что хотите удалить вопрос?"
         hx-target={fmt.Sprintf("#question-%s", questionID.String())}
         hx-swap="outerHTML"

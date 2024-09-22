@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	loginPageUrl = "/login"
+	loginPageUrl = "/admin/login"
 )
 
 type (

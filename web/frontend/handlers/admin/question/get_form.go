@@ -12,7 +12,7 @@ import (
 
 const (
 	formAddTitle = "Добавление вопроса"
-	listUrl      = "/question/list"
+	listUrl      = "/admin/question/list"
 )
 
 type (

@@ -28,7 +28,7 @@ func Form(questionType model.QuestionType, questionBlock templ.Component, answer
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form action=\"/question\" method=\"post\" enctype=\"multipart/form-data\" class=\"m-0 col-span-5\"><input type=\"hidden\" name=\"question_type\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form action=\"/admin/question\" method=\"post\" enctype=\"multipart/form-data\" class=\"m-0 col-span-5\"><input type=\"hidden\" name=\"question_type\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

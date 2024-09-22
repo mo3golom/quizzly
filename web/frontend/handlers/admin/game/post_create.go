@@ -68,5 +68,5 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		return nil, err
 	}
 
-	return frontend_components.Redirect(fmt.Sprintf("/game?id=%s", gameID.String())), nil
+	return frontend_components.Redirect(fmt.Sprintf("/admin/game/%s", gameID.String())), nil
 }

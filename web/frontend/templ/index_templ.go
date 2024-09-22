@@ -12,6 +12,7 @@ import "bytes"
 
 import "quizzly/web/frontend/templ/components"
 import "time"
+import "fmt"
 
 const SiteName = "Quiz Whiz"
 
@@ -64,7 +65,13 @@ type OpenGraph struct {
 	URL   string
 }
 
-func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ.Component {
+type HeaderConfig struct {
+	Title             string
+	AdditionalScripts string
+	Robots            string
+}
+
+func headerComponent(config HeaderConfig, openGraph ...OpenGraph) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -77,20 +84,20 @@ func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><link rel=\"stylesheet\" href=\"/styles.css\"><link rel=\"stylesheet\" href=\"/custom.css\"><link rel=\"icon\" type=\"image/png\" href=\"/logo.png\"><script src=\"/htmx.min.js\"></script><script src=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><link rel=\"stylesheet\" href=\"/files/public/styles.css\"><link rel=\"stylesheet\" href=\"/files/public/custom.css\"><link rel=\"icon\" type=\"image/png\" href=\"/files/public/logo.png\"><script src=\"/files/public/htmx.min.js\"></script><script src=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(scripts)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/files/public/%s", config.AdditionalScripts))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 67, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 74, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></script><script src=\"/scripts.core.min.js\"></script><script src=\"/confetti.browser.min.js\"></script><script src=\"/lazysizes.min.js\"></script><script src=\"https://js.sentry-cdn.com/f1bf22c8751808c407ac195fad8e6267.min.js\" crossorigin=\"anonymous\"></script>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></script><script src=\"/files/public/scripts.core.min.js\"></script><script src=\"/files/public/confetti.browser.min.js\"></script><script src=\"/files/public/lazysizes.min.js\"></script><script src=\"https://js.sentry-cdn.com/f1bf22c8751808c407ac195fad8e6267.min.js\" crossorigin=\"anonymous\"></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -102,7 +109,7 @@ func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(openGraph[0].Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 77, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 84, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -115,7 +122,7 @@ func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(openGraph[0].URL)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 79, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 86, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -131,9 +138,9 @@ func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(title)
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(config.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 86, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 93, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -146,13 +153,41 @@ func headerComponent(title string, scripts string, openGraph ...OpenGraph) templ
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 86, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 93, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title></head>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><meta name=\"description\" content=\"Присоединяйтесь к нашей платформе для викторин, чтобы создавать, делиться, и играть в увлекательные викторины на различные темы. Проверьте свои знания и бросьте вызов своим друзьям!\"><meta name=\"keywords\" content=\"квиз, викторины, тест, интерактивный тест, увлекательные викторины, образовательные тесты, развлекательные квизы, онлайн квиз, квиз для детей, квиз для взрослых, викторина на русском языке, как создать квиз, идеи для викторин, лучшие онлайн тесты, интерактивные опросы для бизнеса, квиз для сбора email адресов, увеличение продаж с помощью квизов, викторина для мероприятий, тесты на личность, вопросы для викторин, создание квиза онлайн\"><link rel=\"canonical\" href=\"https://quizwhiz.ru/\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if config.Robots != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta name=\"robots\" content=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(config.Robots)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 98, Col: 51}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta name=\"robots\" content=\"noindex, nofollow\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -171,21 +206,21 @@ func footerComponent() templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var7 == nil {
-			templ_7745c5c3_Var7 = templ.NopComponent
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<footer class=\"footer text-neutral-content p-4\"><aside class=\"grid-flow-col items-center\"><p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 93, Col: 21}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 108, Col: 21}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -193,12 +228,12 @@ func footerComponent() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
+		var templ_7745c5c3_Var10 string
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Format("2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 93, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 108, Col: 58}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -221,16 +256,16 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var10 == nil {
-			templ_7745c5c3_Var10 = templ.NopComponent
+		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var11 == nil {
+			templ_7745c5c3_Var11 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-indigo-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = headerComponent(title, "/scripts.admin.min.js").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = headerComponent(HeaderConfig{Title: title, AdditionalScripts: "scripts.admin.min.js"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -238,16 +273,16 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
+		var templ_7745c5c3_Var12 string
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 107, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 122, Col: 58}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top text-right text-2xl\">(beta)</span></div><div class=\"mt-4\"><ul class=\"menu text-white rounded-box\"><li><a href=\"/game/new\" class=\"p-2 link text-amber-500 hover:text-white hover:bg-amber-500 no-underline\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/game/list\" class=\"p-2 hover:text-amber-500\">Список игр</a></li><li><a href=\"/question/list\" class=\"p-2 hover:text-amber-500\">Список вопросов</a></li></ul></div><div class=\"mt-4\"><ul class=\"menu text-white rounded-box\"><li><a href=\"/logout\" class=\"p-2 hover:text-amber-500\">Выйти</a></li></ul></div></div></div><div class=\"col-span-5\"><div class=\"rounded-box bg-white p-4 min-h-full drop-shadow-lg\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top text-right text-2xl\">(beta)</span></div><div class=\"mt-4\"><ul class=\"menu text-white rounded-box\"><li><a href=\"/admin/game/new\" class=\"p-2 link text-amber-500 hover:text-white hover:bg-amber-500 no-underline\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z\"></path></svg> <span>Новая игра</span></a></li><li><a href=\"/admin/game/list\" class=\"p-2 hover:text-amber-500\">Список игр</a></li><li><a href=\"/admin/question/list\" class=\"p-2 hover:text-amber-500\">Список вопросов</a></li></ul></div><div class=\"mt-4\"><ul class=\"menu text-white rounded-box\"><li><a href=\"/admin/logout\" class=\"p-2 hover:text-amber-500\">Выйти</a></li></ul></div></div></div><div class=\"col-span-5\"><div class=\"rounded-box bg-white p-4 min-h-full drop-shadow-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -286,16 +321,16 @@ func PublicPageComponent(title string, body templ.Component, openGraph ...OpenGr
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var12 == nil {
-			templ_7745c5c3_Var12 = templ.NopComponent
+		templ_7745c5c3_Var13 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var13 == nil {
+			templ_7745c5c3_Var13 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"ru\" class=\"bg-indigo-950\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = headerComponent(title, "/scripts.public.min.js", openGraph...).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = headerComponent(HeaderConfig{Title: title, AdditionalScripts: "scripts.public.min.js", Robots: "index, follow"}, openGraph...).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -303,12 +338,12 @@ func PublicPageComponent(title string, body templ.Component, openGraph ...OpenGr
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
+		var templ_7745c5c3_Var14 string
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 150, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 165, Col: 52}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

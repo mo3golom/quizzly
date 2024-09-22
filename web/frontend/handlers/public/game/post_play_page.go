@@ -17,10 +17,10 @@ import (
 
 type (
 	PostPlayPageData struct {
-		GameID     uuid.UUID `schema:"id"`
-		QuestionID uuid.UUID `schema:"question-id"`
-		PlayerID   uuid.UUID `schema:"player-id"`
-		Answers    []string  `schema:"answer"`
+		GameID     *uuid.UUID `schema:"id"`
+		QuestionID uuid.UUID  `schema:"question-id"`
+		PlayerID   uuid.UUID  `schema:"player-id"`
+		Answers    []string   `schema:"answer"`
 	}
 
 	PostPlayPageHandler struct {
@@ -43,7 +43,17 @@ func NewPostPlayPageHandler(
 }
 
 func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in PostPlayPageData) (templ.Component, error) {
-	game, err := h.gameUC.Get(request.Context(), in.GameID)
+	gameID := in.GameID
+	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
+		tempGameID, err := uuid.Parse(pathGameID)
+		if err != nil {
+			return nil, err
+		}
+
+		gameID = &tempGameID
+	}
+
+	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +83,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 
 	answerComponent := buildAnswerComponent(answerResult, game.Settings.ShowRightAnswers)
 
-	session, err := h.sessionUC.GetCurrentState(request.Context(), in.GameID, playerID)
+	session, err := h.sessionUC.GetCurrentState(request.Context(), game.ID, playerID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
 		return h.finish(game, playerID, answerComponent)
 	}
@@ -146,7 +156,7 @@ func (h *PostPlayPageHandler) finish(
 	}
 
 	return frontendComponents.Composition(
-		frontendPublicGame.ResultLinkInput(getResultsLink(game.ID, playerID)),
+		frontendPublicGame.ResultLinkInput(resultsLink(game.ID, playerID)),
 		answerComponent,
 	), nil
 }

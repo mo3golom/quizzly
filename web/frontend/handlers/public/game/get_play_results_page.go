@@ -20,8 +20,8 @@ const (
 
 type (
 	GetPlayResultsPageData struct {
-		GameID   uuid.UUID `schema:"game_id"`
-		PlayerID uuid.UUID `schema:"id"`
+		GameID   *uuid.UUID `schema:"game_id"`
+		PlayerID *uuid.UUID `schema:"id"`
 	}
 
 	GetPlayResultsPageHandler struct {
@@ -44,14 +44,34 @@ func NewGetPlayResultsPageHandler(
 }
 
 func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetPlayResultsPageData) (templ.Component, error) {
-	playerID := getPlayerID(request)
+	currentPlayerID := getPlayerID(request)
 
-	game, err := h.gameUC.Get(request.Context(), in.GameID)
+	gameID := in.GameID
+	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
+		tempGameID, err := uuid.Parse(pathGameID)
+		if err != nil {
+			return nil, err
+		}
+
+		gameID = &tempGameID
+	}
+
+	playerID := in.PlayerID
+	if pathPlayerID := request.PathValue(pathValuePlayerID); pathPlayerID != "" {
+		tempPLayerID, err := uuid.Parse(pathPlayerID)
+		if err != nil {
+			return nil, err
+		}
+
+		playerID = &tempPLayerID
+	}
+
+	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if err != nil {
 		return nil, err
 	}
 
-	stats, err := h.sessionUC.GetStatistics(request.Context(), game.ID, in.PlayerID)
+	stats, err := h.sessionUC.GetStatistics(request.Context(), game.ID, *playerID)
 	if errors.Is(err, contracts.ErrSessionNotFinished) {
 		return frontend.PublicPageComponent(
 			h.getTitle(game.Title),
@@ -63,7 +83,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 	}
 
 	actions := make([]templ.Component, 0, 2)
-	if playerID == in.PlayerID {
+	if currentPlayerID == *playerID {
 		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
 		actions = append(actions, frontendPublicGame.ActionShareResult())
 	} else {
@@ -71,7 +91,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 	}
 
 	var playerName string
-	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{in.PlayerID})
+	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{*playerID})
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +114,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 		),
 		frontend.OpenGraph{
 			Title: h.getShareTitle(game.Title, stats.CorrectAnswersCount, stats.QuestionsCount),
-			URL:   getResultsLink(game.ID, in.PlayerID, request),
+			URL:   resultsLink(game.ID, *playerID, request),
 		}), nil
 }
 

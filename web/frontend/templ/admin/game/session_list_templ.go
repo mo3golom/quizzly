@@ -28,7 +28,7 @@ func SessionListContainer(gameID uuid.UUID) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-get=\"game/session/list\" hx-target=\"#session-list-container\" hx-swap=\"innerHTML\" hx-trigger=\"load, submit\"><input type=\"hidden\" name=\"game_id\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-get=\"/admin/game/session/list\" hx-target=\"#session-list-container\" hx-swap=\"innerHTML\" hx-trigger=\"load, submit\"><input type=\"hidden\" name=\"game_id\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

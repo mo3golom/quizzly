@@ -37,7 +37,7 @@ func Form(questionsList templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><form id=\"new-game-form\" method=\"post\" action=\"/game\"><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"mb-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div><form id=\"new-game-form\" method=\"post\" action=\"/admin/game\"><h1 class=\"basis-1/2 font-bold text-xl mb-4\">Доп. параметры</h1><div class=\"form-control mb-4\"><div class=\"label\"><span class=\"label-text\">Название игры</span></div><input type=\"text\" name=\"title\" placeholder=\"Новая игра\" class=\"input input-bordered border-2 w-full max-w-xs\"></div><div class=\"mb-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -30,7 +30,7 @@ func ActionRestartGame(gameID uuid.UUID) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/game/restart?id=%s", gameID.String()))
+		var templ_7745c5c3_Var2 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/game/%s/restart", gameID.String()))
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var2)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -63,7 +63,7 @@ func ActionPlayGame(gameID uuid.UUID) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/game/play?id=%s", gameID.String()))
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/game/%s", gameID.String()))
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
