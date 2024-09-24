@@ -26,7 +26,6 @@ function showAnswerResult() {
     let fullAnimationDuration = 1500
     let stepAnimationDuration = 300
     let skipButtonEnabled= false
-    let result  = document.getElementById("game-page-answer-result");
 
     let readEstimation = document.getElementById("game-page-answer-read-estimation");
     if (readEstimation !== null) {
@@ -40,10 +39,6 @@ function showAnswerResult() {
     }
 
     clearTimeouts()
-    timeouts.push(setTimeout(() => {
-        result.classList.add("opacity-100", "animate-pulse-fade-in");
-        result.classList.remove("opacity-0");
-    }, 10));
 
     hideAnswerResult(fullAnimationDuration, stepAnimationDuration);
     if (skipButtonEnabled) {
@@ -54,17 +49,16 @@ function showAnswerResult() {
 function hideAnswerResult(fullDuration, stepDuration) {
     let result  = document.getElementById("game-page-answer-result");
     let overlay = document.getElementById("game-page-overlay");
+    overlay.classList.remove("opacity-100");
+    overlay.classList.add("hidden", "opacity-0");
 
     timeouts.push(setTimeout(() => {
         result.classList.add("opacity-0");
         result.classList.remove("opacity-100", "animate-pulse-fade-in");
 
-        overlay.classList.add("opacity-0");
-        overlay.classList.remove("opacity-100");
     }, fullDuration - stepDuration));
     timeouts.push(setTimeout(() => {
         result.classList.add("hidden");
-        overlay.classList.add("hidden");
 
         let resultsLink = document.getElementById("game-page-results-link")
         if (resultsLink !== null) {
