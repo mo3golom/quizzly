@@ -16,12 +16,12 @@ templ Form(questionsList templ.Component) {
                     <div class="label">
                       <span class="label-text">Название игры</span>
                     </div>
-                    <input type="text" name="title" placeholder="Новая игра" class="input input-bordered border-2 w-full max-w-xs" />
+                    <input type="text" name="title" placeholder="Новая игра" class="input input-bordered border-2 w-full max-w-xs" required/>
                 </div>
                 <div class="mb-4">
-                    @toggleOption("Перемешать вопросы", "shuffle_questions")
-                    @toggleOption("Перемешать ответы в вопросе","shuffle_answers")
-                    @toggleOption("Показывать правильный ответ в случае неудачи","show_right_answers")
+                    @toggleOption("Перемешать вопросы", "shuffle_questions", "каждый игрок будет видеть вопросы в случайном порядке. Если игрок не ответил на вопрос, он увидит его снова при следующем входе в игру.")
+                    @toggleOption("Перемешать ответы в вопросе","shuffle_answers", "ответы на каждый вопрос будут перемешиваться для каждого игрока. Это помогает избежать запоминания игроками правильного порядка ответов.")
+                    @toggleOption("Показывать правильный ответ в случае неудачи","show_right_answers", `при неправильном ответе игрока на экран результатов будет выводиться правильный ответ. Обратите внимание, что кнопка "играть снова" всегда активна, так что игрок может запомнить правильные ответы и пройти викторину без ошибок во второй раз.`)
                 </div>
                 <div class="form-control">
                    <button id="create-game-submit" type="submit" class="btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0">Создать</button>
@@ -34,10 +34,19 @@ templ Form(questionsList templ.Component) {
         </div>
 }
 
-templ toggleOption(title string, name string) {
+templ toggleOption(title string, name string, hint ...string) {
     <div class="form-control">
         <label class="label cursor-pointer">
-            <span class="label-text">{ title }</span>
+            <span class="label-text">
+            { title }
+            if len(hint) > 0 {
+                                <div class="tooltip tooltip-left align-middle" data-tip={ hint[0] } >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                                    </svg>
+                                </div>
+                                }
+            </span>
             <input
                 type="checkbox"
                 value="1"

@@ -25,7 +25,6 @@ type DefaultSimpleAuth struct {
 	generator  *defaultGenerator
 	encryptor  *defaultEncryptor
 	sender     Sender
-	middleware SimpleAuthMiddleware
 }
 
 func NewSimpleAuth(
@@ -56,10 +55,6 @@ func NewSimpleAuth(
 		generator:  &defaultGenerator{},
 		encryptor:  encryptor,
 		sender:     sender,
-		middleware: &defaultMiddleware{
-			repository: repository,
-			encryptor:  encryptor,
-		},
 	}
 }
 
@@ -159,6 +154,15 @@ func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCo
 	return structs.Pointer(token), nil
 }
 
-func (a *DefaultSimpleAuth) Middleware() SimpleAuthMiddleware {
-	return a.middleware
+func (a *DefaultSimpleAuth) Middleware(forbiddenRedirectURL ...string) SimpleAuthMiddleware {
+	var url *string
+	if len(forbiddenRedirectURL) > 0 {
+		url = &forbiddenRedirectURL[0]
+	}
+
+	return &defaultMiddleware{
+		repository:           a.repository,
+		encryptor:            a.encryptor,
+		forbiddenRedirectURL: url,
+	}
 }

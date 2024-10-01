@@ -1,132 +1,164 @@
 package frontend_admin_question
 
-type QuestionType struct {
-  Name string
-  ActionUrl string
-  IsActive bool
-  Color string
+import "quizzly/internal/quizzly/model"
+import "quizzly/pkg/structs"
+import "github.com/google/uuid"
+import "fmt"
+
+templ Form(questionType model.QuestionType, questionBlock templ.Component, answerBlock templ.Component) {
+    <form
+        action="/admin/question"
+        method="post"
+        enctype="multipart/form-data"
+        class="m-0 col-span-5"
+    >
+        <input type="hidden" name="question_type" value={string(questionType)}/>
+        <div class={"card text-primary-content rounded-2xl bg-blue-500"}>
+            <div class="card-body p-4">
+                <div class="grid grid-cols-4 gap-4">
+                    @questionBlock
+                </div>
+                <div class="grid grid-cols-4 gap-4 mt-4">
+                    @answerBlock
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 text-right">
+            <button type="submit" class={"btn text-white min-w-60 rounded-2xl hover:bg-amber-600 border-0 bg-amber-500"}>Добавить</button>
+        </div>
+    </form>
 }
 
-templ QuestionForm(activeQuestionType string, submitUrl string, color string, questionTypes []QuestionType, answerOptionForms []templ.Component) {
-    <div id="question-form" class="grid grid-cols-6 gap-4">
-        <div>
-            for _, questionType := range questionTypes {
-                <div class="mb-4">
-                    <button
-                        class={getClassForQuestionTypeButton(questionType.IsActive, questionType.Color)}
-                        hx-get={questionType.ActionUrl}
-                        hx-confirm="Are you sure?"
-                        hx-target="#question-form"
-                        hx-swap="outerHTML"
-                    >{ questionType.Name }</button>
-                </div>
-            }
-        </div>
-        <form action={ templ.URL(submitUrl) } method="post" enctype="multipart/form-data" class="m-0 col-span-5">
-            <input type="hidden" name="question_type" value={activeQuestionType}/>
-	        <div class={"card text-primary-content rounded-2xl bg-" + color}>
-                <div class="card-body p-4">
-                    <div class="flex gap-4">
-                        <div class="flex-col basis-1/4 self-start p-4 bg-white rounded-lg">
-                            <label class="form-control w-full max-w-xs min-h-32">
-                              <div class="label">
-                                <span class="label-text">Выбрать изображение</span>
-                              </div>
-                              <input type="file" name="question_image" class="file-input file-input-bordered w-full max-w-xs [&::file-selector-button]:hidden text-black p-2" />
+templ QuestionImageInput() {
+    <div class="self-start p-4 bg-blue-600 rounded-lg">
+        <label class="form-control w-full max-w-xs min-h-32">
+            <div class="label">
+                <span class="label-text text-white">Выбрать изображение</span>
+            </div>
+            <input
+                type="file"
+                name="question_image"
+                class="file-input file-input-bordered w-full max-w-xs [&::file-selector-button]:hidden text-black p-2"
+                accept="image/png, image/jpeg"
+            />
+        </label>
+    </div>
+}
+
+templ QuestionTextInput() {
+    <div class="col-span-3">
+        <textarea
+            name="question_text"
+            class="w-full textarea textarea-lg min-h-40 text-white focus:text-black bg-blue-600 focus:bg-white placeholder:text-gray-300"
+            placeholder="Текст вопроса" required>
+        </textarea>
+    </div>
+}
+
+templ QuestionMultipleChoiceOption() {
+    <div class="col-span-4 mt-4 text-white">
+        <label>
+            Считать ответ верным если:
+            <select name="question_multiple_choice_type" class="select w-full max-w-max text-white bg-blue-600" required>
+                <option value="all" selected>Выбраны ВСЕ правильные варианты ответа</option>
+                <option value="one_of">Выбран ЛЮБОЙ из правильных вариантов ответа</option>
+            </select>
+            <div class="tooltip ml-2 align-middle" data-tip='"Выбраны ВСЕ правильные варианты ответа" - ответ будет засчитан, если выбраны все правильные варианты. \n\n "Выбран ЛЮБОЙ из правильных вариантов ответа" - ответ считается верным, если выбран хотя бы один правильный вариант.'>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+              </svg>
+            </div>
+        </label>
+    </div>
+}
+
+
+templ AnswerChoiceInput(id uuid.UUID, color string, isMultiple bool, show bool) {
+    <div id={fmt.Sprintf("answer-choice-input-%s",id.String())} class={fmt.Sprintf("card rounded-xl justify-self-stretch bg-%s-500 %s", color, structs.Or(show, "", "hidden"))}>
+        <div class="card-body p-2">
+            <div class="grid grid-cols-2 gap-4 items-start">
+                <div class="justify-self-start">
+                        <button
+                            class="btn btn-sm btn-ghost text-white"
+                            data-id={id.String()}
+                            onclick="showChoiceAddButton(this)"
+                            type="button"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="form-control justify-self-end">
+                        <div class="tooltip" data-tip="Пометить как правильный ответ">
+                            <label class="cursor-pointer label p-0">
+                                <input
+                                    type="hidden"
+                                    value="0"
+                                    name="question_correct_answer"
+                                />
+                                if isMultiple {
+                                   <input
+                                        id={fmt.Sprintf("answer-choice-input-checkbox-%s",id.String())}
+                                        value="1"
+                                        name="question_correct_answer"
+                                        type="checkbox"
+                                        class="checkbox checkbox-success checkbox-lg border-4 [--chkfg:white]"
+                                   />
+                                } else {
+                                    <input
+                                        id={fmt.Sprintf("answer-choice-input-checkbox-%s",id.String())}
+                                        value="1"
+                                        name="question_correct_answer"
+                                        type="radio"
+                                        class="radio radio-success radio-lg border-4 [--chkfg:white]"
+                                        required
+                                    />
+                                }
                             </label>
                         </div>
-                        <div class="flex-col basis-3/4">
-                            <textarea name="question_text" class="w-full textarea textarea-lg min-h-40 text-black" placeholder="Текст вопроса" required></textarea>
-                        </div>
-                    </div>
-
-                    if activeQuestionType == "multiple_choice" {
-                        <div class="mt-4 text-white">
-                        Считать ответ верным если:
-                            <select name="question_multiple_choice_type" class="select select-bordered w-full max-w-max text-black" required>
-                                <option value="all" selected>Выбраны ВСЕ правильные варианты ответа</option>
-                                <option value="one_of">Выбран ЛЮБОЙ из правильных вариантов ответа</option>
-                            </select>
-                        </div>
-                    }
-
-                    <div class="grid grid-cols-4 gap-4 mt-4">
-                    for _, answerOptionForm := range answerOptionForms {
-                        @answerOptionForm
-                    }
-                    </div>
+                      </div>
                 </div>
-            </div>
-            <div class="mt-4 text-right">
-                <button type="submit" class={"btn text-white min-w-60 rounded-2xl hover:bg-slate-900 border-0 bg-" + color}>Добавить</button>
-            </div>
-        </form>
-    </div>
+
+                <textarea
+                    id={fmt.Sprintf("answer-choice-input-textarea-%s",id.String())}
+                    name="question_answer_option_text"
+                    class={fmt.Sprintf("textarea min-h-32 text-white focus:text-black focus:bg-white bg-%s-600 placeholder:text-gray-300", color)}
+                    placeholder="Вариант ответа">
+                </textarea>
+        </div>
+   </div>
+   <div
+    id={fmt.Sprintf("answer-choice-add-button-%s",id.String())}
+    class={fmt.Sprintf("self-center justify-self-center %s", structs.Or(!show, "", "hidden"))}
+   >
+               <button
+                    class={fmt.Sprintf("btn border-0 text-lg text-white hover:bg-%s-600 bg-%s-500 ", color, color)}
+                    data-id={id.String()}
+                    onclick="showChoiceInput(this)"
+                    type="button"
+               >+</button>
+   </div>
 }
 
-templ AnswerOptionForm(questionType string, color string, actionUrl string) {
-    <div id={"answer-option-form-" + color} class={"card justify-self-stretch bg-" + color }>
-          <div class="card-body p-2">
-            <div class="grid grid-cols-2 gap-4 items-start">
-                  <div class="justify-self-start">
-                    <button
-                        class="btn btn-sm btn-ghost"
-                        hx-get={actionUrl}
-                        hx-swap="outerHTML"
-                        hx-target={"#answer-option-form-" + color}
-                    >Удалить</button>
-                  </div>
-                  <div class="form-control justify-self-end">
-                    <div class="tooltip" data-tip="Пометить как правильный ответ">
-                        <label class="cursor-pointer label p-0">
-                            <input
-                                type="hidden"
-                                value="0"
-                                name="question_correct_answer"
-                            />
-                            switch questionType {
-                            		case "multiple_choice":
-                            			<input
-                            			    value="1"
-                            			    name="question_correct_answer"
-                            			    type="checkbox"
-                            			    class="checkbox checkbox-success checkbox-lg border-4 [--chkfg:white]"
-                                        />
-                            		default:
-                            			<input
-                            			    value="1"
-                            			    name="question_correct_answer"
-                            			    type="radio"
-                            			    class="radio radio-success radio-lg border-4 [--chkfg:white]"
-                            			    required
-                                        />
-                            }
-                        </label>
-                    </div>
-                  </div>
-            </div>
-
-            <textarea name="question_answer_option_text" class="textarea min-h-32 text-black" placeholder="Вариант ответа" required></textarea>
-          </div>
-    </div>
-}
-
-templ AnswerOptionAdd(color string, actionUrl string) {
-    <div id={"answer-option-add-" + color} class="self-center justify-self-center">
-        <button
-            class={"btn border-0 text-lg text-white hover:bg-slate-900 bg-" + color}
-            hx-get={actionUrl}
-            hx-swap="outerHTML"
-            hx-target={"#answer-option-add-" + color}
-        >+</button>
-    </div>
-}
-
-
-func getClassForQuestionTypeButton(isActive bool, color string) string {
-    if isActive {
-        return "btn w-full text-white border-0 rounded-2xl hover:bg-slate-900 bg-" + color
-    }
-
-    return  "btn btn-outline w-full rounded-2xl hover:bg-slate-900 border-" + color + " text-" + color
+templ AnswerTextInput() {
+   <div class="col-span-4 card justify-self-stretch bg-orange-500 rounded-xl">
+        <div class="card-body p-4">
+                    <input type="hidden" value="1" name="question_correct_answer"/>
+                    <label class="input input-md w-full text-white focus:text-black bg-orange-600 focus:bg-white flex items-center gap-2">
+                        <input
+                            name="question_answer_option_text"
+                            type="text"
+                            placeholder="Правильный ответ"
+                            class="grow placeholder:text-gray-300"
+                            required
+                        />
+                        <div class="tooltip" data-tip='Правильность ответа проверяется по точному совпадению с ответом, который вы укажете. Не учитывается регистр букв. Если нужно задать вопрос с пропуском слова, используйте символ "_" для указания места пропуска (по желанию).'>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 text-gray-300">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+                            </svg>
+                        </div>
+                    </label>
+        </div>
+   </div>
 }

@@ -16,6 +16,7 @@ import (
 	"quizzly/web/frontend/handlers/admin/game"
 	"quizzly/web/frontend/handlers/admin/login"
 	"quizzly/web/frontend/handlers/admin/question"
+	"quizzly/web/frontend/handlers/admin/static/faq"
 	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
 	sessionService "quizzly/web/frontend/services/session"
@@ -48,7 +49,7 @@ func adminRoutes(
 	simpleAuth auth.SimpleAuth,
 	filesManager files.Manager,
 ) {
-	security := simpleAuth.Middleware()
+	security := simpleAuth.Middleware("/admin/login")
 
 	mux.HandleFunc("GET /admin/login", handlers.Templ[struct{}](login.NewGetLoginPageHandler(), log))
 	mux.HandleFunc("POST /admin/login", handlers.Templ[login.PostLoginPageData](login.NewPostLoginPageHandler(simpleAuth), log))
@@ -75,6 +76,8 @@ func adminRoutes(
 
 	mux.HandleFunc("GET /admin/game/list", security.WithAuth(handlers.Templ[struct{}](game.NewGetListHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("GET /admin/game/session/list", security.WithAuth(handlers.Templ[game.GetSessionListData](game.NewGetSessionListHandler(config.sessions.MustGet()), log)))
+
+	mux.HandleFunc("GET /admin/faq", security.WithAuth(handlers.Templ[struct{}](faq.NewStaticFAQHandler(), log)))
 }
 
 func publicRoutes(
