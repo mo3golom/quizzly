@@ -28,7 +28,7 @@ type (
 	SimpleAuth interface {
 		SendLoginCode(ctx context.Context, email Email) error
 		Login(ctx context.Context, email Email, code LoginCode) (*Token, error)
-		Middleware() SimpleAuthMiddleware
+		Middleware(forbiddenRedirectURL ...string) SimpleAuthMiddleware
 	}
 
 	SimpleAuthMiddleware interface {

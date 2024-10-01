@@ -5,21 +5,22 @@ import (
 )
 
 type defaultMiddleware struct {
-	repository *defaultRepository
-	encryptor  *defaultEncryptor
+	repository           *defaultRepository
+	encryptor            *defaultEncryptor
+	forbiddenRedirectURL *string
 }
 
 func (s *defaultMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := getTokenFromCookie(r)
 		if token == "" {
-			w.WriteHeader(http.StatusForbidden)
+			s.forbidden(w, r)
 			return
 		}
 
 		encryptedToken, err := s.encryptor.Encrypt(string(token))
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			s.forbidden(w, r)
 			return
 		}
 
@@ -28,7 +29,7 @@ func (s *defaultMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Re
 			Token(encryptedToken),
 		)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			s.forbidden(w, r)
 			return
 		}
 
@@ -40,6 +41,15 @@ func (s *defaultMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Re
 
 		delegate(w, r)
 	}
+}
+
+func (s *defaultMiddleware) forbidden(w http.ResponseWriter, r *http.Request) {
+	if s.forbiddenRedirectURL != nil {
+		http.Redirect(w, r, *s.forbiddenRedirectURL, http.StatusFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusForbidden)
 }
 
 func getTokenFromCookie(request *http.Request) Token {
