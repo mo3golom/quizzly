@@ -10,6 +10,7 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
@@ -27,6 +28,8 @@ type (
 		gameUC    contracts.GameUsecase
 		sessionUC contracts.SessionUsecase
 		playerUC  contracts.PLayerUsecase
+
+		playerService player.Service
 	}
 )
 
@@ -34,11 +37,13 @@ func NewPostPlayPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
+	playerService player.Service,
 ) *PostPlayPageHandler {
 	return &PostPlayPageHandler{
-		gameUC:    gameUC,
-		sessionUC: sessionUC,
-		playerUC:  playerUC,
+		gameUC:        gameUC,
+		sessionUC:     sessionUC,
+		playerUC:      playerUC,
+		playerService: playerService,
 	}
 }
 
@@ -63,13 +68,13 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 
 	playerID := in.PlayerID
 	if playerID == uuid.Nil {
-		playerID = getPlayerID(request)
-	}
+		currentPlayer, err := h.playerService.GetPlayer(writer, request)
+		if err != nil {
+			return nil, err
+		}
 
-	if playerID == uuid.Nil {
-		return frontendPublicGame.StartPage(), nil
+		playerID = currentPlayer.ID
 	}
-	setPlayerID(writer, playerID)
 
 	answerResult, err := h.sessionUC.AcceptAnswers(request.Context(), &contracts.AcceptAnswersIn{
 		GameID:     game.ID,

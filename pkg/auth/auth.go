@@ -160,7 +160,7 @@ func (a *DefaultSimpleAuth) Middleware(forbiddenRedirectURL ...string) SimpleAut
 		url = &forbiddenRedirectURL[0]
 	}
 
-	return &defaultMiddleware{
+	return &authMiddleware{
 		repository:           a.repository,
 		encryptor:            a.encryptor,
 		forbiddenRedirectURL: url,

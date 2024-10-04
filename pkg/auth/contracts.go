@@ -32,6 +32,7 @@ type (
 	}
 
 	SimpleAuthMiddleware interface {
+		WithEnrich(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
 		WithAuth(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
 	}
 

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/page"
+	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
@@ -28,6 +30,8 @@ type (
 		gameUC    contracts.GameUsecase
 		sessionUC contracts.SessionUsecase
 		playerUC  contracts.PLayerUsecase
+
+		playerService player.Service
 	}
 )
 
@@ -35,16 +39,21 @@ func NewGetPlayResultsPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
+	playerService player.Service,
 ) *GetPlayResultsPageHandler {
 	return &GetPlayResultsPageHandler{
-		gameUC:    gameUC,
-		sessionUC: sessionUC,
-		playerUC:  playerUC,
+		gameUC:        gameUC,
+		sessionUC:     sessionUC,
+		playerUC:      playerUC,
+		playerService: playerService,
 	}
 }
 
-func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetPlayResultsPageData) (templ.Component, error) {
-	currentPlayerID := getPlayerID(request)
+func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in GetPlayResultsPageData) (templ.Component, error) {
+	currentPlayer, err := h.playerService.GetPlayer(writer, request)
+	if err != nil {
+		return nil, err
+	}
 
 	gameID := in.GameID
 	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
@@ -73,7 +82,8 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 
 	stats, err := h.sessionUC.GetStatistics(request.Context(), game.ID, *playerID)
 	if errors.Is(err, contracts.ErrSessionNotFinished) {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			h.getTitle(game.Title),
 			frontendComponents.StatusMessage("Ой ей... Игра еще не завершена"),
 		), nil
@@ -83,7 +93,7 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 	}
 
 	actions := make([]templ.Component, 0, 2)
-	if currentPlayerID == *playerID {
+	if currentPlayer.ID == *playerID {
 		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
 		actions = append(actions, frontendPublicGame.ActionShareResult())
 	} else {
@@ -99,7 +109,8 @@ func (h *GetPlayResultsPageHandler) Handle(_ http.ResponseWriter, request *http.
 		playerName = players[0].Name
 	}
 
-	return frontend.PublicPageComponent(
+	return page.PublicIndexPage(
+		request.Context(),
 		h.getTitle(game.Title),
 		frontendPublicGame.Page(
 			frontendPublicGame.ResultHeader(game.Title),

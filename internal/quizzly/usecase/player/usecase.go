@@ -35,6 +35,16 @@ func (u *Usecase) Create(ctx context.Context, in *model.Player) error {
 	})
 }
 
+func (u *Usecase) Update(ctx context.Context, in *model.Player) error {
+	return u.template.Execute(ctx, func(tx transactional.Tx) error {
+		return u.players.Update(ctx, tx, in)
+	})
+}
+
 func (u *Usecase) Get(ctx context.Context, ids []uuid.UUID) ([]model.Player, error) {
 	return u.players.GetByIDs(ctx, ids)
+}
+
+func (u *Usecase) GetByUsers(ctx context.Context, userIDs []uuid.UUID) ([]model.Player, error) {
+	return u.players.GetByUserIDs(ctx, userIDs)
 }

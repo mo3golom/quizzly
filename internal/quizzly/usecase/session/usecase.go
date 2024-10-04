@@ -3,7 +3,6 @@ package session
 import (
 	"context"
 	"crypto/rand"
-	"database/sql"
 	"errors"
 	"github.com/google/uuid"
 	"math/big"
@@ -105,6 +104,9 @@ func (u *Usecase) Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UU
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
+		if errors.Is(err, contracts.ErrSessionNotFound) {
+			return nil
+		}
 		if err != nil {
 			return err
 		}
@@ -124,6 +126,10 @@ func (u *Usecase) Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.U
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
+		if errors.Is(err, contracts.ErrSessionNotFound) {
+			return nil
+		}
+
 		if err != nil {
 			return err
 		}
@@ -220,7 +226,7 @@ func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID 
 		PlayerID: playerID,
 		GameID:   gameID,
 	})
-	if errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, contracts.ErrSessionNotFound) {
 		err := u.Start(ctx, gameID, playerID)
 		if err != nil {
 			return nil, err
@@ -230,7 +236,6 @@ func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID 
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
-
 	}
 	if err != nil {
 		return nil, err

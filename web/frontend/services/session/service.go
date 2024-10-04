@@ -1,11 +1,13 @@
 package session
 
 import (
-	"context"
+	"fmt"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
+	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/auth"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
@@ -31,14 +33,26 @@ func NewService(
 	}
 }
 
-func (s *DefaultService) List(ctx context.Context, spec *Spec, page int64, limit int64) (*ListOut, error) {
-	specificSessions, err := s.sessions.GetExtendedSessions(ctx, spec.GameID, page, limit)
+func (s *DefaultService) List(request *http.Request, spec *Spec, page int64, limit int64) (*ListOut, error) {
+	var currentPlayer *model.Player
+	if authCtx, ok := request.Context().(auth.Context); ok && authCtx.UserID() != uuid.Nil {
+		players, err := s.players.GetByUsers(request.Context(), []uuid.UUID{authCtx.UserID()})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(players) > 0 {
+			currentPlayer = structs.Pointer(players[0])
+		}
+	}
+
+	specificSessions, err := s.sessions.GetExtendedSessions(request.Context(), spec.GameID, page, limit)
 	if err != nil {
 		return nil, err
 	}
 
 	specificPlayers, err := s.players.Get(
-		ctx,
+		request.Context(),
 		slices.SafeMap(specificSessions.Result, func(session model.ExtendedSession) uuid.UUID {
 			return session.PlayerID
 		}),
@@ -67,8 +81,13 @@ func (s *DefaultService) List(ctx context.Context, spec *Spec, page int64, limit
 				sessionLastQuestionAnsweredAt = structs.Pointer(sessionLastQuestionAnsweredAt.In(moscowLocation))
 			}
 
+			playerName := specificPlayersMap[session.PlayerID].Name
+			if currentPlayer != nil && currentPlayer.Name == playerName {
+				playerName = fmt.Sprintf("%s ( вы )", playerName)
+			}
+
 			return frontend_admin_game.SessionListItem(handlers.SessionItemStatistics{
-				PlayerName:                    specificPlayersMap[session.PlayerID].Name,
+				PlayerName:                    playerName,
 				CompletionRate:                int(session.CompletionRate()),
 				SessionStatus:                 session.Status,
 				SessionStartedAt:              sessionStartedAt,

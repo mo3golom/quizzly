@@ -1,9 +1,9 @@
 package session
 
 import (
-	"context"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
+	"net/http"
 )
 
 type (
@@ -17,6 +17,6 @@ type (
 	}
 
 	Service interface {
-		List(ctx context.Context, spec *Spec, page int64, limit int64) (*ListOut, error)
+		List(request *http.Request, spec *Spec, page int64, limit int64) (*ListOut, error)
 	}
 )

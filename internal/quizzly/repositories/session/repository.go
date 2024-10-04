@@ -2,9 +2,12 @@ package session
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
@@ -88,6 +91,10 @@ func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactiona
 
 	var result sqlxSession
 	if err := tx.GetContext(ctx, &result, query, spec.PlayerID, spec.GameID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, contracts.ErrSessionNotFound
+		}
+
 		return nil, err
 	}
 

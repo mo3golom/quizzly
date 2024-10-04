@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	frontend "quizzly/web/frontend/templ"
+	"quizzly/web/frontend/services/page"
+	"quizzly/web/frontend/services/player"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
 )
@@ -24,20 +25,24 @@ type (
 	GetRestartPageHandler struct {
 		gameUC    contracts.GameUsecase
 		sessionUC contracts.SessionUsecase
+
+		playerService player.Service
 	}
 )
 
 func NewGetRestartPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
+	playerService player.Service,
 ) *GetRestartPageHandler {
 	return &GetRestartPageHandler{
-		gameUC:    gameUC,
-		sessionUC: sessionUC,
+		gameUC:        gameUC,
+		sessionUC:     sessionUC,
+		playerService: playerService,
 	}
 }
 
-func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetRestartPageData) (templ.Component, error) {
+func (h *GetRestartPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in GetRestartPageData) (templ.Component, error) {
 	gameID := in.GameID
 	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
 		tempGameID, err := uuid.Parse(pathGameID)
@@ -50,7 +55,8 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 
 	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра не найдена."),
 		), nil
@@ -59,24 +65,26 @@ func (h *GetRestartPageHandler) Handle(_ http.ResponseWriter, request *http.Requ
 		return nil, err
 	}
 	if game.Status == model.GameStatusFinished {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра уже завершена."),
 		), nil
 	}
 	if game.Status == model.GameStatusCreated {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			getRestartPageTitle,
 			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
 		), nil
 	}
 
-	playerID := getPlayerID(request)
-	if playerID == uuid.Nil {
-		return frontendComponents.Redirect(gameLink(game.ID)), nil
+	currentPlayer, err := h.playerService.GetPlayer(writer, request)
+	if err != nil {
+		return nil, err
 	}
 
-	err = h.sessionUC.Restart(request.Context(), game.ID, playerID)
+	err = h.sessionUC.Restart(request.Context(), game.ID, currentPlayer.ID)
 	if err != nil {
 		return nil, err
 	}
