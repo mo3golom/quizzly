@@ -6,26 +6,29 @@ import (
 	"fmt"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
-	"github.com/goombaio/namegenerator"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/page"
+	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
-	"time"
 )
 
 type (
 	GetPlayPageData struct {
-		GameID *uuid.UUID `schema:"id"`
+		GameID     *uuid.UUID `schema:"id"`
+		CustomName *string    `schema:"name"`
 	}
 
 	GetPlayPageHandler struct {
 		gameUC    contracts.GameUsecase
 		sessionUC contracts.SessionUsecase
 		playerUC  contracts.PLayerUsecase
+
+		playerService player.Service
 	}
 )
 
@@ -33,11 +36,13 @@ func NewGetPlayPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
+	playerService player.Service,
 ) *GetPlayPageHandler {
 	return &GetPlayPageHandler{
-		gameUC:    gameUC,
-		sessionUC: sessionUC,
-		playerUC:  playerUC,
+		gameUC:        gameUC,
+		sessionUC:     sessionUC,
+		playerUC:      playerUC,
+		playerService: playerService,
 	}
 }
 
@@ -54,7 +59,8 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 
 	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра не найдена."),
 		), nil
@@ -63,39 +69,44 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		return nil, err
 	}
 	if game.Status == model.GameStatusFinished {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра уже завершена."),
 		), nil
 	}
 	if game.Status == model.GameStatusCreated {
-		return frontend.PublicPageComponent(
+		return page.PublicIndexPage(
+			request.Context(),
 			h.getTitle(game),
 			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
 		), nil
 	}
 
-	playerID, err := h.getPlayerID(request)
+	customPlayerName := ""
+	if in.CustomName != nil {
+		customPlayerName = *in.CustomName
+	}
+	currentPlayer, err := h.playerService.GetPlayer(writer, request, customPlayerName)
 	if err != nil {
 		return nil, err
 	}
-	setPlayerID(writer, playerID)
 
-	session, err := h.sessionUC.GetCurrentState(request.Context(), *gameID, playerID)
+	session, err := h.sessionUC.GetCurrentState(request.Context(), *gameID, currentPlayer.ID)
 	if errors.Is(err, contracts.ErrQuestionQueueIsEmpty) {
-		err = h.sessionUC.Finish(context.Background(), game.ID, playerID)
+		err = h.sessionUC.Finish(context.Background(), game.ID, currentPlayer.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		return frontendComponents.Redirect(resultsLink(game.ID, playerID)), nil
+		return frontendComponents.Redirect(resultsLink(game.ID, currentPlayer.ID)), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if session.Status == model.SessionStatusFinished {
-		return frontendComponents.Redirect(resultsLink(game.ID, playerID)), nil
+		return frontendComponents.Redirect(resultsLink(game.ID, currentPlayer.ID)), nil
 	}
 
 	specificQuestionColor := handlers.QuestionTypePublicColors
@@ -109,7 +120,7 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	}
 
 	var playerName string
-	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{playerID})
+	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{currentPlayer.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -136,12 +147,13 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		)
 	}
 
-	return frontend.PublicPageComponent(
+	return page.PublicIndexPage(
+		request.Context(),
 		h.getTitle(game),
 		frontendPublicGame.Page(
 			frontendPublicGame.QuestionForm(
 				game.ID,
-				playerID,
+				currentPlayer.ID,
 				frontendPublicGame.Header(game.Title),
 				frontendComponents.GridLine(
 					frontendPublicGame.Progress(&handlers.SessionProgress{
@@ -154,24 +166,6 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 			),
 		),
 	), nil
-}
-
-func (h *GetPlayPageHandler) getPlayerID(request *http.Request) (uuid.UUID, error) {
-	playerID := getPlayerID(request)
-	if playerID == uuid.Nil {
-		newPlayerID := uuid.New()
-		err := h.playerUC.Create(request.Context(), &model.Player{
-			ID:   newPlayerID,
-			Name: namegenerator.NewNameGenerator(time.Now().UTC().UnixNano()).Generate(),
-		})
-		if err != nil {
-			return uuid.Nil, err
-		}
-
-		playerID = newPlayerID
-	}
-
-	return playerID, nil
 }
 
 func (h *GetPlayPageHandler) getTitle(game *model.Game) string {

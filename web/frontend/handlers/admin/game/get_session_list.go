@@ -36,7 +36,7 @@ func (h *GetSessionListHandler) Handle(_ http.ResponseWriter, request *http.Requ
 	}
 
 	sessionList, err := h.sessionService.List(
-		request.Context(),
+		request,
 		&session.Spec{
 			GameID: in.GameID,
 		},

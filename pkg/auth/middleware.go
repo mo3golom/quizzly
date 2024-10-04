@@ -1,49 +1,62 @@
 package auth
 
 import (
+	"github.com/google/uuid"
+	"golang.org/x/net/context"
 	"net/http"
 )
 
-type defaultMiddleware struct {
+type authMiddleware struct {
+	forbiddenRedirectURL *string
 	repository           *defaultRepository
 	encryptor            *defaultEncryptor
-	forbiddenRedirectURL *string
 }
 
-func (s *defaultMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func (s *authMiddleware) WithEnrich(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := getTokenFromCookie(r)
-		if token == "" {
-			s.forbidden(w, r)
-			return
+		enrichContextFn := func(r *http.Request) context.Context {
+			token := getTokenFromCookie(r)
+			if token == "" {
+				return r.Context()
+			}
+
+			encryptedToken, err := s.encryptor.Encrypt(string(token))
+			if err != nil {
+				return r.Context()
+			}
+
+			specificUser, err := s.repository.getUserByToken(
+				r.Context(),
+				Token(encryptedToken),
+			)
+			if err != nil {
+				return r.Context()
+			}
+
+			return DefaultAuthContext{
+				Context: r.Context(),
+				userID:  specificUser.id,
+			}
 		}
 
-		encryptedToken, err := s.encryptor.Encrypt(string(token))
-		if err != nil {
-			s.forbidden(w, r)
-			return
-		}
-
-		specificUser, err := s.repository.getUserByToken(
-			r.Context(),
-			Token(encryptedToken),
-		)
-		if err != nil {
-			s.forbidden(w, r)
-			return
-		}
-
-		authContext := DefaultAuthContext{
-			Context: r.Context(),
-			userID:  specificUser.id,
-		}
-		r = r.WithContext(authContext)
-
+		r = r.WithContext(enrichContextFn(r))
 		delegate(w, r)
 	}
 }
 
-func (s *defaultMiddleware) forbidden(w http.ResponseWriter, r *http.Request) {
+func (s *authMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return s.WithEnrich(func(w http.ResponseWriter, r *http.Request) {
+		authCtx, ok := r.Context().(Context)
+		if !ok || authCtx.UserID() == uuid.Nil {
+			s.forbidden(w, r)
+			return
+		}
+
+		delegate(w, r)
+	})
+}
+
+func (s *authMiddleware) forbidden(w http.ResponseWriter, r *http.Request) {
 	if s.forbiddenRedirectURL != nil {
 		http.Redirect(w, r, *s.forbiddenRedirectURL, http.StatusFound)
 		return

@@ -3,7 +3,7 @@ package login
 import (
 	"github.com/a-h/templ"
 	"net/http"
-	frontend "quizzly/web/frontend/templ"
+	"quizzly/web/frontend/services/page"
 	frontendLogin "quizzly/web/frontend/templ/admin/login"
 )
 
@@ -20,8 +20,9 @@ func NewGetLoginPageHandler() *GetLoginPageHandler {
 	return &GetLoginPageHandler{}
 }
 
-func (h *GetLoginPageHandler) Handle(_ http.ResponseWriter, _ *http.Request, _ struct{}) (templ.Component, error) {
-	return frontend.PublicPageComponent(
+func (h *GetLoginPageHandler) Handle(_ http.ResponseWriter, request *http.Request, _ struct{}) (templ.Component, error) {
+	return page.PublicIndexPage(
+		request.Context(),
 		loginPageTitle,
 		frontendLogin.Page(
 			frontendLogin.Form(""),

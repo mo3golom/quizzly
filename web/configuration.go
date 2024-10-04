@@ -19,6 +19,7 @@ import (
 	"quizzly/web/frontend/handlers/admin/static/faq"
 	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
+	playerService "quizzly/web/frontend/services/player"
 	sessionService "quizzly/web/frontend/services/session"
 	"syscall"
 	"time"
@@ -31,6 +32,7 @@ const (
 type (
 	configuration struct {
 		sessions structs.Singleton[sessionService.Service]
+		player   structs.Singleton[playerService.Service]
 	}
 
 	serverSettings struct {
@@ -83,40 +85,48 @@ func adminRoutes(
 func publicRoutes(
 	mux *http.ServeMux,
 	log logger.Logger,
+	config *configuration,
 	quizzlyConfig *quizzly.Configuration,
+	simpleAuth auth.SimpleAuth,
 ) {
+	security := simpleAuth.Middleware()
+
 	gamePlayPageHandler := gamePublic.NewGetPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
+		config.player.MustGet(),
 	)
 	gameRestartPageHandler := gamePublic.NewGetRestartPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
+		config.player.MustGet(),
 	)
 	gameResultsPagehandler := gamePublic.NewGetPlayResultsPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
+		config.player.MustGet(),
 	)
 
-	mux.HandleFunc("GET /game/{game_id}", handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log))
+	mux.HandleFunc("GET /game/{game_id}", security.WithEnrich(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/play", handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log))
+	mux.HandleFunc("GET /game/play", security.WithEnrich(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
 
 	mux.HandleFunc("POST /game/{game_id}", handlers.Templ[gamePublic.PostPlayPageData](gamePublic.NewPostPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
+		config.player.MustGet(),
 	), log))
 
-	mux.HandleFunc("GET /game/{game_id}/restart", handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log))
+	mux.HandleFunc("GET /game/{game_id}/restart", security.WithEnrich(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/restart", handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log))
+	mux.HandleFunc("GET /game/restart", security.WithEnrich(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
 
-	mux.HandleFunc("GET /game/{game_id}/results/{player_id}", handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log))
+	mux.HandleFunc("GET /game/{game_id}/results/{player_id}", security.WithEnrich(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/results", handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log))
+	mux.HandleFunc("GET /game/results", security.WithEnrich(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
 }
 
 func ServerRun(
@@ -130,6 +140,12 @@ func ServerRun(
 			return sessionService.NewService(
 				quizzlyConfig.Session.MustGet(),
 				quizzlyConfig.Player.MustGet(),
+			), nil
+		}),
+		player: structs.NewSingleton(func() (playerService.Service, error) {
+			return playerService.NewService(
+				quizzlyConfig.Player.MustGet(),
+				log,
 			), nil
 		}),
 	}
@@ -159,7 +175,7 @@ func ServerRun(
 	mux.HandleFunc("GET /files/images/{image_name}", files2.NewGetImageHandler(filesManager, log).Handle())
 
 	adminRoutes(mux, config, log, quizzlyConfig, simpleAuth, filesManager)
-	publicRoutes(mux, log, quizzlyConfig)
+	publicRoutes(mux, log, config, quizzlyConfig, simpleAuth)
 
 	server := &http.Server{
 		Addr:         settings.Port,

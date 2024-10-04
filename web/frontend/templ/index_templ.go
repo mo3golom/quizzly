@@ -317,7 +317,7 @@ func AdminPageComponent(title string, body templ.Component) templ.Component {
 	})
 }
 
-func PublicPageComponent(title string, body templ.Component, openGraph ...OpenGraph) templ.Component {
+func PublicPageComponent(title string, body templ.Component, showAdminLink bool, openGraph ...OpenGraph) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -338,20 +338,30 @@ func PublicPageComponent(title string, body templ.Component, openGraph ...OpenGr
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen max-w-screen-xl mx-auto\"><div class=\"text-bold text-left text-big-noodle text-white p-4 pb-8\"><span class=\"text-5xl\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body class=\"bg-indigo-950\"><div class=\"flex flex-col min-h-screen max-w-screen-xl mx-auto\"><div><div class=\"flex items-center p-4 pb-8\"><div class=\"text-bold text-left text-big-noodle text-white flex-col mr-4\"><span class=\"text-5xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(SiteName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 200, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/index.templ`, Line: 202, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top ml-2 text-2xl\">(beta)</span></div><div class=\"mb-auto\"><div class=\"p-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> <span class=\"align-top ml-2 text-2xl\">(beta)</span></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if showAdminLink {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/admin/game/list\" class=\"ml-4 btn btn-sm btn-ghost text-white flex-col border-white hover:border-white hover:bg-white hover:text-indigo-950\">Панель управления</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"mb-auto\"><div class=\"p-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

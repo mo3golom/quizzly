@@ -190,15 +190,25 @@ templ AdminPageComponent(title string, body templ.Component) {
 	</html>
 }
 
-templ PublicPageComponent(title string, body templ.Component, openGraph ...OpenGraph) {
+templ PublicPageComponent(title string, body templ.Component, showAdminLink bool, openGraph ...OpenGraph) {
     <!doctype html>
     <html lang="ru" class="bg-indigo-950">
     		@headerComponent(HeaderConfig{Title: title,AdditionalScripts: "scripts.public.min.js", Robots: "index, follow"}, openGraph...)
     		<body class="bg-indigo-950">
             		<div class="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-            		    <div class="text-bold text-left text-big-noodle text-white p-4 pb-8">
-            		     <span class="text-5xl">{ SiteName }</span>
-            		     <span class="align-top ml-2 text-2xl">(beta)</span>
+            		    <div>
+            		     <div class="flex items-center p-4 pb-8">
+            		        <div class="text-bold text-left text-big-noodle text-white flex-col mr-4">
+            		            <span class="text-5xl">{ SiteName }</span>
+            		            <span class="align-top ml-2 text-2xl">(beta)</span>
+            		        </div>
+            		        if showAdminLink {
+            		            <a
+            		                href="/admin/game/list"
+            		                class="ml-4 btn btn-sm btn-ghost text-white flex-col border-white hover:border-white hover:bg-white hover:text-indigo-950"
+                                >Панель управления</a>
+            		        }
+            		     </div>
             		    </div>
             		    <div class="mb-auto">
             		         <div class="p-4">
