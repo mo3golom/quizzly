@@ -68,7 +68,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 
 	playerID := in.PlayerID
 	if playerID == uuid.Nil {
-		currentPlayer, err := h.playerService.GetPlayer(writer, request)
+		currentPlayer, err := h.playerService.GetPlayer(writer, request, game.ID)
 		if err != nil {
 			return nil, err
 		}

@@ -40,6 +40,10 @@ type (
 		SendLoginCode(ctx context.Context, to Email, code LoginCode) error
 	}
 
+	Cleaner interface {
+		ClearExpiredLoginCodes(ctx context.Context) error
+	}
+
 	SenderConfig struct {
 		FromEmail Email
 		Host      string

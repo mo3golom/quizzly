@@ -6,8 +6,13 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/player"
 	"quizzly/pkg/transactional"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
+)
+
+const (
+	maxNameLength = 25
 )
 
 type Usecase struct {
@@ -28,6 +33,10 @@ func NewUsecase(
 func (u *Usecase) Create(ctx context.Context, in *model.Player) error {
 	if in.ID == uuid.Nil {
 		in.ID = uuid.New()
+	}
+
+	if utf8.RuneCountInString(in.Name) > 50 {
+		in.Name = in.Name[:maxNameLength]
 	}
 
 	return u.template.Execute(ctx, func(tx transactional.Tx) error {

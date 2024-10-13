@@ -92,6 +92,7 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 				ShuffleQuestions: game.Settings.ShuffleQuestions,
 				ShuffleAnswers:   game.Settings.ShuffleAnswers,
 				ShowRightAnswers: game.Settings.ShowRightAnswers,
+				InputCustomName:  game.Settings.InputCustomName,
 			}),
 			frontendAdminGame.Invite(gameLink(game.ID, request)),
 			frontendAdminGame.Statistics(

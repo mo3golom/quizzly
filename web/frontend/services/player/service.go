@@ -2,6 +2,8 @@ package player
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/goombaio/namegenerator"
 	"net/http"
@@ -29,7 +31,7 @@ func NewService(playerUC contracts.PLayerUsecase, log logger.Logger) *DefaultSer
 	}
 }
 
-func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Request, customName ...string) (*model.Player, error) {
+func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Request, gameID uuid.UUID, customName ...string) (*model.Player, error) {
 	var userID *uuid.UUID
 	if authCtx, ok := request.Context().(auth.Context); ok && authCtx.UserID() != uuid.Nil {
 		userID = structs.Pointer(authCtx.UserID())
@@ -40,12 +42,12 @@ func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Req
 		name = customName[0]
 	}
 
-	player, err := s.findPLayerID(request, userID, name)
+	player, err := s.findPLayerID(request, userID, gameID, name)
 	if err != nil {
 		s.log.Error("error getting player id", err)
 	}
 	if player != nil {
-		setPlayerID(writer, player.ID)
+		setPlayerID(writer, player.ID, gameID)
 		return player, nil
 	}
 
@@ -54,20 +56,34 @@ func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Req
 		return nil, err
 	}
 
-	setPlayerID(writer, player.ID)
+	setPlayerID(writer, player.ID, gameID)
 	return player, nil
 }
 
-func (s *DefaultService) findPLayerID(request *http.Request, userID *uuid.UUID, customName string) (*model.Player, error) {
+func (s *DefaultService) findPLayerID(request *http.Request, userID *uuid.UUID, gameID uuid.UUID, customName string) (*model.Player, error) {
 	player, err := s.findByUserID(request.Context(), userID)
 	if err != nil {
 		return nil, err
 	}
 	if player != nil {
+		needUpdate := false
+		if customName != "" {
+			player.Name = customName
+			player.NameUserEntered = true
+			needUpdate = true
+		}
+
+		if needUpdate {
+			err = s.playerUC.Update(request.Context(), player)
+			if err != nil {
+				return player, err
+			}
+		}
+
 		return player, nil
 	}
 
-	player, err = s.findFromCookie(request)
+	player, err = s.findFromCookie(request, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +95,7 @@ func (s *DefaultService) findPLayerID(request *http.Request, userID *uuid.UUID, 
 		}
 		if customName != "" {
 			player.Name = customName
+			player.NameUserEntered = true
 			needUpdate = true
 		}
 
@@ -97,14 +114,17 @@ func (s *DefaultService) findPLayerID(request *http.Request, userID *uuid.UUID, 
 
 func (s *DefaultService) newPlayer(ctx context.Context, userID *uuid.UUID, customName string) (*model.Player, error) {
 	name := namegenerator.NewNameGenerator(time.Now().UTC().UnixNano()).Generate()
+	nameUserEntered := false
 	if customName != "" {
 		name = customName
+		nameUserEntered = true
 	}
 
 	newPlayer := &model.Player{
-		ID:     uuid.New(),
-		Name:   name,
-		UserID: userID,
+		ID:              uuid.New(),
+		Name:            name,
+		NameUserEntered: nameUserEntered,
+		UserID:          userID,
 	}
 	err := s.playerUC.Create(ctx, newPlayer)
 	if err != nil {
@@ -131,8 +151,11 @@ func (s *DefaultService) findByUserID(ctx context.Context, userID *uuid.UUID) (*
 	return &players[0], nil
 }
 
-func (s *DefaultService) findFromCookie(request *http.Request) (*model.Player, error) {
-	cookie, err := request.Cookie(cookiePlayerID)
+func (s *DefaultService) findFromCookie(request *http.Request, gameID uuid.UUID) (*model.Player, error) {
+	cookie, err := request.Cookie(cookieName(gameID))
+	if errors.Is(err, http.ErrNoCookie) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -154,16 +177,20 @@ func (s *DefaultService) findFromCookie(request *http.Request) (*model.Player, e
 	return &players[0], nil
 }
 
-func setPlayerID(writer http.ResponseWriter, id uuid.UUID) {
+func setPlayerID(writer http.ResponseWriter, id uuid.UUID, gameID uuid.UUID) {
 	cookie := http.Cookie{
-		Name:     cookiePlayerID,
+		Name:     cookieName(gameID),
 		Value:    id.String(),
 		Path:     "/",
-		Expires:  time.Now().Add(47 * time.Hour),
-		MaxAge:   172800,
+		Expires:  time.Now().Add(24 * time.Hour),
+		MaxAge:   86400,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 
 	http.SetCookie(writer, &cookie)
+}
+
+func cookieName(gameID uuid.UUID) string {
+	return fmt.Sprintf("%s-%s", cookiePlayerID, gameID.String())
 }
