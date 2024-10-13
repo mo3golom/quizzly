@@ -62,7 +62,9 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		return page.PublicIndexPage(
 			request.Context(),
 			h.getTitle(game),
-			frontendPublicGame.StartPage("Игра не найдена."),
+			frontendPublicGame.Page(
+				frontendPublicGame.StartPage("Игра не найдена."),
+			),
 		), nil
 	}
 	if err != nil {
@@ -72,14 +74,18 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		return page.PublicIndexPage(
 			request.Context(),
 			h.getTitle(game),
-			frontendPublicGame.StartPage("Игра уже завершена."),
+			frontendPublicGame.Page(
+				frontendPublicGame.StartPage("Игра уже завершена."),
+			),
 		), nil
 	}
 	if game.Status == model.GameStatusCreated {
 		return page.PublicIndexPage(
 			request.Context(),
 			h.getTitle(game),
-			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
+			frontendPublicGame.Page(
+				frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
+			),
 		), nil
 	}
 
@@ -87,9 +93,19 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 	if in.CustomName != nil {
 		customPlayerName = *in.CustomName
 	}
-	currentPlayer, err := h.playerService.GetPlayer(writer, request, customPlayerName)
+	currentPlayer, err := h.playerService.GetPlayer(writer, request, game.ID, customPlayerName)
 	if err != nil {
 		return nil, err
+	}
+
+	if game.Settings.InputCustomName && !currentPlayer.NameUserEntered && in.CustomName == nil {
+		return page.PublicIndexPage(
+			request.Context(),
+			h.getTitle(game),
+			frontendPublicGame.Page(
+				frontendPublicGame.NamePage(game.Title, game.ID),
+			),
+		), nil
 	}
 
 	session, err := h.sessionUC.GetCurrentState(request.Context(), *gameID, currentPlayer.ID)

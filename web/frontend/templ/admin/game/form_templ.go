@@ -53,6 +53,10 @@ func Form(questionsList templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = toggleOption("Игрок должен ввести имя перед игрой", "input_custom_name", `перед началом игры игрок должен ввести имя/псевдоним. При этом экран не будет показан при повторной игре`).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"form-control\"><button id=\"create-game-submit\" type=\"submit\" class=\"btn text-white min-w-60 rounded-2xl bg-blue-500 hover:bg-blue-600 border-0\">Создать</button></div></form><script type=\"text/javascript\">\n                enrichRequestByQuestions(\"new-game-form\")\n            </script></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -84,7 +88,7 @@ func toggleOption(title string, name string, hint ...string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 41, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 42, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -102,7 +106,7 @@ func toggleOption(title string, name string, hint ...string) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(hint[0])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 43, Col: 97}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 44, Col: 97}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -120,7 +124,7 @@ func toggleOption(title string, name string, hint ...string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 53, Col: 26}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/form.templ`, Line: 54, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

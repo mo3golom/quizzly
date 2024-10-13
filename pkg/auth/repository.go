@@ -96,6 +96,16 @@ func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.T
 	}, nil
 }
 
+func (r *defaultRepository) clearExpiredLoginCodes(ctx context.Context, tx transactional.Tx) error {
+	const query = ` 
+		delete from user_auth_login_code
+		where expires_at < now()
+	`
+
+	_, err := tx.ExecContext(ctx, query)
+	return err
+}
+
 func (r *defaultRepository) upsertToken(ctx context.Context, tx transactional.Tx, in *upsertTokenIn) error {
 	const query = ` 
 		insert into user_auth_token (user_id, token, expires_at) values ($1, $2, $3) 

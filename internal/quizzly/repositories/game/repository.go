@@ -27,6 +27,7 @@ type (
 		SettingsShuffleQuestions bool      `db:"settings_shuffle_questions"`
 		SettingsShuffleAnswers   bool      `db:"settings_shuffle_answers"`
 		SettingsShowRightAnswers bool      `db:"settings_show_right_answers"`
+		SettingsInputCustomName  bool      `db:"settings_input_custom_name"`
 		CreatedAt                time.Time `db:"created_at"`
 	}
 
@@ -61,8 +62,9 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 			is_private,
 		    shuffle_questions, 
 		    shuffle_answers,
-		    show_right_answers
-		) values ($1, $2, $3, $4, $5) 
+		    show_right_answers,
+		    input_custom_name
+		) values ($1, $2, $3, $4, $5, $6) 
 		on conflict (game_id) do nothing
 	`
 
@@ -74,6 +76,7 @@ func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in 
 		in.Settings.ShuffleQuestions,
 		in.Settings.ShuffleAnswers,
 		in.Settings.ShowRightAnswers,
+		in.Settings.InputCustomName,
 	)
 	return err
 }
@@ -110,7 +113,8 @@ func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUI
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
 			gs.shuffle_answers as settings_shuffle_answers,
-			gs.show_right_answers as settings_show_right_answers
+			gs.show_right_answers as settings_show_right_answers,
+		    gs.input_custom_name as settings_input_custom_name
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
 		where g.author_id = $1
@@ -164,7 +168,8 @@ func (r *DefaultRepository) get(ctx context.Context, db transactional.Tx, id uui
 			gs.is_private as settings_is_private, 
 			gs.shuffle_questions as settings_shuffle_questions,
 			gs.shuffle_answers as settings_shuffle_answers,
-			gs.show_right_answers as settings_show_right_answers
+			gs.show_right_answers as settings_show_right_answers,
+		    gs.input_custom_name as settings_input_custom_name
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
 		where g.id = $1
@@ -195,6 +200,7 @@ func convertToGame(in sqlxGame) model.Game {
 			ShuffleQuestions: in.SettingsShuffleQuestions,
 			ShuffleAnswers:   in.SettingsShuffleAnswers,
 			ShowRightAnswers: in.SettingsShowRightAnswers,
+			InputCustomName:  in.SettingsInputCustomName,
 		},
 		CreatedAt: in.CreatedAt,
 	}

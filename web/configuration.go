@@ -108,6 +108,10 @@ func publicRoutes(
 		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
 	)
+	gameRenamePlayerHandler := gamePublic.NewPostRenamePlayerHandler(
+		quizzlyConfig.Player.MustGet(),
+		config.player.MustGet(),
+	)
 
 	mux.HandleFunc("GET /game/{game_id}", security.WithEnrich(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
 	// backwards compatibility
@@ -127,6 +131,8 @@ func publicRoutes(
 	mux.HandleFunc("GET /game/{game_id}/results/{player_id}", security.WithEnrich(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
 	// backwards compatibility
 	mux.HandleFunc("GET /game/results", security.WithEnrich(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
+
+	mux.HandleFunc("POST /game/{game_id}/player/{player_id}/rename", security.WithEnrich(handlers.Templ[gamePublic.PostRenamePlayerData](gameRenamePlayerHandler, log)))
 }
 
 func ServerRun(

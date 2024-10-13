@@ -50,11 +50,6 @@ func NewGetPlayResultsPageHandler(
 }
 
 func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *http.Request, in GetPlayResultsPageData) (templ.Component, error) {
-	currentPlayer, err := h.playerService.GetPlayer(writer, request)
-	if err != nil {
-		return nil, err
-	}
-
 	gameID := in.GameID
 	if pathGameID := request.PathValue(pathValueGameID); pathGameID != "" {
 		tempGameID, err := uuid.Parse(pathGameID)
@@ -80,6 +75,11 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		return nil, err
 	}
 
+	currentPlayer, err := h.playerService.GetPlayer(writer, request, game.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	stats, err := h.sessionUC.GetStatistics(request.Context(), game.ID, *playerID)
 	if errors.Is(err, contracts.ErrSessionNotFinished) {
 		return page.PublicIndexPage(
@@ -92,14 +92,6 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		return nil, err
 	}
 
-	actions := make([]templ.Component, 0, 2)
-	if currentPlayer.ID == *playerID {
-		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
-		actions = append(actions, frontendPublicGame.ActionShareResult())
-	} else {
-		actions = append(actions, frontendPublicGame.ActionPlayGame(game.ID))
-	}
-
 	var playerName string
 	players, err := h.playerUC.Get(request.Context(), []uuid.UUID{*playerID})
 	if err != nil {
@@ -109,12 +101,26 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		playerName = players[0].Name
 	}
 
+	resultPlayer := frontendPublicGame.ResultPlayer(playerName)
+	actions := make([]templ.Component, 0, 2)
+	if currentPlayer.ID == *playerID {
+		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
+		actions = append(actions, frontendPublicGame.ActionShareResult())
+
+		resultPlayer = frontendPublicGame.ResultPlayer(
+			playerName,
+			frontendPublicGame.ActionRenamePlayer(game.ID, currentPlayer.ID, playerName),
+		)
+	} else {
+		actions = append(actions, frontendPublicGame.ActionPlayGame(game.ID))
+	}
+
 	return page.PublicIndexPage(
 		request.Context(),
 		h.getTitle(game.Title),
 		frontendPublicGame.Page(
 			frontendPublicGame.ResultHeader(game.Title),
-			frontendPublicGame.ResultPlayer(playerName),
+			resultPlayer,
 			frontendPublicGame.ResultStatistics(
 				&handlers.SessionStatistics{
 					QuestionsCount:      int(stats.QuestionsCount),

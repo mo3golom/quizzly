@@ -41,3 +41,28 @@ templ ActionShareResult() {
        </button>
    </div>
 }
+
+templ ActionRenamePlayer(gameID uuid.UUID, playerID uuid.UUID, name string) {
+   <label>
+        <input
+             id="game-action-rename-player"
+             hx-post={fmt.Sprintf("/game/%s/player/%s/rename", gameID.String(), playerID.String())}
+             hx-target="this"
+             hx-swap="outerHTML"
+             hx-trigger="change changed"
+             onchange="console.log(this.value)"
+             name="name"
+             class="input bg-indigo-900 text-white rounded-2xl w-min text-3xl text-big-noodle focus:text-black focus:bg-white"
+             value={name}
+             placeholder="Имя игрока"
+             maxlength="25"
+        />
+    </label>
+    <script type="text/javascript">
+    document.getElementById("game-action-rename-player").addEventListener("keydown", function(event) {
+        if (event.keyCode === 13) { // Check if Enter key is pressed
+            this.blur(); // Unfocus the input
+        }
+    });
+    </script>
+}

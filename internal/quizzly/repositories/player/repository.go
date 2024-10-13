@@ -15,9 +15,10 @@ import (
 
 type (
 	sqlxPlayer struct {
-		ID     uuid.UUID  `db:"id"`
-		Name   string     `db:"name"`
-		UserID *uuid.UUID `db:"user_id"`
+		ID              uuid.UUID  `db:"id"`
+		Name            string     `db:"name"`
+		NameUserEntered bool       `db:"name_user_entered"`
+		UserID          *uuid.UUID `db:"user_id"`
 	}
 
 	DefaultRepository struct {
@@ -33,25 +34,29 @@ func NewRepository(db *sqlx.DB) Repository {
 
 func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Player) error {
 	const query = ` 
-		insert into player (id, user_id, name) values ($1, $2, $3) on conflict (id) do nothing
+		insert into player (id, user_id, name, name_user_entered) values ($1, $2, $3, $4) on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
 	return err
 }
 
 func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in *model.Player) error {
 	const query = ` 
-		update player set user_id = $2, name = $3 where id = $1
+		update player set 
+		 user_id = $2, 
+		 name = $3,
+		 name_user_entered = $4
+	    where id = $1
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name)
+	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
 	return err
 }
 
 func (r *DefaultRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]model.Player, error) {
 	const query = ` 
-		select id, user_id, name
+		select id, user_id, name, name_user_entered
 		from player
 		where id = any($1)
 	`
@@ -67,16 +72,17 @@ func (r *DefaultRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 
 	return slices.SafeMap(result, func(in sqlxPlayer) model.Player {
 		return model.Player{
-			ID:     in.ID,
-			Name:   in.Name,
-			UserID: in.UserID,
+			ID:              in.ID,
+			Name:            in.Name,
+			NameUserEntered: in.NameUserEntered,
+			UserID:          in.UserID,
 		}
 	}), nil
 }
 
 func (r *DefaultRepository) GetByUserIDs(ctx context.Context, userIDs []uuid.UUID) ([]model.Player, error) {
 	const query = ` 
-		select id, user_id, name
+		select id, user_id, name, name_user_entered
 		from player
 		where user_id = any($1)
 	`
@@ -92,9 +98,10 @@ func (r *DefaultRepository) GetByUserIDs(ctx context.Context, userIDs []uuid.UUI
 
 	return slices.SafeMap(result, func(in sqlxPlayer) model.Player {
 		return model.Player{
-			ID:     in.ID,
-			Name:   in.Name,
-			UserID: in.UserID,
+			ID:              in.ID,
+			Name:            in.Name,
+			NameUserEntered: in.NameUserEntered,
+			UserID:          in.UserID,
 		}
 	}), nil
 }
