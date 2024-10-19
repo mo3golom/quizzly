@@ -234,6 +234,12 @@ func ServerRun(
 		}
 	}()
 
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error("panic occurred", errors.New(fmt.Sprintf("%v", err)))
+		}
+	}()
+
 	// Set up graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
