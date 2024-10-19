@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
+	"quizzly/internal/quizzly/model"
+	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/services/page"
 	"quizzly/web/frontend/services/player"
@@ -105,7 +107,7 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 	actions := make([]templ.Component, 0, 2)
 	if currentPlayer.ID == *playerID {
 		actions = append(actions, frontendPublicGame.ActionRestartGame(game.ID))
-		actions = append(actions, frontendPublicGame.ActionShareResult())
+		actions = append(actions, frontendPublicGame.ActionShareResult(h.getShareTitle(game.Title, stats.CorrectAnswersCount, stats.QuestionsCount)))
 
 		resultPlayer = frontendPublicGame.ResultPlayer(
 			playerName,
@@ -113,6 +115,11 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		)
 	} else {
 		actions = append(actions, frontendPublicGame.ActionPlayGame(game.ID))
+	}
+
+	publicGames, err := h.gameUC.GetPublic(request.Context())
+	if err != nil {
+		return nil, err
 	}
 
 	return page.PublicIndexPage(
@@ -128,6 +135,21 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 				},
 			),
 			frontendComponents.GridLine(actions...),
+			frontendPublicGame.ResultAdditional(
+				frontendComponents.DividerVerticalLight("Или",
+					frontendPublicGame.PublicGameComposition(
+						slices.SafeMap(publicGames[:5], func(game model.Game) templ.Component {
+							title := fmt.Sprintf("Игра от %s", game.CreatedAt.Format("02.01.2006"))
+							if game.Title != nil {
+								title = *game.Title
+							}
+
+							return frontendPublicGame.PublicGame(title, game.ID)
+						})...,
+					),
+					frontendPublicGame.CreateGame(),
+				),
+			),
 		),
 		frontend.OpenGraph{
 			Title: h.getShareTitle(game.Title, stats.CorrectAnswersCount, stats.QuestionsCount),

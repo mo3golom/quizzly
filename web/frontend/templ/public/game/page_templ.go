@@ -25,7 +25,7 @@ func Page(components ...templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"max-w-screen-lg mx-auto\"><div class=\"flex min-h-[75vh]\"><div class=\"m-auto\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"max-w-screen-lg mx-auto\"><div class=\"flex min-h-[75vh]\"><div class=\"m-auto min-w-[50vw] lg:min-w-[512px]\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

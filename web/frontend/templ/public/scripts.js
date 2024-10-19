@@ -185,6 +185,12 @@ function connectToGame() {
     window.location = "/game/" + gameId
 }
 
-function copyShareResultsBlock() {
-    copyTextToClipboard(window.location.href, "Ссылка скопирована")
+function copyShareResultsBlock(element) {
+    let additionalText = element.getAttribute("data-additional-text")
+    let text = window.location.href
+    if (additionalText !== null && additionalText !== "") {
+        text = additionalText + "\n" + text
+    }
+
+    copyTextToClipboard(text, "Ссылка скопирована")
 }

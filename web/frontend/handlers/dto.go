@@ -29,6 +29,7 @@ type (
 		Status    model.GameStatus
 		Title     *string
 		CreatedAt time.Time
+		Settings  *GameSettings
 	}
 
 	GameSettings struct {
@@ -36,6 +37,7 @@ type (
 		ShuffleAnswers   bool
 		ShowRightAnswers bool
 		InputCustomName  bool
+		IsPrivate        bool
 	}
 
 	GameStatistics struct {

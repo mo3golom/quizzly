@@ -14,7 +14,6 @@ templ Header(game *handlers.Game) {
                             Игра от { game.CreatedAt.Format("02.01.2006") }
                         }
                         </h1>
-                        <p class="text-sm text-gray-400">{ game.ID.String() }</p>
                         <h2>
                         switch game.Status {
                         		case "created":

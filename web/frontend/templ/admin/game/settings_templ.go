@@ -29,6 +29,12 @@ func Settings(settings *handlers.GameSettings) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		if settings.IsPrivate {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"badge badge-lg bg-pink-500 text-white mr-2 mb-2 p-4\">Частная игра</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
 		if settings.ShuffleQuestions {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"badge badge-lg badge-ghost mr-2 mb-2 p-4\">Вопросы перемешаны</div>")
 			if templ_7745c5c3_Err != nil {

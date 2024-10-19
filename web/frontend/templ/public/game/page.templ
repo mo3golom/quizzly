@@ -5,7 +5,7 @@ import "quizzly/web/frontend/templ/components"
 templ Page(components ...templ.Component) {
     <div class="max-w-screen-lg mx-auto">
         <div class="flex min-h-[75vh]">
-            <div class="m-auto">
+            <div class="m-auto min-w-[50vw] lg:min-w-[512px]">
             @frontend_components.Composition(components...)
             </div>
         </div>

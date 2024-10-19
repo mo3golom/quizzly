@@ -16,6 +16,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	defaultLimit int64 = 10_000_000
+)
+
 type (
 	sqlxGame struct {
 		ID                       uuid.UUID `db:"id"`
@@ -101,7 +105,11 @@ func (r *DefaultRepository) GetWithTx(ctx context.Context, tx transactional.Tx, 
 	return r.get(ctx, tx, id)
 }
 
-func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
+func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Game, error) {
+	if spec == nil || (spec.AuthorID == nil && spec.IsPrivate == nil) {
+		return nil, nil
+	}
+
 	const query = `
 		select 
 			g.id, 
@@ -117,11 +125,28 @@ func (r *DefaultRepository) GetByAuthorID(ctx context.Context, authorID uuid.UUI
 		    gs.input_custom_name as settings_input_custom_name
 		from game as g
 		inner join game_settings as gs on gs.game_id = g.id
-		where g.author_id = $1
+		where ($1::UUID is null or g.author_id = $1)
+		  and ($2::bool is null or gs.is_private = $2)
+		  and ($3::text[] is null or cardinality($3::text[]) = 0 or g.status = any($3))
+		order by g.created_at desc
+		limit $4
 	`
 
+	limit := defaultLimit
+	if spec.Limit > 0 {
+		limit = spec.Limit
+	}
+
 	var result []sqlxGame
-	if err := r.db.SelectContext(ctx, &result, query, authorID); err != nil {
+	if err := r.db.SelectContext(
+		ctx,
+		&result,
+		query,
+		spec.AuthorID,
+		spec.IsPrivate,
+		pq.Array(spec.Statuses),
+		limit,
+	); err != nil {
 		return nil, err
 	}
 
@@ -140,7 +165,7 @@ func (r *DefaultRepository) InsertGameQuestions(ctx context.Context, tx transact
 	return err
 }
 
-func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *Spec) ([]uuid.UUID, error) {
+func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]uuid.UUID, error) {
 	const query = `
 		select question_id
 		from game_question

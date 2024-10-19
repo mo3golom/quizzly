@@ -42,7 +42,7 @@ templ QuestionListContainer(options ContainerOptions) {
 templ QuestionListItem(question handlers.Question, answerOptions []templ.Component, options Options) {
        <div
         id={fmt.Sprintf("question-%s", question.ID.String())}
-        class="card card-bordered mb-4 bg-white border-base-200 border-4 relative"
+        class="card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm"
        >
             if options.WithDisabledOverlay {
                 <div class="absolute bg-base-disabled w-full h-full z-10"></div>

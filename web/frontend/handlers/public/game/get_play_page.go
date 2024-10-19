@@ -59,34 +59,16 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 
 	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
-		return page.PublicIndexPage(
-			request.Context(),
-			h.getTitle(game),
-			frontendPublicGame.Page(
-				frontendPublicGame.StartPage("Игра не найдена."),
-			),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра не найдена"), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 	if game.Status == model.GameStatusFinished {
-		return page.PublicIndexPage(
-			request.Context(),
-			h.getTitle(game),
-			frontendPublicGame.Page(
-				frontendPublicGame.StartPage("Игра уже завершена."),
-			),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра уже завершена"), nil
 	}
 	if game.Status == model.GameStatusCreated {
-		return page.PublicIndexPage(
-			request.Context(),
-			h.getTitle(game),
-			frontendPublicGame.Page(
-				frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
-			),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра еще не началась. Подождите немного или попросите автора запустить игру"), nil
 	}
 
 	customPlayerName := ""

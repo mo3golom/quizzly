@@ -50,6 +50,13 @@ func (h *GetListHandler) Handle(_ http.ResponseWriter, request *http.Request, _ 
 			Status:    game.Status,
 			Title:     game.Title,
 			CreatedAt: game.CreatedAt,
+			Settings: &handlers.GameSettings{
+				ShuffleQuestions: game.Settings.ShuffleQuestions,
+				ShuffleAnswers:   game.Settings.ShuffleAnswers,
+				ShowRightAnswers: game.Settings.ShowRightAnswers,
+				InputCustomName:  game.Settings.InputCustomName,
+				IsPrivate:        game.Settings.IsPrivate,
+			},
 		}))
 	}
 

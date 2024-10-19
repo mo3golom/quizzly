@@ -27,14 +27,7 @@ templ ResultPlayer(name string, editBlock ...templ.Component) {
 }
 
 templ ResultStatistics(stats *handlers.SessionStatistics) {
-     <div class="mb-1">
-               <progress
-                  class="progress progress-warning h-4 rounded-2xl bg-amber-800 drop-shadow-lg"
-                  value={strconv.Itoa(stats.CorrectAnswersCount)}
-                  max={strconv.Itoa(stats.QuestionsCount)}
-               ></progress>
-     </div>
-     <div class="stats stats-vertical sm:stats-horizontal w-full bg-blue-500 rounded-2xl mb-2 drop-shadow-lg">
+     <div class="stats stats-vertical sm:stats-horizontal w-full bg-pink-500 rounded-2xl mb-2 drop-shadow-lg">
           <div class="stat">
              <div class="stat-title text-white">Отвечено правильно</div>
              <div class="stat-value text-big-noodle text-white">{ strconv.Itoa(stats.CorrectAnswersCount) }</div>
@@ -52,4 +45,15 @@ templ ResultLinkInput(link string) {
         А дальше... Результаты игры
     </div>
     <input type="hidden" id="game-page-results-link" value={link} />
+}
+
+templ ResultAdditional(components ...templ.Component) {
+    <div class="mt-10">
+       <div class="text-3xl text-big-noodle text-white text-center">А еще...</div>
+       <div>
+        for _, component := range components {
+            @component
+        }
+       </div>
+    </div>
 }

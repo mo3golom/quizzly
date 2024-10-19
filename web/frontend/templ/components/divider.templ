@@ -1,0 +1,13 @@
+package frontend_components
+
+templ DividerVerticalLight(dividerText string, components ...templ.Component) {
+    <div class="flex w-full flex-col">
+      for i, component := range components {
+         @component
+
+         if i < len(components) - 1 {
+            <div class="divider divider-light text-white text-big-noodle text-2xl">{dividerText}</div>
+         }
+      }
+    </div>
+}

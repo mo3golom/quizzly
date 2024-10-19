@@ -112,7 +112,7 @@ func QuestionListItem(question handlers.Question, answerOptions []templ.Componen
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"card card-bordered mb-4 bg-white border-base-200 border-4 relative\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

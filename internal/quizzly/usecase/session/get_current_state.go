@@ -36,7 +36,7 @@ func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerI
 		gameQuestions, err := u.games.GetQuestionIDsBySpec(
 			ctx,
 			tx,
-			&game.Spec{
+			&game.QuestionSpec{
 				GameID: gameID,
 			},
 		)

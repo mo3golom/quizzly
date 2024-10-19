@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/web/frontend/services/page"
 	"quizzly/web/frontend/services/player"
 	frontendComponents "quizzly/web/frontend/templ/components"
-	frontendPublicGame "quizzly/web/frontend/templ/public/game"
 )
 
 const (
@@ -55,28 +53,16 @@ func (h *GetRestartPageHandler) Handle(writer http.ResponseWriter, request *http
 
 	game, err := h.gameUC.Get(request.Context(), *gameID)
 	if errors.Is(err, contracts.ErrGameNotFound) {
-		return page.PublicIndexPage(
-			request.Context(),
-			getRestartPageTitle,
-			frontendPublicGame.StartPage("Игра не найдена."),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра не найдена"), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 	if game.Status == model.GameStatusFinished {
-		return page.PublicIndexPage(
-			request.Context(),
-			getRestartPageTitle,
-			frontendPublicGame.StartPage("Игра уже завершена."),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра уже завершена"), nil
 	}
 	if game.Status == model.GameStatusCreated {
-		return page.PublicIndexPage(
-			request.Context(),
-			getRestartPageTitle,
-			frontendPublicGame.StartPage("Игра еще не началась. Подождите немного или попросите автора запустить игру."),
-		), nil
+		return frontendComponents.Redirect("/?warn=Игра еще не началась. Подождите немного или попросите автора запустить игру"), nil
 	}
 
 	currentPlayer, err := h.playerService.GetPlayer(writer, request, game.ID)

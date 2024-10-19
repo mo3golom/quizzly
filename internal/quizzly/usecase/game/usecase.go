@@ -7,6 +7,7 @@ import (
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
+	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
 
@@ -83,7 +84,17 @@ func (u *Usecase) Get(ctx context.Context, id uuid.UUID) (*model.Game, error) {
 }
 
 func (u *Usecase) GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Game, error) {
-	return u.games.GetByAuthorID(ctx, authorID)
+	return u.games.GetBySpec(ctx, &game.Spec{
+		AuthorID: &authorID,
+	})
+}
+
+func (u *Usecase) GetPublic(ctx context.Context) ([]model.Game, error) {
+	return u.games.GetBySpec(ctx, &game.Spec{
+		IsPrivate: structs.Pointer(false),
+		Statuses:  []model.GameStatus{model.GameStatusStarted},
+		Limit:     10,
+	})
 }
 
 func (u *Usecase) AddQuestion(ctx context.Context, gameID uuid.UUID, questionID ...uuid.UUID) error {
@@ -119,7 +130,7 @@ func (u *Usecase) GetQuestions(ctx context.Context, gameID uuid.UUID) ([]uuid.UU
 	var result []uuid.UUID
 	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
 		var err error
-		result, err = u.games.GetQuestionIDsBySpec(ctx, tx, &game.Spec{
+		result, err = u.games.GetQuestionIDsBySpec(ctx, tx, &game.QuestionSpec{
 			GameID: gameID,
 		})
 		return err
@@ -130,7 +141,7 @@ func (u *Usecase) GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameS
 	var questionsCount int64
 	var participantsCount int64
 	err := u.template.Execute(ctx, func(tx transactional.Tx) error {
-		questions, err := u.games.GetQuestionIDsBySpec(ctx, tx, &game.Spec{
+		questions, err := u.games.GetQuestionIDsBySpec(ctx, tx, &game.QuestionSpec{
 			GameID: id,
 		})
 		if err != nil {
