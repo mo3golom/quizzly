@@ -1,4 +1,4 @@
-FROM golang:1.22.2-alpine AS builder
+FROM golang:1.23.2-alpine AS builder
 
 ENV APP_HOME /go/src/app
 
@@ -7,7 +7,7 @@ COPY ./ ./
 
 RUN go build -o app  ./cmd/service/main.go
 
-FROM golang:1.22.2-alpine
+FROM golang:1.23.2-alpine
 
 ENV APP_HOME /go/src/app
 RUN mkdir -p "$APP_HOME"
