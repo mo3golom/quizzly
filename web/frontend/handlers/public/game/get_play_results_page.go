@@ -122,6 +122,11 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		return nil, err
 	}
 
+	publicGamesLen := 5
+	if len(publicGames) < 5 {
+		publicGamesLen = len(publicGames)
+	}
+
 	return page.PublicIndexPage(
 		request.Context(),
 		h.getTitle(game.Title),
@@ -138,7 +143,7 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 			frontendPublicGame.ResultAdditional(
 				frontendComponents.DividerVerticalLight("Или",
 					frontendPublicGame.PublicGameComposition(
-						slices.SafeMap(publicGames[:5], func(game model.Game) templ.Component {
+						slices.SafeMap(publicGames[:publicGamesLen], func(game model.Game) templ.Component {
 							title := fmt.Sprintf("Игра от %s", game.CreatedAt.Format("02.01.2006"))
 							if game.Title != nil {
 								title = *game.Title
