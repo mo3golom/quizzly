@@ -63,7 +63,7 @@ func (h *PostPlayPageHandler) Handle(writer http.ResponseWriter, request *http.R
 		return nil, err
 	}
 	if game.Status == model.GameStatusFinished {
-		return frontendPublicGame.StartPage(), nil
+		return frontendComponents.Redirect("/?warn=Игра уже завершена"), nil
 	}
 
 	playerID := in.PlayerID

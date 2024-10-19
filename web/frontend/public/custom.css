@@ -19,3 +19,20 @@
     opacity: 1;
     transition: opacity 300ms;
 }
+
+.divider-light:before {
+    --tw-bg-opacity: 1;
+    background-color: rgba(255,255,255,0.2);
+}
+
+.divider-light:after {
+    --tw-bg-opacity: 1;
+    background-color: rgba(255,255,255,0.2);
+}
+
+
+.transition-outline {
+    transition-property: outline-width, outline-color;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+}

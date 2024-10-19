@@ -19,6 +19,7 @@ type (
 		ShuffleAnswers   bool     `schema:"shuffle_answers"`
 		ShowRightAnswers bool     `schema:"show_right_answers"`
 		InputCustomName  bool     `schema:"input_custom_name"`
+		IsPrivate        bool     `schema:"is_private"`
 		Title            *string  `schema:"title"`
 	}
 
@@ -46,7 +47,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 			Type:     model.GameTypeAsync,
 			Title:    in.Title,
 			Settings: model.GameSettings{
-				IsPrivate:        false,
+				IsPrivate:        in.IsPrivate,
 				ShuffleQuestions: in.ShuffleQuestions,
 				ShuffleAnswers:   in.ShuffleAnswers,
 				ShowRightAnswers: in.ShowRightAnswers,

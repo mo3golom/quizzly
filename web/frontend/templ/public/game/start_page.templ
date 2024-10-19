@@ -1,13 +1,16 @@
 package frontend_public_game
 
+import "fmt"
+import "github.com/google/uuid"
+
 templ StartPage(warns ...string) {
-    <div class="max-w-md mx-auto">
+    <div class="mx-auto">
         for _, warn := range warns {
             <div role="alert" class="alert bg-amber-500 border-0 mb-4 text-white">
               <span>{warn}</span>
             </div>
         }
-        <div class={"card text-primary-content rounded-2xl drop-shadow-lg bg-blue-500 drop-shadow-lg mb-2 mt-2"}>
+        <div class={"card text-primary-content rounded-2xl shadow-lg bg-blue-500 mb-2 mt-2"}>
             <div class="card-body p-4">
                 <div class="text-big-noodle text-2xl text-white">
                  Подключиться к игре
@@ -22,9 +25,57 @@ templ StartPage(warns ...string) {
                             required
                         />
                     </label>
-                    <button class="btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0" onclick="connectToGame()">Играть</button>
+                    <button class="btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0 text-white" onclick="connectToGame()">Играть</button>
                 </div>
             </div>
+        </div>
+    </div>
+}
+
+templ PublicGameComposition(components ...templ.Component) {
+    <div class="mt-4">
+    <div class="text-big-noodle text-3xl text-white w-full text-center mb-2">Сыграйте в новые квизы</div>
+    for i, component := range components {
+        if i == len(components) - 1 {
+            <div class="stack w-full">
+              @component
+              <div class="card rounded-2xl bg-blue-600">
+                <div class="card-body p-4">
+                   you can't
+                </div>
+              </div>
+              <div class="card rounded-2xl -mb-1 bg-blue-700">
+                <div class="card-body p-4">
+                   see this
+                </div>
+              </div>
+            </div>
+        } else {
+            @component
+        }
+    }
+    </div>
+}
+
+templ PublicGame(title string, gameID uuid.UUID) {
+    <div class={"card rounded-2xl bg-blue-500 shadow-lg outline outline-0 outline-blue-500 hover:outline-4 hover:shadow-xl hover:z-10 mb-2 transition-outline"}>
+        <div class="card-body p-4">
+            <a href={templ.SafeURL(fmt.Sprintf("/game/%s", gameID.String()))} class="text-big-noodle text-2xl text-white w-full flex items-center">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+             </svg>
+             <span class="ml-2">{title}</span>
+            </a>
+        </div>
+    </div>
+}
+
+templ CreateGame() {
+     <div class={"card rounded-2xl bg-amber-500 shadow-lg outline outline-0 outline-amber-500 hover:outline-4 hover:shadow-xl hover:z-10 mb-2 transition-outline"}>
+        <div class="card-body p-4">
+            <a href={templ.SafeURL("/admin/game/new")} class="w-full text-white flex justify-center items-center text-big-noodle text-3xl">
+                <span>Создайте свой квиз!</span>
+            </a>
         </div>
     </div>
 }

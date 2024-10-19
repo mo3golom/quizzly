@@ -21,6 +21,7 @@ type (
 		Finish(ctx context.Context, id uuid.UUID) error
 		Get(ctx context.Context, id uuid.UUID) (*model.Game, error)
 		GetByAuthor(ctx context.Context, authorID uuid.UUID) ([]model.Game, error)
+		GetPublic(ctx context.Context) ([]model.Game, error)
 		GetStatistics(ctx context.Context, id uuid.UUID) (*model.GameStatistics, error)
 
 		AddQuestion(ctx context.Context, gameID uuid.UUID, questionID ...uuid.UUID) error
