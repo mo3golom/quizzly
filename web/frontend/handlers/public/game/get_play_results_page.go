@@ -10,6 +10,7 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/page"
 	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
@@ -34,6 +35,8 @@ type (
 		playerUC  contracts.PLayerUsecase
 
 		playerService player.Service
+
+		linkService link.Service
 	}
 )
 
@@ -42,12 +45,14 @@ func NewGetPlayResultsPageHandler(
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
 	playerService player.Service,
+	linkService link.Service,
 ) *GetPlayResultsPageHandler {
 	return &GetPlayResultsPageHandler{
 		gameUC:        gameUC,
 		sessionUC:     sessionUC,
 		playerUC:      playerUC,
 		playerService: playerService,
+		linkService:   linkService,
 	}
 }
 
@@ -158,7 +163,7 @@ func (h *GetPlayResultsPageHandler) Handle(writer http.ResponseWriter, request *
 		),
 		frontend.OpenGraph{
 			Title: h.getShareTitle(game.Title, stats.CorrectAnswersCount, stats.QuestionsCount),
-			URL:   resultsLink(game.ID, *playerID, request),
+			URL:   h.linkService.GameResultsLink(game.ID, *playerID, request),
 		}), nil
 }
 
