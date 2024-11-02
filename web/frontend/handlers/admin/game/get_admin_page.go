@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/session"
 	frontend "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
@@ -26,16 +27,20 @@ type (
 	GetAdminPageHandler struct {
 		uc             contracts.GameUsecase
 		sessionService session.Service
+
+		linkService link.Service
 	}
 )
 
 func NewGetPageHandler(
 	uc contracts.GameUsecase,
 	sessionService session.Service,
+	linkService link.Service,
 ) *GetAdminPageHandler {
 	return &GetAdminPageHandler{
 		uc:             uc,
 		sessionService: sessionService,
+		linkService:    linkService,
 	}
 }
 
@@ -95,7 +100,7 @@ func (h *GetAdminPageHandler) Handle(_ http.ResponseWriter, request *http.Reques
 				InputCustomName:  game.Settings.InputCustomName,
 				IsPrivate:        game.Settings.IsPrivate,
 			}),
-			frontendAdminGame.Invite(gameLink(game.ID, request)),
+			frontendAdminGame.Invite(h.linkService.GameLink(game.ID, request)),
 			frontendAdminGame.Statistics(
 				&handlers.GameStatistics{
 					QuestionsCount:    int(stats.QuestionsCount),

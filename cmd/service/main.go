@@ -43,6 +43,7 @@ func main() {
 
 	web.ServerRun(
 		log,
+		variables.Repository.MustGet(),
 		quizzlyConfig,
 		simpleAuthConfig.SimpleAuth.MustGet(),
 		filesConfig.S3.MustGet(),

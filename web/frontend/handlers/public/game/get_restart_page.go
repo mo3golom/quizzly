@@ -7,12 +7,9 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
+	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/player"
 	frontendComponents "quizzly/web/frontend/templ/components"
-)
-
-const (
-	getRestartPageTitle = "Перезапуск игры"
 )
 
 type (
@@ -25,6 +22,8 @@ type (
 		sessionUC contracts.SessionUsecase
 
 		playerService player.Service
+
+		linkService link.Service
 	}
 )
 
@@ -32,11 +31,13 @@ func NewGetRestartPageHandler(
 	gameUC contracts.GameUsecase,
 	sessionUC contracts.SessionUsecase,
 	playerService player.Service,
+	linkService link.Service,
 ) *GetRestartPageHandler {
 	return &GetRestartPageHandler{
 		gameUC:        gameUC,
 		sessionUC:     sessionUC,
 		playerService: playerService,
+		linkService:   linkService,
 	}
 }
 
@@ -75,5 +76,5 @@ func (h *GetRestartPageHandler) Handle(writer http.ResponseWriter, request *http
 		return nil, err
 	}
 
-	return frontendComponents.Redirect(gameLink(game.ID)), nil
+	return frontendComponents.Redirect(h.linkService.GameLink(game.ID, request)), nil
 }

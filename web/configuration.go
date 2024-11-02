@@ -12,6 +12,7 @@ import (
 	"quizzly/pkg/files"
 	"quizzly/pkg/logger"
 	"quizzly/pkg/structs"
+	"quizzly/pkg/variables"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/handlers/admin/game"
 	"quizzly/web/frontend/handlers/admin/login"
@@ -19,6 +20,7 @@ import (
 	"quizzly/web/frontend/handlers/admin/static/faq"
 	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
+	"quizzly/web/frontend/services/link"
 	playerService "quizzly/web/frontend/services/player"
 	sessionService "quizzly/web/frontend/services/session"
 	"syscall"
@@ -40,6 +42,7 @@ type (
 	configuration struct {
 		sessions structs.Singleton[sessionService.Service]
 		player   structs.Singleton[playerService.Service]
+		link     structs.Singleton[link.Service]
 	}
 
 	serverSettings struct {
@@ -88,6 +91,7 @@ func adminRoutes(
 	mux.HandleFunc("GET /admin/game/{game_id}", "/admin/game/:game_id", security.WithAuth(handlers.Templ[game.GetAdminPageData](game.NewGetPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		config.sessions.MustGet(),
+		config.link.MustGet(),
 	), log)))
 	mux.HandleFunc("POST /admin/game/start", "/admin/game/start", security.WithAuth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("POST /admin/game/finish", "/admin/game/finish", security.WithAuth(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(quizzlyConfig.Game.MustGet()), log)))
@@ -112,17 +116,20 @@ func publicRoutes(
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
+		config.link.MustGet(),
 	)
 	gameRestartPageHandler := gamePublic.NewGetRestartPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
 		config.player.MustGet(),
+		config.link.MustGet(),
 	)
 	gameResultsPagehandler := gamePublic.NewGetPlayResultsPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
+		config.link.MustGet(),
 	)
 	gameRenamePlayerHandler := gamePublic.NewPostRenamePlayerHandler(
 		quizzlyConfig.Player.MustGet(),
@@ -142,6 +149,7 @@ func publicRoutes(
 		quizzlyConfig.Session.MustGet(),
 		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
+		config.link.MustGet(),
 	), log))
 
 	mux.HandleFunc("GET /game/{game_id}/restart", "/game/:game_id/restart", security.WithEnrich(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
@@ -157,6 +165,7 @@ func publicRoutes(
 
 func ServerRun(
 	log logger.Logger,
+	variables variables.Repository,
 	quizzlyConfig *quizzly.Configuration,
 	simpleAuth auth.SimpleAuth,
 	filesManager files.Manager,
@@ -172,6 +181,11 @@ func ServerRun(
 			return playerService.NewService(
 				quizzlyConfig.Player.MustGet(),
 				log,
+			), nil
+		}),
+		link: structs.NewSingleton(func() (link.Service, error) {
+			return link.NewService(
+				variables,
 			), nil
 		}),
 	}

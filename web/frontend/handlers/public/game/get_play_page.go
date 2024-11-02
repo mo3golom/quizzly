@@ -10,6 +10,7 @@ import (
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/page"
 	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
@@ -29,6 +30,8 @@ type (
 		playerUC  contracts.PLayerUsecase
 
 		playerService player.Service
+
+		linkService link.Service
 	}
 )
 
@@ -37,12 +40,14 @@ func NewGetPlayPageHandler(
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
 	playerService player.Service,
+	linkService link.Service,
 ) *GetPlayPageHandler {
 	return &GetPlayPageHandler{
 		gameUC:        gameUC,
 		sessionUC:     sessionUC,
 		playerUC:      playerUC,
 		playerService: playerService,
+		linkService:   linkService,
 	}
 }
 
@@ -97,14 +102,14 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 			return nil, err
 		}
 
-		return frontendComponents.Redirect(resultsLink(game.ID, currentPlayer.ID)), nil
+		return frontendComponents.Redirect(h.linkService.GameResultsLink(game.ID, currentPlayer.ID)), nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	if session.Status == model.SessionStatusFinished {
-		return frontendComponents.Redirect(resultsLink(game.ID, currentPlayer.ID)), nil
+		return frontendComponents.Redirect(h.linkService.GameResultsLink(game.ID, currentPlayer.ID)), nil
 	}
 
 	specificQuestionColor := handlers.QuestionTypePublicColors

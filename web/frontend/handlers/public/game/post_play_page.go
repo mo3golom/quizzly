@@ -10,6 +10,7 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/web/frontend/handlers"
+	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/player"
 	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
@@ -30,6 +31,7 @@ type (
 		playerUC  contracts.PLayerUsecase
 
 		playerService player.Service
+		linkService   link.Service
 	}
 )
 
@@ -38,12 +40,14 @@ func NewPostPlayPageHandler(
 	sessionUC contracts.SessionUsecase,
 	playerUC contracts.PLayerUsecase,
 	playerService player.Service,
+	linkService link.Service,
 ) *PostPlayPageHandler {
 	return &PostPlayPageHandler{
 		gameUC:        gameUC,
 		sessionUC:     sessionUC,
 		playerUC:      playerUC,
 		playerService: playerService,
+		linkService:   linkService,
 	}
 }
 
@@ -161,7 +165,7 @@ func (h *PostPlayPageHandler) finish(
 	}
 
 	return frontendComponents.Composition(
-		frontendPublicGame.ResultLinkInput(resultsLink(game.ID, playerID)),
+		frontendPublicGame.ResultLinkInput(h.linkService.GameResultsLink(game.ID, playerID)),
 		answerComponent,
 	), nil
 }
