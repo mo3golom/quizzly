@@ -58,24 +58,28 @@ templ PublicGameComposition(components ...templ.Component) {
 }
 
 templ PublicGame(title string, gameID uuid.UUID) {
+    <a href={templ.SafeURL(fmt.Sprintf("/game/%s", gameID.String()))}>
     <div class={"card rounded-2xl bg-blue-500 shadow-lg outline outline-0 outline-blue-500 hover:outline-4 hover:shadow-xl hover:z-10 mb-2 transition-outline"}>
         <div class="card-body p-4">
-            <a href={templ.SafeURL(fmt.Sprintf("/game/%s", gameID.String()))} class="text-big-noodle text-2xl text-white w-full flex items-center">
+            <div class="text-big-noodle text-2xl text-white w-full flex items-center">
              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
              </svg>
              <span class="ml-2">{title}</span>
-            </a>
+            </div>
         </div>
     </div>
+    </a>
 }
 
 templ CreateGame() {
+     <a href={templ.SafeURL("/admin/game/new")}>
      <div class={"card rounded-2xl bg-amber-500 shadow-lg outline outline-0 outline-amber-500 hover:outline-4 hover:shadow-xl hover:z-10 mb-2 transition-outline"}>
         <div class="card-body p-4">
-            <a href={templ.SafeURL("/admin/game/new")} class="w-full text-white flex justify-center items-center text-big-noodle text-3xl">
+            <div class="w-full text-white flex justify-center items-center text-big-noodle text-3xl">
                 <span>Создайте свой квиз!</span>
-            </a>
+            </div>
         </div>
     </div>
+    </a>
 }

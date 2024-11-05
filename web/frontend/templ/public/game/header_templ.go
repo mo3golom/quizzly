@@ -24,7 +24,7 @@ func Header(text *string) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if text != nil {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-3xl text-big-noodle text-white\">Игра \"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-3xl sm:text-4xl text-big-noodle text-white\">Игра \"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
