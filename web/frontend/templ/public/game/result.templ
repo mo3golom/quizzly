@@ -4,7 +4,7 @@ import "strconv"
 import "quizzly/web/frontend/handlers"
 
 templ ResultHeader(gameTitle *string) {
-    <div class="text-white text-4xl sm:text-5xl font-bold text-big-noodle mb-4">
+    <div class="text-white text-3xl sm:text-4xl font-bold text-big-noodle mb-4">
      if gameTitle != nil {
         Игра "{ *gameTitle }" завершена!
      }  else {
