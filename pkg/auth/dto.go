@@ -13,12 +13,6 @@ type (
 		expiresAt time.Time
 	}
 
-	upsertTokenIn struct {
-		token     Token
-		userID    uuid.UUID
-		expiresAt time.Time
-	}
-
 	getLoginCodeIn struct {
 		code   LoginCode
 		userID uuid.UUID

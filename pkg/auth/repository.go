@@ -26,16 +26,6 @@ type (
 	}
 )
 
-func (r *defaultRepository) insertUser(ctx context.Context, tx transactional.Tx, in *user) error {
-	const query = ` 
-		insert into "user" (id, email) values ($1, $2) 
-	    on conflict (email) do nothing
-	`
-
-	_, err := tx.ExecContext(ctx, query, in.id, in.email)
-	return err
-}
-
 func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional.Tx, email Email) (*user, error) {
 	const query = ` 
 		select id, email from "user"
@@ -56,6 +46,38 @@ func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional
 		id:    result.ID,
 		email: result.Email,
 	}, nil
+}
+
+func (r *defaultRepository) getUserByID(ctx context.Context, id uuid.UUID) (*user, error) {
+	const query = ` 
+		select u.id, u.email from "user" u
+		where u.id = $1
+		limit 1
+	`
+
+	var result sqlxUser
+	err := r.db.GetContext(ctx, &result, query, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, errUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user{
+		id:    result.ID,
+		email: result.Email,
+	}, nil
+}
+
+func (r *defaultRepository) insertUser(ctx context.Context, tx transactional.Tx, in *user) error {
+	const query = ` 
+		insert into "user" (id, email) values ($1, $2) 
+	    on conflict (email) do nothing
+	`
+
+	_, err := tx.ExecContext(ctx, query, in.id, in.email)
+	return err
 }
 
 func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactional.Tx, in *upsertLoginCodeIn) error {
@@ -104,40 +126,4 @@ func (r *defaultRepository) clearExpiredLoginCodes(ctx context.Context, tx trans
 
 	_, err := tx.ExecContext(ctx, query)
 	return err
-}
-
-func (r *defaultRepository) upsertToken(ctx context.Context, tx transactional.Tx, in *upsertTokenIn) error {
-	const query = ` 
-		insert into user_auth_token (user_id, token, expires_at) values ($1, $2, $3) 
-	    on conflict (user_id) do update set
-			token = excluded.token,
-			expires_at = excluded.expires_at,
-			updated_at = now()
-	`
-
-	_, err := tx.ExecContext(ctx, query, in.userID, in.token, in.expiresAt)
-	return err
-}
-
-func (r *defaultRepository) getUserByToken(ctx context.Context, token Token) (*user, error) {
-	const query = ` 
-		select u.id, u.email from "user" u
-		join user_auth_token uat on uat.user_id = u.id
-		where uat.token = $1 and uat.expires_at > now()
-		limit 1
-	`
-
-	var result sqlxUser
-	err := r.db.GetContext(ctx, &result, query, token)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errUserNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &user{
-		id:    result.ID,
-		email: result.Email,
-	}, nil
 }

@@ -9,25 +9,26 @@ import (
 type authMiddleware struct {
 	forbiddenRedirectURL *string
 	repository           *defaultRepository
-	encryptor            *defaultEncryptor
+	tokenService         *tokenService
+	cookieService        *cookieService
 }
 
-func (s *authMiddleware) WithEnrich(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func (s *authMiddleware) Trace(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		enrichContextFn := func(r *http.Request) context.Context {
-			token := getTokenFromCookie(r)
-			if token == "" {
+			token, err := s.cookieService.getToken(r)
+			if err != nil || token == "" {
 				return r.Context()
 			}
 
-			encryptedToken, err := s.encryptor.Encrypt(string(token))
+			userID, err := s.tokenService.getUserID(token)
 			if err != nil {
 				return r.Context()
 			}
 
-			specificUser, err := s.repository.getUserByToken(
+			specificUser, err := s.repository.getUserByID(
 				r.Context(),
-				Token(encryptedToken),
+				userID,
 			)
 			if err != nil {
 				return r.Context()
@@ -44,8 +45,8 @@ func (s *authMiddleware) WithEnrich(delegate func(http.ResponseWriter, *http.Req
 	}
 }
 
-func (s *authMiddleware) WithAuth(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return s.WithEnrich(func(w http.ResponseWriter, r *http.Request) {
+func (s *authMiddleware) Auth(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return s.Trace(func(w http.ResponseWriter, r *http.Request) {
 		authCtx, ok := r.Context().(Context)
 		if !ok || authCtx.UserID() == uuid.Nil {
 			s.forbidden(w, r)
@@ -63,13 +64,4 @@ func (s *authMiddleware) forbidden(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusForbidden)
-}
-
-func getTokenFromCookie(request *http.Request) Token {
-	cookie, err := request.Cookie(CookieToken)
-	if err != nil {
-		return ""
-	}
-
-	return Token(cookie.Value)
 }

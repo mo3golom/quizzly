@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"quizzly/pkg/auth"
 	frontend_components "quizzly/web/frontend/templ/components"
-	"time"
 )
 
 const (
@@ -13,28 +12,21 @@ const (
 )
 
 type (
-	GetLogoutPageHandler struct{}
+	GetLogoutPageHandler struct {
+		simpleAuth auth.SimpleAuth
+	}
 )
 
-func NewGetLogoutPageHandler() *GetLogoutPageHandler {
-	return &GetLogoutPageHandler{}
+func NewGetLogoutPageHandler(
+	simpleAuth auth.SimpleAuth,
+) *GetLogoutPageHandler {
+	return &GetLogoutPageHandler{
+		simpleAuth: simpleAuth,
+	}
 }
 
 func (h *GetLogoutPageHandler) Handle(writer http.ResponseWriter, _ *http.Request, _ struct{}) (templ.Component, error) {
-	removeToken(writer)
+	h.simpleAuth.Logout(writer)
 
 	return frontend_components.Redirect(loginPageUrl), nil
-}
-
-func removeToken(writer http.ResponseWriter) {
-	cookie := http.Cookie{
-		Name:     auth.CookieToken,
-		Value:    "",
-		Path:     "/",
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	http.SetCookie(writer, &cookie)
 }

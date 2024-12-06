@@ -5,10 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
-)
-
-const (
-	CookieToken = "token"
+	"time"
 )
 
 var (
@@ -18,7 +15,6 @@ var (
 type (
 	Email     string
 	LoginCode int64
-	Token     string
 
 	Context interface {
 		context.Context
@@ -27,33 +23,32 @@ type (
 
 	SimpleAuth interface {
 		SendLoginCode(ctx context.Context, email Email) error
-		Login(ctx context.Context, email Email, code LoginCode) (*Token, error)
+		Login(ctx context.Context, w http.ResponseWriter, email Email, code LoginCode) error
+		Logout(w http.ResponseWriter)
 		Middleware(forbiddenRedirectURL ...string) SimpleAuthMiddleware
+		Cleaner() Cleaner
 	}
 
 	SimpleAuthMiddleware interface {
-		WithEnrich(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
-		WithAuth(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
-	}
-
-	Sender interface {
-		SendLoginCode(ctx context.Context, to Email, code LoginCode) error
+		Trace(delegate func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
+		Auth(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request)
 	}
 
 	Cleaner interface {
-		ClearExpiredLoginCodes(ctx context.Context) error
+		Name() string
+		Perform(ctx context.Context) error
+		DetermineInterval(ctx context.Context) (*time.Duration, error)
 	}
 
-	SenderConfig struct {
-		FromEmail Email
+	Config struct {
+		SecretKey      string
+		CookieBlockKey string // it should be 16 bytes (AES-128) or 32 bytes (AES-256) long
+		Debug          bool
+
+		FromEmail string
 		Host      string
 		Port      int64
 		User      string
 		Password  string
-		Debug     bool
-	}
-
-	EncryptorConfig struct {
-		SecretKey string
 	}
 )

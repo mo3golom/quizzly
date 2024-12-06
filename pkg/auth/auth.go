@@ -2,13 +2,10 @@ package auth
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"quizzly/pkg/structs"
+	"net/http"
 	"quizzly/pkg/transactional"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,33 +17,26 @@ const (
 )
 
 type DefaultSimpleAuth struct {
-	template   transactional.Template
-	repository *defaultRepository
-	generator  *defaultGenerator
-	encryptor  *defaultEncryptor
-	sender     Sender
+	template      transactional.Template
+	repository    *defaultRepository
+	generator     *defaultGenerator
+	encryptor     *defaultEncryptor
+	tokenService  *tokenService
+	cookieService *cookieService
+	sender        *sender
+	cleaner       *DefaultCleaner
 }
 
 func NewSimpleAuth(
 	db *sqlx.DB,
 	template transactional.Template,
-	encryptorConfig *EncryptorConfig,
-	senderConfig *SenderConfig,
+	config *Config,
 ) SimpleAuth {
 	encryptor := &defaultEncryptor{
-		secretKey: encryptorConfig.SecretKey,
+		secretKey: config.SecretKey,
 	}
 	repository := &defaultRepository{
 		db: db,
-	}
-
-	var sender Sender
-	if senderConfig.Debug {
-		sender = &DebugSender{}
-	} else {
-		sender = &DefaultSender{
-			config: senderConfig,
-		}
 	}
 
 	return &DefaultSimpleAuth{
@@ -54,7 +44,15 @@ func NewSimpleAuth(
 		repository: repository,
 		generator:  &defaultGenerator{},
 		encryptor:  encryptor,
-		sender:     sender,
+		sender: &sender{
+			config: config,
+		},
+		tokenService:  newTokenService(config.SecretKey),
+		cookieService: newCookieService(config.SecretKey, config.CookieBlockKey),
+		cleaner: &DefaultCleaner{
+			template:   template,
+			repository: repository,
+		},
 	}
 }
 
@@ -101,17 +99,19 @@ func (a *DefaultSimpleAuth) SendLoginCode(ctx context.Context, email Email) erro
 	return a.sender.SendLoginCode(ctx, email, code)
 }
 
-func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCode) (*Token, error) {
-	h := md5.New()
-	h.Write([]byte(strings.ToLower(string(email))))
-	token := Token(hex.EncodeToString(h.Sum(nil)))
-
+func (a *DefaultSimpleAuth) Login(
+	ctx context.Context,
+	w http.ResponseWriter,
+	email Email,
+	code LoginCode,
+) error {
 	encryptedData, err := a.encryptor.Encrypt(string(email))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	encryptedEmail := Email(encryptedData)
 
+	var token string
 	err = a.template.Execute(ctx, func(tx transactional.Tx) error {
 		specificUser, err := a.repository.getUserByEmail(ctx, tx, encryptedEmail)
 		if errors.Is(err, errUserNotFound) {
@@ -136,22 +136,18 @@ func (a *DefaultSimpleAuth) Login(ctx context.Context, email Email, code LoginCo
 			return ErrLoginFailed
 		}
 
-		encryptedToken, err := a.encryptor.Encrypt(string(token))
-		if err != nil {
-			return err
-		}
-
-		return a.repository.upsertToken(ctx, tx, &upsertTokenIn{
-			token:     Token(encryptedToken),
-			userID:    specificUser.id,
-			expiresAt: time.Now().Add(tokenDefaultTTL),
-		})
+		token, err = a.tokenService.createToken(specificUser.id, tokenDefaultTTL)
+		return err
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return structs.Pointer(token), nil
+	return a.cookieService.setToken(w, token, tokenDefaultTTL)
+}
+
+func (a *DefaultSimpleAuth) Logout(w http.ResponseWriter) {
+	a.cookieService.removeToken(w)
 }
 
 func (a *DefaultSimpleAuth) Middleware(forbiddenRedirectURL ...string) SimpleAuthMiddleware {
@@ -162,7 +158,12 @@ func (a *DefaultSimpleAuth) Middleware(forbiddenRedirectURL ...string) SimpleAut
 
 	return &authMiddleware{
 		repository:           a.repository,
-		encryptor:            a.encryptor,
+		cookieService:        a.cookieService,
+		tokenService:         a.tokenService,
 		forbiddenRedirectURL: url,
 	}
+}
+
+func (a *DefaultSimpleAuth) Cleaner() Cleaner {
+	return a.cleaner
 }

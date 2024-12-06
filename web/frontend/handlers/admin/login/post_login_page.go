@@ -8,7 +8,6 @@ import (
 	"quizzly/web/frontend/handlers"
 	frontendLogin "quizzly/web/frontend/templ/admin/login"
 	frontend_components "quizzly/web/frontend/templ/components"
-	"time"
 )
 
 const (
@@ -48,24 +47,10 @@ func (h *PostLoginPageHandler) Handle(writer http.ResponseWriter, request *http.
 		return frontendLogin.Form(*in.Email), nil
 	}
 
-	token, err := h.simpleAuth.Login(request.Context(), *in.Email, *in.Code)
+	err := h.simpleAuth.Login(request.Context(), writer, *in.Email, *in.Code)
 	if err != nil {
 		return nil, handlers.BadRequest(err)
 	}
 
-	setToken(writer, *token)
 	return frontend_components.Redirect(mainPageUrl), nil
-}
-
-func setToken(writer http.ResponseWriter, token auth.Token) {
-	cookie := http.Cookie{
-		Name:     auth.CookieToken,
-		Value:    string(token),
-		Path:     "/",
-		Expires:  time.Now().Add(730001 * time.Hour),
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	http.SetCookie(writer, &cookie)
 }
