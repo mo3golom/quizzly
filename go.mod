@@ -7,9 +7,11 @@ toolchain go1.23.2
 require (
 	github.com/a-h/templ v0.2.663
 	github.com/getsentry/sentry-go v0.27.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/gorilla/schema v1.4.1
+	github.com/gorilla/securecookie v1.1.2
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.2.0
@@ -18,6 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/slok/go-http-metrics v0.13.0
 	golang.org/x/net v0.28.0
+	golang.org/x/sync v0.8.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 
 )

@@ -12,11 +12,16 @@ const (
 	subject = "ваш код для входа"
 )
 
-type DefaultSender struct {
-	config *SenderConfig
+type sender struct {
+	config *Config
 }
 
-func (s *DefaultSender) SendLoginCode(ctx context.Context, to Email, code LoginCode) error {
+func (s *sender) SendLoginCode(ctx context.Context, to Email, code LoginCode) error {
+	if s.config.Debug {
+		fmt.Println(code)
+		return nil
+	}
+
 	bodyBuffer := new(bytes.Buffer)
 	err := frontendEmail.Code(int(code)).Render(ctx, bodyBuffer)
 	if err != nil {
@@ -24,7 +29,7 @@ func (s *DefaultSender) SendLoginCode(ctx context.Context, to Email, code LoginC
 	}
 
 	mail := gomail.NewMessage()
-	mail.SetHeader("From", string(s.config.FromEmail))
+	mail.SetHeader("From", s.config.FromEmail)
 	mail.SetHeader("To", string(to))
 	mail.SetHeader("Subject", fmt.Sprintf("%d — %s", code, subject))
 	mail.SetBody("text/html", bodyBuffer.String())

@@ -8,6 +8,7 @@ import (
 	"quizzly/internal/quizzly"
 	"quizzly/pkg/auth"
 	"quizzly/pkg/files"
+	jobs2 "quizzly/pkg/jobs"
 	"quizzly/pkg/transactional"
 	variables2 "quizzly/pkg/variables"
 	"quizzly/web"
@@ -30,22 +31,49 @@ func main() {
 		panic(err)
 	}
 
+	variablesRepo := variables.Repository.MustGet()
+
 	log := cmd.MustInitLogger()
 	defer log.Flush()
 
+	jobs := jobs2.NewDefaultRunner(log)
+
 	filesConfig := files.NewConfiguration(variables.Repository.MustGet())
-	simpleAuthConfig := auth.NewConfiguration(db, template, variables.Repository.MustGet())
+	simpleAuth := auth.NewSimpleAuth(
+		db,
+		template,
+		&auth.Config{
+			SecretKey:      variablesRepo.GetString(variables2.AuthSecretKey),
+			CookieBlockKey: variablesRepo.GetString(variables2.AuthCookieBlockKey),
+			FromEmail:      variablesRepo.GetString(variables2.AuthSenderFromEmail),
+			Host:           variablesRepo.GetString(variables2.AuthSenderHost),
+			Port:           variablesRepo.GetInt64(variables2.AuthSenderPort),
+			User:           variablesRepo.GetString(variables2.AuthSenderUser),
+			Password:       variablesRepo.GetString(variables2.AuthSenderPassword),
+			Debug:          variablesRepo.GetString(variables2.AppEnvironmentVariable) == string(variables2.EnvironmentLocal),
+		},
+	)
+	err = jobs.Register(simpleAuth.Cleaner())
+	if err != nil {
+		panic(err)
+	}
 
 	quizzlyConfig := quizzly.NewConfiguration(
 		db,
 		template,
 	)
 
-	web.ServerRun(
+	server := web.NewServer(
 		log,
 		variables.Repository.MustGet(),
 		quizzlyConfig,
-		simpleAuthConfig.SimpleAuth.MustGet(),
+		simpleAuth,
 		filesConfig.S3.MustGet(),
+	)
+
+	runner := cmd.NewRunner(log)
+	runner.Start(
+		server,
+		jobs,
 	)
 }

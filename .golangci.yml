@@ -3,3 +3,7 @@ issues:
     - path: pkg/telegram/survey/question.go
       linters:
         - unused
+  exclude-dirs:
+    - vendor
+    - bin
+    - mod
