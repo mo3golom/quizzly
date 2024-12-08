@@ -19,7 +19,7 @@ templ NamePage(gameTitle *string, gameID uuid.UUID) {
                    <span class="ml-1">Введите имя для начала игры</span>
                 </div>
                 <div class="join w-full">
-                    <label class="input input-bordered flex items-center gap-2 w-full rounded-xl join-item">
+                    <label class="input input-bordered flex items-center gap-2 w-full min-w-px rounded-xl join-item">
                         <input
                             name="name"
                             type="text"
@@ -29,7 +29,7 @@ templ NamePage(gameTitle *string, gameID uuid.UUID) {
                             required
                         />
                     </label>
-                    <button class="btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0">Играть</button>
+                    <button class="btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0 text-white">Играть</button>
                 </div>
                 </form>
             </div>
