@@ -67,7 +67,7 @@ func StartPage(warns ...string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-4\"><div class=\"text-big-noodle text-2xl text-white\">Подключиться к игре</div><div class=\"join\"><label class=\"input input-bordered flex items-center gap-2 w-full rounded-xl join-item\"><input id=\"game-start-page-game-id\" type=\"text\" class=\"grow text-black\" placeholder=\"Код игры\" required></label> <button class=\"btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0 text-white\" onclick=\"connectToGame()\">Играть</button></div></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-4\"><div class=\"text-big-noodle text-2xl text-white\">Подключиться к игре</div><div class=\"join\"><label class=\"input input-bordered flex items-center gap-2 w-full min-w-px rounded-xl join-item\"><input id=\"game-start-page-game-id\" type=\"text\" class=\"grow text-black\" placeholder=\"Код игры\" required></label> <button class=\"btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0 text-white\" onclick=\"connectToGame()\">Играть</button></div></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
