@@ -21,6 +21,11 @@ type (
 		ExcludeQuestionIDs []uuid.UUID
 	}
 
+	GameQuestion struct {
+		ID   uuid.UUID
+		Sort int64
+	}
+
 	Repository interface {
 		Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error
 		Update(ctx context.Context, tx transactional.Tx, in *model.Game) error
@@ -29,6 +34,6 @@ type (
 		GetBySpec(ctx context.Context, spec *Spec) ([]model.Game, error)
 
 		InsertGameQuestions(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionIDs []uuid.UUID) error
-		GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]uuid.UUID, error)
+		GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]GameQuestion, error)
 	}
 )

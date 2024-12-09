@@ -35,6 +35,11 @@ type (
 		CreatedAt                time.Time `db:"created_at"`
 	}
 
+	sqlxGameQuestion struct {
+		ID   uuid.UUID `db:"question_id"`
+		Sort *int64    `db:"sort"`
+	}
+
 	DefaultRepository struct {
 		db *sqlx.DB
 	}
@@ -165,20 +170,30 @@ func (r *DefaultRepository) InsertGameQuestions(ctx context.Context, tx transact
 	return err
 }
 
-func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]uuid.UUID, error) {
+func (r *DefaultRepository) GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]GameQuestion, error) {
 	const query = `
-		select question_id
+		select question_id, sort
 		from game_question
 		where game_id = $1
 		and ($2::UUID[] is null or cardinality($2::UUID[]) = 0 or question_id != ANY($2::UUID[]))
 	`
 
-	var result []uuid.UUID
+	var result []sqlxGameQuestion
 	if err := tx.SelectContext(ctx, &result, query, spec.GameID, pq.Array(spec.ExcludeQuestionIDs)); err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return slices.SafeMap(result, func(i sqlxGameQuestion) GameQuestion {
+		var sort int64
+		if i.Sort != nil {
+			sort = *i.Sort
+		}
+
+		return GameQuestion{
+			ID:   i.ID,
+			Sort: sort,
+		}
+	}), nil
 }
 
 func (r *DefaultRepository) get(ctx context.Context, db transactional.Tx, id uuid.UUID) (*model.Game, error) {

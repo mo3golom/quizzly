@@ -2,17 +2,14 @@ package session
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"github.com/google/uuid"
-	"math/big"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/player"
 	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
-	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
 )
 
@@ -242,40 +239,4 @@ func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID 
 	}
 
 	return specificSession, nil
-}
-
-func getUnansweredQuestionID(game *model.Game, gameQuestions []uuid.UUID, sessionItems []model.SessionItem) (*unansweredQuestion, error) {
-	unansweredSessionItems := slices.Filter(sessionItems, func(item model.SessionItem) bool {
-		return item.AnsweredAt == nil
-	})
-	if len(unansweredSessionItems) > 0 {
-		return &unansweredQuestion{
-			ID:    unansweredSessionItems[0].QuestionID,
-			IsNew: false,
-		}, nil
-	}
-
-	answeredSessionItemsMap := make(map[uuid.UUID]struct{}, len(sessionItems))
-	for _, item := range sessionItems {
-		answeredSessionItemsMap[item.QuestionID] = struct{}{}
-	}
-
-	unansweredQuestionIDs := slices.Filter(gameQuestions, func(questionID uuid.UUID) bool {
-		_, ok := answeredSessionItemsMap[questionID]
-		return !ok
-	})
-	if len(unansweredQuestionIDs) == 0 {
-		return nil, contracts.ErrQuestionQueueIsEmpty
-	}
-
-	questionIndex := 0
-	if game.Settings.ShuffleQuestions {
-		randomNumber, _ := rand.Int(rand.Reader, big.NewInt(int64(len(unansweredQuestionIDs))))
-		questionIndex = int(randomNumber.Int64())
-	}
-
-	return &unansweredQuestion{
-		ID:    unansweredQuestionIDs[questionIndex],
-		IsNew: true,
-	}, nil
 }
