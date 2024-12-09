@@ -129,11 +129,17 @@ func (u *Usecase) AddQuestion(ctx context.Context, gameID uuid.UUID, questionID 
 func (u *Usecase) GetQuestions(ctx context.Context, gameID uuid.UUID) ([]uuid.UUID, error) {
 	var result []uuid.UUID
 	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		var err error
-		result, err = u.games.GetQuestionIDsBySpec(ctx, tx, &game.QuestionSpec{
+		tempResult, err := u.games.GetQuestionIDsBySpec(ctx, tx, &game.QuestionSpec{
 			GameID: gameID,
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		result = slices.SafeMap(tempResult, func(i game.GameQuestion) uuid.UUID {
+			return i.ID
+		})
+		return nil
 	})
 }
 
