@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/slok/go-http-metrics/middleware"
+	middlewarestd "github.com/slok/go-http-metrics/middleware/std"
 	"net/http"
 	"os"
 	"quizzly/internal/quizzly"
@@ -24,10 +27,10 @@ import (
 	sessionService "quizzly/web/frontend/services/session"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
-	"github.com/slok/go-http-metrics/middleware"
-	middlewarestd "github.com/slok/go-http-metrics/middleware/std"
 )
 
 const (
@@ -36,7 +39,14 @@ const (
 	metricsAddr = ":3333"
 )
 
+const (
+	ServerTypeHttp   serverType = "http"
+	ServerTypeLambda serverType = "lambda"
+)
+
 type (
+	serverType string
+
 	configuration struct {
 		sessions structs.Singleton[sessionService.Service]
 		player   structs.Singleton[playerService.Service]
@@ -56,7 +66,9 @@ type (
 	}
 
 	ServerInstance struct {
-		server *http.Server
+		serverLambda func(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+		serverHTTP   *http.Server
+		serverType   serverType
 
 		log logger.Logger
 	}
@@ -183,6 +195,7 @@ func NewServer(
 	quizzlyConfig *quizzly.Configuration,
 	simpleAuth auth.SimpleAuth,
 	filesManager files.Manager,
+	serverType serverType,
 ) *ServerInstance {
 	config := &configuration{
 		sessions: structs.NewSingleton(func() (sessionService.Service, error) {
@@ -246,12 +259,25 @@ func NewServer(
 	}
 
 	return &ServerInstance{
-		server: server,
-		log:    log,
+		serverLambda: httpadapter.New(muxExtended.mux).ProxyWithContext,
+		serverHTTP:   server,
+		serverType:   serverType,
+		log:          log,
 	}
 }
 
 func (s *ServerInstance) Start(ctx context.Context) {
+	switch s.serverType {
+	case ServerTypeLambda:
+		s.log.Info("lambda server start")
+		s.startLambda()
+	default:
+		s.log.Info("http server start")
+		s.startHTTP(ctx)
+	}
+}
+
+func (s *ServerInstance) startHTTP(ctx context.Context) {
 	// Serve metrics.
 	// Serve our metrics.
 	go func() {
@@ -262,9 +288,9 @@ func (s *ServerInstance) Start(ctx context.Context) {
 	}()
 
 	go func() {
-		fmt.Println("Server listening on port ", s.server.Addr)
-		if err := s.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.log.Error("server error", err)
+		fmt.Println("Server listening on port ", s.serverHTTP.Addr)
+		if err := s.serverHTTP.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.log.Error("serverHTTP error", err)
 		}
 	}()
 
@@ -277,16 +303,24 @@ func (s *ServerInstance) Start(ctx context.Context) {
 	<-ctx.Done()
 }
 
+func (s *ServerInstance) startLambda() {
+	lambda.Start(s.serverLambda)
+}
+
 func (s *ServerInstance) Stop(ctx context.Context) {
-	s.log.Info("Shutting down server...")
+	if s.serverType == ServerTypeLambda {
+		return
+	}
+
+	s.log.Info("Shutting down serverHTTP...")
 
 	// Create a context with a timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Shutdown the server
-	if err := s.server.Shutdown(ctx); err != nil {
-		s.log.Error("server shutdown error", err)
+	// Shutdown the serverHTTP
+	if err := s.serverHTTP.Shutdown(ctx); err != nil {
+		s.log.Error("serverHTTP shutdown error", err)
 	}
 	s.log.Info("Server gracefully stopped")
 }

@@ -6,9 +6,11 @@ toolchain go1.23.2
 
 require (
 	github.com/a-h/templ v0.2.663
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.48
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.71.1
 	github.com/aws/smithy-go v1.22.1
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
