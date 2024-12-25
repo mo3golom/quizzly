@@ -11,10 +11,26 @@ on:
 
 env:
   CR_URI: quiz-whiz.cr.cloud.ru
+  APP_NAME: quiz-whiz
 
 
 jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Apply migrations
+        uses: ./.github/actions/db_migrations
+        with:
+          db-connection: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+          source: file://db/migrations
   build:
+    needs: migrations
     runs-on: ubuntu-latest
     steps:
       - name: Checkout to the branch
@@ -34,32 +50,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ env.CR_URI }}/evo-restapigo:${{ github.sha }}
+          tags: ${{ env.CR_URI }}/${{ env.APP_NAME }}:${{ github.sha }}
           file: ./Dockerfile
           context: .
-  migrations:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Apply migrations
-        uses: ./.github/actions/db_migrations
-        with:
-          db-connection: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
-          source: file://db/migrations
-  deploy:
-    needs: [build, migrations]
-    runs-on: ubuntu-latest
-    steps:
-     - name: Deploy Stage
-       uses: fjogeleit/http-request-action@v1
-       with:
-        url: ${{ secrets.COOLIFY_URL }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_ID }}&force=false
-        method: 'GET'
-        bearerToken: ${{ secrets.COOLIFY_TOKEN }}
