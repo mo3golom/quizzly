@@ -5,7 +5,9 @@ ENV APP_HOME /go/src/app
 WORKDIR "$APP_HOME"
 COPY ./ ./
 
-RUN go build -o app  ./cmd/service/main.go
+RUN go mod download
+RUN go mod verify
+RUN go build -o app ./cmd/service/main.go
 
 FROM golang:1.23.2-alpine
 

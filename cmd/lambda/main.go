@@ -69,12 +69,7 @@ func main() {
 		quizzlyConfig,
 		simpleAuth,
 		filesConfig.S3.MustGet(),
-		web.ServerTypeHttp,
+		web.ServerTypeLambda,
 	)
-
-	runner := cmd.NewRunner(log)
-	runner.Start(
-		server,
-		jobs,
-	)
+	server.Start(ctx)
 }
