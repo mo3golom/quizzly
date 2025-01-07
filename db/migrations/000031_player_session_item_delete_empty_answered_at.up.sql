@@ -1,0 +1,1 @@
+delete from player_session_item where answered_at is null;

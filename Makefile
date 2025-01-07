@@ -1,4 +1,4 @@
-.PHONY: build-lambda clean
+.PHONY: build-lambda clean-lambda lint
 
 build-lambda:
 	mkdir -p functions
@@ -8,4 +8,5 @@ build-lambda:
 clean-lambda:
 	rm -rf functions
 
-
+lint:
+	golangci-lint -c ./.golangci.yml run ./...

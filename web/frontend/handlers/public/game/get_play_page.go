@@ -131,25 +131,6 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		playerName = players[0].Name
 	}
 
-	var question templ.Component
-	switch session.CurrentQuestion.Type {
-	case model.QuestionTypeChoice, model.QuestionTypeOneOfChoice, model.QuestionTypeMultipleChoice:
-		question = frontendPublicGame.Question(
-			session.CurrentQuestion.ID,
-			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
-			frontendComponents.Composition(
-				frontendPublicGame.AnswerChoiceDescription(session.CurrentQuestion.Type),
-				frontendPublicGame.AnswerChoiceOptions(session.CurrentQuestion.Type, answerOptions),
-			),
-		)
-	case model.QuestionTypeFillTheGap:
-		question = frontendPublicGame.Question(
-			session.CurrentQuestion.ID,
-			frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
-			frontendPublicGame.AnswerTextInput(),
-		)
-	}
-
 	return page.PublicIndexPage(
 		request.Context(),
 		h.getTitle(game),
@@ -165,7 +146,14 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 					}),
 					frontendPublicGame.Player(playerName),
 				),
-				question,
+				frontendPublicGame.Question(
+					session.CurrentQuestion.ID,
+					frontendPublicGame.QuestionBlock(session.CurrentQuestion.Text, session.CurrentQuestion.ImageID),
+					frontendComponents.Composition(
+						frontendPublicGame.AnswerChoiceDescription(session.CurrentQuestion.Type),
+						frontendPublicGame.AnswerChoiceOptions(session.CurrentQuestion.Type, answerOptions),
+					),
+				),
 			),
 		),
 	), nil

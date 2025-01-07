@@ -3,10 +3,13 @@ package files
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"quizzly/pkg/structs"
+
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go/middleware"
-	"quizzly/pkg/structs"
 )
 
 type S3Manager struct {
@@ -33,6 +36,14 @@ func NewS3Manager(
 		},
 	})
 
+	// Optionally verify bucket exists
+	_, err := s3Client.HeadBucket(context.Background(), &s3.HeadBucketInput{
+		Bucket: &config.BucketName,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("bucket %s not found or not accessible: %w", config.BucketName, err)
+	}
+
 	return &S3Manager{
 		client:     s3Client,
 		bucketName: config.BucketName,
@@ -40,11 +51,18 @@ func NewS3Manager(
 }
 
 func (m *S3Manager) Upload(ctx context.Context, in *UploadFile) error {
-	_, err := m.client.PutObject(
+	// Read all data into a buffer to make it seekable
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	_, err := io.Copy(buffer, in.Data)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.client.PutObject(
 		ctx,
 		&s3.PutObjectInput{
 			Bucket:        &m.bucketName,
-			Body:          in.Data,
+			Body:          bytes.NewReader(buffer.Bytes()), // Use NewReader to create a seekable reader
 			Key:           &in.Name,
 			ContentType:   structs.Pointer("application/octet-stream"),
 			ContentLength: &in.Size,

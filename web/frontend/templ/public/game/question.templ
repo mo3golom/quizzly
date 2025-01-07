@@ -6,140 +6,110 @@ import "quizzly/web/frontend/handlers"
 import "github.com/google/uuid"
 import "quizzly/internal/quizzly/model"
 import "quizzly/web/frontend/templ/components"
+import "quizzly/pkg/structs"
 
 templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
-   <form
-     hx-post={fmt.Sprintf("/game/%s", gameID.String())}
-     hx-target="this"
-     hx-swap="outerHTML"
-     hx-trigger="submit delay:500ms"
-   >
-        <input name="id" type="hidden" value={ gameID.String() }/>
-        <input name="player-id" type="hidden" value={ playerID.String() }/>
-        @frontend_components.Composition(components...)
-        <div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
-            <button
-                id="play-page-submit-button"
-                type="submit"
-                class="btn drop-shadow-lg sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"
-                onclick="submitAnswer()"
-                disabled
-            >Ответить</button>
-        </div>
-   </form>
+	<form
+		hx-post={ fmt.Sprintf("/game/%s", gameID.String()) }
+		hx-target="this"
+		hx-swap="outerHTML"
+		hx-trigger="submit"
+		hx-on::before-Request="beforeRequestPlayPageQuestionForm(event)"
+		hx-on::before-swap="afterRequestPlayPageQuestionForm(event)"
+		id="play-page-question-form"
+	>
+		<input name="id" type="hidden" value={ gameID.String() }/>
+		<input name="player-id" type="hidden" value={ playerID.String() }/>
+		@frontend_components.Composition(components...)
+		<div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
+			<button
+				id="play-page-submit-button"
+				type="submit"
+				class="btn drop-shadow-lg sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"
+				disabled
+			>Ответить</button>
+		</div>
+		<script type="text/javascript">
+			initPlayPageQuestionForm()
+		</script>
+	</form>
 }
 
 templ Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Component) {
-    <div class={"card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 bg-blue-500"}>
-        <div class="card-body p-4">
-            <input name="question-id" type="hidden" value={ id.String() }/>
-            @questionBlock
-            @answerBlock
-            <script type="text/javascript">
+	<div class={ "card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 bg-blue-500" }>
+		<div class="card-body p-4">
+			<input name="question-id" type="hidden" value={ id.String() }/>
+			@questionBlock
+			@answerBlock
+			<script type="text/javascript">
                 scrollToTop();
             </script>
-        </div>
-    </div>
+		</div>
+	</div>
 }
 
 templ QuestionBlock(text string, imageID *string) {
-    if imageID != nil {
-        <div class="flex flex-col sm:flex-row gap-4 pb-4">
-            <div class="flex-col basis-full sm:basis-1/4">
-                <img src={fmt.Sprintf("/files/images/%s", *imageID)} class="rounded-xl"/>
-            </div>
-             <div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
-                { text }
-             </div>
-        </div>
-    } else {
-        <div class="font-bold text-2xl text-white pb-4">
-            { text }
-        </div>
-    }
+	if imageID != nil {
+		<div class="flex flex-col sm:flex-row gap-4 pb-4">
+			<div class="flex-col basis-full sm:basis-1/4">
+				<img src={ fmt.Sprintf("/files/images/%s", *imageID) } class="rounded-xl"/>
+			</div>
+			<div class="flex-col basis-full sm:basis-3/4 font-bold text-2xl text-white">
+				{ text }
+			</div>
+		</div>
+	} else {
+		<div class="font-bold text-2xl text-white pb-4">
+			{ text }
+		</div>
+	}
 }
 
-
 templ AnswerChoiceDescription(questionType model.QuestionType) {
-    <div>
-       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-       </svg>
-       <span>
-                  switch questionType {
-                    case "choice":
-                        Выберите только один правильный ответ
-                    case "one_of_choice":
-                        Выберите любой из правильных ответов
-                    case "multiple_choice":
-                        Выберите все правильные ответы
-                  }
-        </span>
-    </div>
+	<div>
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
+		</svg>
+		<span>
+			switch questionType {
+				case "choice":
+					Выберите только один правильный ответ
+				case "one_of_choice":
+					Выберите любой из правильных ответов
+				case "multiple_choice":
+					Выберите все правильные ответы
+			}
+		</span>
+	</div>
 }
 
 templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption) {
-    <div class={fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1",len(in))}>
-            for _, answerOption := range in {
-                <div class={fmt.Sprintf("card justify-self-stretch transition transition-colors rounded-xl duration-200 %s",answerOption.Color)}>
-                      <input
-                        type="checkbox"
-                        name="answer"
-                        value={fmt.Sprintf("%d",answerOption.ID)}
-                        class="hidden"
-                        id={fmt.Sprintf("checkbox-%d",answerOption.ID)}
-                      />
-                      <button
-                        id={fmt.Sprintf("%d",answerOption.ID)}
-                        type="button"
-                        class="card-body flex p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100"
-                        onclick="chooseAnswer(this)"
-                      >
-                        <div class="m-auto">{ answerOption.Text }</div>
-                      </button>
-                </div>
-            }
-            <script type="text/javascript">
-                chosenAnswers = [];
-            </script>
-            switch questionType {
-                 case "choice":
-                     <script type="text/javascript">
-                        maxPossibleChosenAnswers = 1
-                     </script>
-                 case "one_of_choice", "multiple_choice":
-                    <script type="text/javascript">
-                        maxPossibleChosenAnswers = 99
-                    </script>
-            }
-    </div>
-}
-
-templ AnswerTextInput() {
-    <div class="col-span-4 card justify-self-stretch bg-orange-500 rounded-xl">
-        <div class="card-body p-4">
-            <label>
-                <input
-                    name="answer"
-                    type="text"
-                    placeholder="Правильный ответ"
-                    class="input input-md w-full text-white focus:text-black bg-orange-600 focus:bg-white placeholder:text-gray-300"
-                    onkeyup="writeAnswer(this)"
-                    required
-                    autocomplete="off"
-                />
-            </label>
-        </div>
-    </div>
+	<div class={ fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1", len(in)) }>
+		for _, answerOption := range in {
+			<label>
+				<input
+					type={ structs.Or(questionType == "choice", "radio", "checkbox") }
+					class="peer appearance-none"
+					name="answer"
+					value={ fmt.Sprintf("%d", answerOption.ID) }
+				/>
+				<div class={ fmt.Sprintf("card cursor-pointer justify-self-stretch transition transition-all rounded-xl duration-200 outline outline-0 peer-checked:outline-4 peer-checked:outline-green-500 %s", answerOption.Color) }>
+					<div class="card-body flex p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100">
+						<div class="m-auto">{ answerOption.Text }</div>
+					</div>
+				</div>
+			</label>
+		}
+	</div>
 }
 
 templ Progress(progress *handlers.SessionProgress) {
-    <div class="self-center justify-self-start">
-        <progress
-            class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800 drop-shadow-lg"
-            value={strconv.Itoa(progress.Answered)}
-            max={strconv.Itoa(progress.Total)}
-        ></progress>
-        <span class="ml-1 align-bottom font-bold text-white text-big-noodle text-xl">{strconv.Itoa(progress.Answered)} / {strconv.Itoa(progress.Total)}</span>
-    </div>
+	<div class="self-center justify-self-start">
+		<progress
+			class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800 drop-shadow-lg"
+			value={ strconv.Itoa(progress.Answered) }
+			max={ strconv.Itoa(progress.Total) }
+		></progress>
+		<span class="ml-1 align-bottom font-bold text-white text-big-noodle text-xl">{ strconv.Itoa(progress.Answered) } / { strconv.Itoa(progress.Total) }</span>
+	</div>
 }

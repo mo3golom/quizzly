@@ -10,30 +10,33 @@ import (
 
 type (
 	Spec struct {
+		IDs       []uuid.UUID
 		AuthorID  *uuid.UUID
 		IsPrivate *bool
 		Limit     int64
 		Statuses  []model.GameStatus
 	}
 
-	QuestionSpec struct {
-		GameID             uuid.UUID
-		ExcludeQuestionIDs []uuid.UUID
+	QuestionsSpec struct {
+		IDs    []uuid.UUID
+		GameID *uuid.UUID
+		Order  *Order
 	}
 
-	GameQuestion struct {
-		ID   uuid.UUID
-		Sort int64
+	Order struct {
+		Field     string
+		Direction string
 	}
 
 	Repository interface {
-		Insert(ctx context.Context, tx transactional.Tx, in *model.Game) error
-		Update(ctx context.Context, tx transactional.Tx, in *model.Game) error
-		Get(ctx context.Context, id uuid.UUID) (*model.Game, error)
-		GetWithTx(ctx context.Context, tx transactional.Tx, id uuid.UUID) (*model.Game, error)
+		Upsert(ctx context.Context, tx transactional.Tx, in *model.Game) error
 		GetBySpec(ctx context.Context, spec *Spec) ([]model.Game, error)
+		GetBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *Spec) ([]model.Game, error)
 
-		InsertGameQuestions(ctx context.Context, tx transactional.Tx, gameID uuid.UUID, questionIDs []uuid.UUID) error
-		GetQuestionIDsBySpec(ctx context.Context, tx transactional.Tx, spec *QuestionSpec) ([]GameQuestion, error)
+		InsertQuestion(ctx context.Context, tx transactional.Tx, in *model.Question) error
+		UpdateQuestion(ctx context.Context, tx transactional.Tx, in *model.Question) error
+		DeleteQuestion(ctx context.Context, tx transactional.Tx, id uuid.UUID) error
+		GetQuestionsBySpec(ctx context.Context, spec *QuestionsSpec) ([]model.Question, error)
+		GetQuestionsBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *QuestionsSpec) ([]model.Question, error)
 	}
 )

@@ -3,7 +3,6 @@ package repositories
 import (
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/player"
-	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
 	"quizzly/pkg/structs"
 
@@ -12,10 +11,9 @@ import (
 
 type (
 	Configuration struct {
-		Game     structs.Singleton[game.Repository]
-		Session  structs.Singleton[session.Repository]
-		Question structs.Singleton[question.Repository]
-		Player   structs.Singleton[player.Repository]
+		Game    structs.Singleton[game.Repository]
+		Session structs.Singleton[session.Repository]
+		Player  structs.Singleton[player.Repository]
 	}
 )
 
@@ -26,9 +24,6 @@ func NewConfiguration(db *sqlx.DB) *Configuration {
 		}),
 		Session: structs.NewSingleton(func() (session.Repository, error) {
 			return session.NewRepository(db), nil
-		}),
-		Question: structs.NewSingleton(func() (question.Repository, error) {
-			return question.NewRepository(db), nil
 		}),
 		Player: structs.NewSingleton(func() (player.Repository, error) {
 			return player.NewRepository(db), nil

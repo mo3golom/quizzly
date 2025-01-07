@@ -3,133 +3,111 @@ package frontend_admin_question
 import "quizzly/web/frontend/handlers"
 import "fmt"
 import "github.com/google/uuid"
-import "quizzly/pkg/structs"
 
-type ContainerOptions struct {
-    WithSelect bool
-    WithActions bool
-    QuestionIDs []uuid.UUID
+templ QuestionListContainer(gameID uuid.UUID) {
+	<form
+		hx-get="/admin/question/list"
+		hx-target="#question-list-container"
+		hx-swap="innerHTML"
+		hx-trigger="load, submit"
+	>
+		<input type="hidden" name="game_id" value={ gameID.String() }/>
+		<input type="hidden" name="in_container" value="1"/>
+		<div id="question-list-container"></div>
+	</form>
 }
 
-type Options struct {
-  WithSelect bool
-  WithActions bool
-  WithDisabledOverlay bool
-}
-
-templ QuestionListContainer(options ContainerOptions) {
-    <form
-        hx-get="/admin/question/list"
-        hx-target="#question-list-container"
-        hx-swap="innerHTML"
-        hx-trigger="load, submit"
-    >
-    if options.WithSelect {
-        <input type="hidden" name="with_select" value="1"/>
-    }
-    if options.WithActions {
-        <input type="hidden" name="with_actions" value="1"/>
-    }
-    for _, id := range options.QuestionIDs {
-            <input type="hidden" name="question_id" value={id.String()}/>
-    }
-    <input type="hidden" name="in_container" value="1"/>
-    <div id="question-list-container">
-    </div>
-    </form>
-}
-
-templ QuestionListItem(question handlers.Question, answerOptions []templ.Component, options Options) {
-       <div
-        id={fmt.Sprintf("question-%s", question.ID.String())}
-        class="card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm"
-       >
-            if options.WithDisabledOverlay {
-                <div class="absolute bg-base-disabled w-full h-full z-10"></div>
-            }
-            <div class="grid gap-4 grid-cols-4 content-start">
-                   <div class={fmt.Sprintf("grid-col col-span-3 p-4 %s", structs.Or(options.WithActions, "col-span-3", "col-span-4"))}>
-                     <label class={fmt.Sprintf("justify-start flex gap-4 %s", structs.Or(options.WithSelect ,"cursor-pointer", ""))}>
-                        if options.WithSelect {
-                            @QuestionSelect(question.ID)
-                        }
-                        if question.ImageID != nil {
-                            @QuestionImage(*question.ImageID)
-                        }
-                        @QuestionText(question.Text)
-                     </label>
-                   </div>
-                   if options.WithActions {
-                   <div class="grid-col justify-self-end self-start p-4">
-                      @ActionDeleteQuestion(question.ID)
-                   </div>
-                   }
-            </div>
-
-            <div class="collapse collapse-arrow bg-base-200 rounded-none">
-              <input type="checkbox" />
-              <div class="collapse-title">Варианты ответов</div>
-              <div class="collapse-content">
-                <div class="grid gap-4 grid-cols-3">
-                for _, answerOption := range answerOptions {
-                    @answerOption
-                }
-                </div>
-                switch question.Type {
-                    case "one_of_choice":
-                        <div class="mt-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                          </svg>
-                          <span>Может быть выбран любой правильный вариант ответа</span>
-                        </div>
-                    case "multiple_choice":
-                        <div class="mt-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                          </svg>
-                          <span>Должны быть выбраны все правильные ответы</span>
-                        </div>
-                }
-              </div>
-            </div>
-       </div>
-}
-
-templ QuestionSelect(id uuid.UUID) {
-   <div class="flex-col basis-auto">
-    <input
-        value={ id.String() }
-        id={id.String()}
-        type="checkbox"
-        class="checkbox checkbox-md border-2 border-blue-500 checked:border-blue-500 [--chkbg:theme(colors.blue.500)] [--chkfg:white]"
-        onchange="selectQuestion(this)"
-    />
-   </div>
+templ QuestionListItem(order int, question handlers.Question, answerOptions []templ.Component) {
+	<div class="flex items-start gap-2">
+		<div class="text-3xl text-big-noodle pr-1">
+			{ fmt.Sprintf("#%d", order) }
+		</div>
+		<div
+			id={ fmt.Sprintf("question-%s", question.ID.String()) }
+			class="card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm flex-grow"
+		>
+			<div class="grid gap-4 grid-cols-4 content-start">
+				<div class="grid-col col-span-3 p-4">
+					<div class="justify-start flex gap-4">
+						if question.ImageID != nil {
+							@QuestionImage(*question.ImageID)
+						}
+						@QuestionText(question.Text)
+					</div>
+				</div>
+				<div class="grid-col justify-self-end self-start p-4">
+					<button
+						class="btn btn-square btn-ghost btn-sm"
+						hx-delete={ fmt.Sprintf("/admin/question?id=%s", question.ID.String()) }
+						hx-confirm="Вы уверены, что хотите удалить вопрос?"
+						hx-target="#question-list-container"
+						hx-swap="innerHTML"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
+			<div class="collapse collapse-arrow bg-base-200 rounded-none">
+				<input type="checkbox"/>
+				<div class="collapse-title">Варианты ответов</div>
+				<div class="collapse-content">
+					<div class="grid gap-4 grid-cols-3">
+						for _, answerOption := range answerOptions {
+							@answerOption
+						}
+					</div>
+					switch question.Type {
+						case "one_of_choice":
+							<div class="mt-2">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
+								</svg>
+								<span>Может быть выбран любой правильный вариант ответа</span>
+							</div>
+						case "multiple_choice":
+							<div class="mt-2">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
+								</svg>
+								<span>Должны быть выбраны все правильные ответы</span>
+							</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
 }
 
 templ QuestionImage(imageID string) {
-    <div class="flex-col basis-1/4">
-        <img  data-src={fmt.Sprintf("/files/images/%s", imageID)} class="lazyload rounded-lg min-w-16 max-w-40"/>
-    </div>
+	<div class="flex-col basis-1/4">
+		<img data-src={ fmt.Sprintf("/files/images/%s", imageID) } class="lazyload rounded-lg min-w-16 max-w-40"/>
+	</div>
 }
 
 templ QuestionText(text string) {
-    <div class="flex-col">
-       <span class="text-xl font-medium">{ text }</span>
-    </div>
+	<div class="flex-col">
+		<span class="text-xl font-medium">{ text }</span>
+	</div>
 }
 
 templ QuestionListItemAnswerOption(text string, isCorrect bool) {
-    if isCorrect {
-         <div class="tooltip" data-tip="Это правильный ответ">
-            <div class="bg-white rounded-md p-2 text-left outline outline-2 outline-green-500">
-                { text }
-            </div>
-         </div>
-    } else {
-         <div class="bg-white rounded-md p-2 text-left outline outline-2 outline-red-500">
-            { text }
-         </div>
-    }
+	if isCorrect {
+		<div class="tooltip" data-tip="Это правильный ответ">
+			<div class="bg-white rounded-md p-2 text-left outline outline-2 outline-green-500">
+				{ text }
+			</div>
+		</div>
+	} else {
+		<div class="bg-white rounded-md p-2 text-left outline outline-2 outline-red-500">
+			{ text }
+		</div>
+	}
+}
+
+templ NotFound() {
+	<div class="text-base-content text-center text-gray-500 p-4">
+		<span>Нет еще ни одного вопроса :(</span>
+	</div>
 }

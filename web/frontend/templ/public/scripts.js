@@ -1,6 +1,5 @@
-let chosenAnswers = [];
-let maxPossibleChosenAnswers = 1;
 let timeouts = [];
+let playPageQuestionFormPromise = null;
 
 function clearTimeouts() {
     timeouts.forEach(timeout => clearTimeout(timeout));
@@ -11,43 +10,68 @@ function scrollToTop() {
     window.scrollTo(0, 0);
 }
 
-function submitAnswer() {
+function initPlayPageQuestionForm() {
+    const form = document.getElementById('play-page-question-form');
+    if (form != null) {
+        const submitBtn = document.getElementById('play-page-submit-button');
+        const submit = document.getElementById('play-page-submit');
+        form.addEventListener('change', function () {
+            const hasChecked = form.querySelector('input[type="checkbox"]:checked, input[type="radio"]:checked');
+            if (hasChecked) {
+                submitBtn.disabled = false
+                submit.classList.remove("hidden", "opacity-0")
+                submit.classList.add("animate-fade-in-up", "sm:animate-fade-in")
+            } else {
+                submitBtn.disabled = true
+                submit.classList.add("hidden", "opacity-0")
+                submit.classList.remove("animate-fade-in-up", "sm:animate-fade-in")
+            }
+        });
+    }
+}
+
+function beforeRequestPlayPageQuestionForm(event) {
     let overlay = document.getElementById("game-page-overlay");
     overlay.classList.remove("hidden");
+    overlay.classList.add("opacity-100");
+    overlay.classList.remove("opacity-0");
 
-    clearTimeouts()
-    timeouts.push(setTimeout(() => {
-        overlay.classList.add("opacity-100");
-        overlay.classList.remove("opacity-0");
-    }, 10));
+
+    playPageQuestionFormPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, 300);
+    });
+}
+
+function afterRequestPlayPageQuestionForm(event) {
+    if (playPageQuestionFormPromise) {
+        event.preventDefault();
+        playPageQuestionFormPromise
+            .then(() => {
+                htmx.swap(event.detail.target, event.detail.xhr.response, { swapStyle: 'outerHTML' });
+            })
+            .finally(() => {
+                playPageQuestionFormPromise = null;
+            });
+    }
 }
 
 function showAnswerResult() {
-    let fullAnimationDuration = 1500
-    let stepAnimationDuration = 300
-    let skipButtonEnabled= false
+    const DEFAULT_FULL_DURATION = 1500;
+    const STEP_DURATION = 300;
 
-    let readEstimation = document.getElementById("game-page-answer-read-estimation");
-    if (readEstimation !== null) {
-        let readEstimationValue = parseInt(readEstimation.value)
+    const readEstimation = document.getElementById("game-page-answer-read-estimation");
+    const readDuration = readEstimation ? parseInt(readEstimation.value) : DEFAULT_FULL_DURATION;
 
-        if (readEstimationValue > fullAnimationDuration) {
-            fullAnimationDuration = readEstimationValue
-            skipButtonEnabled = true
-        }
+    const fullAnimationDuration = Math.max(DEFAULT_FULL_DURATION, readDuration);
 
-    }
-
-    clearTimeouts()
-
-    hideAnswerResult(fullAnimationDuration, stepAnimationDuration);
-    if (skipButtonEnabled) {
-        document.getElementById("game-page-skip-answer").classList.remove("hidden")
-    }
+    clearTimeouts();
+    hideAnswerResult(fullAnimationDuration, STEP_DURATION);
 }
 
 function hideAnswerResult(fullDuration, stepDuration) {
-    let result  = document.getElementById("game-page-answer-result");
+    let result = document.getElementById("game-page-answer-result");
     let overlay = document.getElementById("game-page-overlay");
     overlay.classList.remove("opacity-100");
     overlay.classList.add("hidden", "opacity-0");
@@ -65,67 +89,6 @@ function hideAnswerResult(fullDuration, stepDuration) {
             window.location = resultsLink.value
         }
     }, fullDuration));
-}
-
-function chooseAnswer(element) {
-    let id = element.id
-    let found = chosenAnswers.findIndex((i) => i === id)
-
-    let hideSubmitButton = () => {
-        document.getElementById("play-page-submit-button").disabled=true
-        document.getElementById("play-page-submit").classList.add("hidden", "opacity-0")
-        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up", "sm:animate-fade-in")
-    }
-    let showSubmitButton = () => {
-        document.getElementById("play-page-submit-button").disabled=false
-        document.getElementById("play-page-submit").classList.remove("hidden", "opacity-0")
-        document.getElementById("play-page-submit").classList.add("animate-fade-in-up", "sm:animate-fade-in")
-    }
-
-    if (found !== -1) {
-        element.classList.remove("outline", "outline-4", "outline-green-500")
-        document.getElementById("checkbox-"+id).checked=false
-        chosenAnswers.splice(found, 1)
-
-        if (chosenAnswers.length === 0) {
-           hideSubmitButton()
-        }
-        return
-    }
-
-    if (maxPossibleChosenAnswers === 1 && chosenAnswers.length > 0) {
-        chosenAnswers.forEach((i) => {
-            document.getElementById(i).classList.remove("outline", "outline-4", "outline-green-500")
-            document.getElementById("checkbox-"+i).checked=false
-        });
-        chosenAnswers = []
-        hideSubmitButton()
-    }
-
-    element.classList.add("outline", "outline-4", "outline-green-500")
-    document.getElementById("checkbox-"+id).checked=true
-    showSubmitButton()
-    chosenAnswers.push(id)
-}
-
-function writeAnswer(element) {
-    let hideSubmitButton = () => {
-        document.getElementById("play-page-submit-button").disabled=true
-        document.getElementById("play-page-submit").classList.add("hidden", "opacity-0")
-        document.getElementById("play-page-submit").classList.remove("animate-fade-in-up", "sm:animate-fade-in")
-    }
-    let showSubmitButton = () => {
-        document.getElementById("play-page-submit-button").disabled=false
-        document.getElementById("play-page-submit").classList.remove("hidden", "opacity-0")
-        document.getElementById("play-page-submit").classList.add("animate-fade-in-up", "sm:animate-fade-in")
-    }
-
-    if (element.value.length > 0) {
-        showSubmitButton()
-        return
-    }
-
-    hideSubmitButton()
 }
 
 function fire() {

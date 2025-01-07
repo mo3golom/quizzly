@@ -2,19 +2,17 @@ package session
 
 import (
 	"context"
-	cryptoRand "crypto/rand"
 	"errors"
-	"github.com/google/uuid"
-	"math/big"
-	"math/rand"
+	"math/rand/v2"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
-	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
-	"sort"
+	"strconv"
+
+	"github.com/google/uuid"
 )
 
 func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*contracts.SessionState, error) {
@@ -36,45 +34,24 @@ func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerI
 			return nil
 		}
 
-		gameQuestions, err := u.games.GetQuestionIDsBySpec(
-			ctx,
-			tx,
-			&game.QuestionSpec{
-				GameID: gameID,
-			},
-		)
+		questionMap, err := u.getQuestionMap(ctx, tx, gameID)
 		if err != nil {
 			return err
 		}
 
-		sessionItems, err := u.sessions.GetSessionBySpecWithTx(
-			ctx,
-			tx,
-			&session.ItemSpec{
-				PlayerID: playerID,
-				GameID:   gameID,
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		specificUnansweredQuestion, err := getUnansweredQuestionID(specificGame, gameQuestions, sessionItems)
-		if err != nil {
-			return err
-		}
-
-		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
-			IDs: []uuid.UUID{specificUnansweredQuestion.ID},
+		sessionItems, err := u.sessions.GetSessionBySpecWithTx(ctx, tx, &session.ItemSpec{
+			PlayerID: playerID,
+			GameID:   gameID,
 		})
 		if err != nil {
 			return err
 		}
-		if len(specificQuestions.Result) == 0 {
-			return errors.New("question not found")
+
+		currentQuestion, err := findUnansweredQuestion(specificGame, questionMap, sessionItems)
+		if err != nil {
+			return err
 		}
 
-		currentQuestion := specificQuestions.Result[0]
 		if specificGame.Settings.ShuffleAnswers {
 			tempAnswerOptions := currentQuestion.AnswerOptions
 			rand.Shuffle(len(tempAnswerOptions), func(i, j int) {
@@ -84,9 +61,9 @@ func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerI
 		}
 
 		result = &contracts.SessionState{
-			CurrentQuestion: &currentQuestion,
+			CurrentQuestion: currentQuestion,
 			Progress: contracts.Progress{
-				Total: int64(len(gameQuestions)),
+				Total: int64(questionMap.Len()),
 				Answered: int64(len(
 					slices.Filter(sessionItems, func(item model.SessionItem) bool {
 						return item.AnsweredAt != nil
@@ -94,53 +71,113 @@ func (u *Usecase) GetCurrentState(ctx context.Context, gameID uuid.UUID, playerI
 				)),
 			},
 		}
-
-		if !specificUnansweredQuestion.IsNew {
-			return nil
-		}
-		return u.sessions.InsertSessionItem(ctx, tx, &model.SessionItem{
-			SessionID:  specificSession.ID,
-			QuestionID: currentQuestion.ID,
-		})
+		return nil
 	})
 }
 
-func getUnansweredQuestionID(specificGame *model.Game, gameQuestions []game.GameQuestion, sessionItems []model.SessionItem) (*unansweredQuestion, error) {
-	unansweredSessionItems := slices.Filter(sessionItems, func(item model.SessionItem) bool {
-		return item.AnsweredAt == nil
-	})
-	if len(unansweredSessionItems) > 0 {
-		return &unansweredQuestion{
-			ID:    unansweredSessionItems[0].QuestionID,
-			IsNew: false,
-		}, nil
+func findUnansweredQuestion(specificGame *model.Game, questionMap *model.QuestionMap, sessionItems []model.SessionItem) (*model.Question, error) {
+	if len(sessionItems) == 0 {
+		if questionMap.Empty() {
+			return nil, contracts.ErrEmptyQuestions
+		}
+
+		if specificGame.Settings.ShuffleQuestions {
+			return questionMap.GetRandomQuestion(), nil
+		}
+		return questionMap.GetFirst(), nil
 	}
 
-	answeredSessionItemsMap := make(map[uuid.UUID]struct{}, len(sessionItems))
+	answeredMap := make(map[uuid.UUID]bool, len(sessionItems))
 	for _, item := range sessionItems {
-		answeredSessionItemsMap[item.QuestionID] = struct{}{}
+		answeredMap[item.QuestionID] = true
 	}
 
-	unansweredQuestions := slices.Filter(gameQuestions, func(question game.GameQuestion) bool {
-		_, ok := answeredSessionItemsMap[question.ID]
-		return !ok
-	})
-	if len(unansweredQuestions) == 0 {
-		return nil, contracts.ErrQuestionQueueIsEmpty
+	var latestSessionItem model.SessionItem
+	for _, item := range sessionItems {
+		if latestSessionItem.AnsweredAt == nil ||
+			(item.AnsweredAt != nil && item.AnsweredAt.After(*latestSessionItem.AnsweredAt)) {
+			latestSessionItem = item
+		}
 	}
 
-	sort.Slice(unansweredQuestions, func(i, j int) bool {
-		return unansweredQuestions[i].Sort > unansweredQuestions[j].Sort
-	})
+	lastQuestion, err := questionMap.GetQuestion(latestSessionItem.QuestionID)
+	if err != nil {
+		return nil, err
+	}
 
-	questionIndex := 0
 	if specificGame.Settings.ShuffleQuestions {
-		randomNumber, _ := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(len(unansweredQuestions))))
-		questionIndex = int(randomNumber.Int64())
+		var unansweredQuestions []uuid.UUID
+		for _, id := range questionMap.GetIDs() {
+			id := id
+			if answeredMap[id] {
+				continue
+			}
+
+			unansweredQuestions = append(unansweredQuestions, id)
+		}
+
+		if len(unansweredQuestions) == 0 {
+			return nil, contracts.ErrQuestionQueueIsEmpty
+		}
+
+		question, err := questionMap.GetQuestion(unansweredQuestions[rand.IntN(len(unansweredQuestions))])
+		if errors.Is(err, model.ErrQuestionNotFound) {
+			return nil, contracts.ErrQuestionQueueIsEmpty
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		return question, nil
 	}
 
-	return &unansweredQuestion{
-		ID:    unansweredQuestions[questionIndex].ID,
-		IsNew: true,
-	}, nil
+	var nextQuestion *model.Question
+	if len(latestSessionItem.Answers) > 0 {
+		selectedAnswer, err := strconv.Atoi(latestSessionItem.Answers[0])
+		if err != nil {
+			return nil, err
+		}
+
+		nextQuestion, err = questionMap.GetNextQuestion(lastQuestion.ID, model.AnswerOptionID(selectedAnswer))
+		if err != nil && !errors.Is(err, model.ErrQuestionNotFound) {
+			return nil, err
+		}
+	}
+
+	if nextQuestion != nil {
+		return nextQuestion, nil
+	}
+
+	for i, id := range questionMap.GetIDs() {
+		if id != lastQuestion.ID || i >= questionMap.Len()-1 {
+			continue
+		}
+
+		question, err := questionMap.GetQuestion(questionMap.GetIDs()[i+1])
+		if errors.Is(err, model.ErrQuestionNotFound) {
+			return nil, contracts.ErrQuestionQueueIsEmpty
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		return question, nil
+	}
+
+	return nil, contracts.ErrQuestionQueueIsEmpty
+}
+
+func (u *Usecase) getQuestionMap(ctx context.Context, tx transactional.Tx, gameID uuid.UUID) (*model.QuestionMap, error) {
+	questions, err := u.games.GetQuestionsBySpecWithTx(ctx, tx, &game.QuestionsSpec{
+		GameID: &gameID,
+		Order: &game.Order{
+			Field:     "created_at",
+			Direction: "asc",
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewQuestionMap(questions), nil
 }

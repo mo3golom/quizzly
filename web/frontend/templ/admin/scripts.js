@@ -7,20 +7,41 @@ function copy(element) {
     )
 }
 
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    const placeholder = document.getElementById('image-placeholder');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '';
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+    }
+}
+
 function showChoiceInput(element) {
     let id = element.getAttribute("data-id")
-    document.getElementById("answer-choice-input-checkbox-"+id).checked = false
-    document.getElementById("answer-choice-input-textarea-"+id).value = ""
-    document.getElementById("answer-choice-input-"+id).classList.remove("hidden")
-    document.getElementById("answer-choice-add-button-"+id).classList.add("hidden")
+    document.getElementById("answer-choice-input-checkbox-" + id).checked = false
+    document.getElementById("answer-choice-input-textarea-" + id).value = ""
+    document.getElementById("answer-choice-input-" + id).classList.remove("hidden")
+    document.getElementById("answer-choice-add-button-" + id).classList.add("hidden")
 }
 
 function showChoiceAddButton(element) {
     let id = element.getAttribute("data-id")
-    document.getElementById("answer-choice-input-checkbox-"+id).checked = false
-    document.getElementById("answer-choice-input-textarea-"+id).value = ""
-    document.getElementById("answer-choice-add-button-"+id).classList.remove("hidden")
-    document.getElementById("answer-choice-input-"+id).classList.add("hidden")
+    document.getElementById("answer-choice-input-checkbox-" + id).checked = false
+    document.getElementById("answer-choice-input-textarea-" + id).value = ""
+    document.getElementById("answer-choice-add-button-" + id).classList.remove("hidden")
+    document.getElementById("answer-choice-input-" + id).classList.add("hidden")
 }
 
 function selectQuestion(element) {
@@ -36,7 +57,7 @@ function selectQuestion(element) {
 
 function restoreSelectedQuestions() {
     chosenQuestions.forEach((id) => {
-        let element =document.getElementById(id)
+        let element = document.getElementById(id)
         if (element !== null) {
             element.checked = true
         }
@@ -49,7 +70,7 @@ function enrichRequestByQuestions(id) {
         return
     }
 
-    element.addEventListener("submit", function(event){
+    element.addEventListener("submit", function (event) {
         event.preventDefault()
         chosenQuestions.forEach((id) => {
             let input = document.createElement('input')
@@ -62,7 +83,7 @@ function enrichRequestByQuestions(id) {
     })
 }
 
-document.addEventListener('htmx:afterRequest', function(evt) {
+document.addEventListener('htmx:afterRequest', function (evt) {
     if (evt.detail.target.id === 'question-list-container') {
         questionListContainerListener(evt)
     }

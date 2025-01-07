@@ -1,15 +1,205 @@
 package frontend_admin_game
 
 import "quizzly/web/frontend/templ/components"
+import "quizzly/web/frontend/handlers"
+import "fmt"
+import "github.com/google/uuid"
 
 templ Page(components ...templ.Component) {
-    <div>
-        @frontend_components.Composition(components...)
-    </div>
+	<div id="game-page">
+		@frontend_components.Composition(components...)
+	</div>
 }
 
 templ AdminPageQuestionsList(list templ.Component) {
-    <div id="game-page-questions-list">
-        @list
-    </div>
+	<div id="game-page-questions-list">
+		@list
+	</div>
+}
+
+templ Header(game *handlers.Game, title templ.Component, settings templ.Component) {
+	<div class="mb-4">
+		<input id="game-id" name="game-id" type="hidden" value={ game.ID.String() }/>
+		<div class="flex items-start gap-4">
+			<div class="grow">
+				<h1 class="font-bold text-2xl">
+					@title
+				</h1>
+				<h2>
+					switch game.Status {
+						case "created":
+							<span class="badge bg-blue-500 text-white">{ "Создана" }</span>
+						case "started":
+							<span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+						case "finished":
+							<span class="badge bg-orange-500 text-white">{ "Завершена" }</span>
+					}
+				</h2>
+			</div>
+			<div class="flex gap-2 shrink-0">
+				if game.Status == "created" {
+					<button
+						class="btn btn-sm bg-green-500 hover:bg-green-600 border-0 text-white"
+						hx-post="/admin/game/start"
+						hx-trigger="click"
+						hx-target="#game-page"
+						hx-swap="outerHTML"
+						hx-include="[name='game-id']"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"></path>
+						</svg>
+						<span>Начать</span>
+					</button>
+				}
+				if game.Status != "finished" {
+					<button
+						class="btn btn-sm bg-red-500 hover:bg-red-600 border-0 text-white"
+						hx-post="/admin/game/finish"
+						hx-trigger="click"
+						hx-target="#game-page"
+						hx-swap="outerHTML"
+						hx-include="[name='game-id']"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z"></path>
+						</svg>
+						<span>Завершить</span>
+					</button>
+				}
+			</div>
+		</div>
+		<div class="mt-4">
+			@settings
+		</div>
+		if  game.Status == "created" {
+			<div class="card bg-base-200 mt-2">
+				<div class="card-body font-bold">
+					<div class="flex gap-4">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+							<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"></path>
+						</svg>
+						<span>Нажмите "Начать", чтобы запустить игру</span>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+templ Title(game *handlers.Game) {
+	{ game.Title }
+}
+
+templ TitleInput(game *handlers.Game) {
+	<input
+		name="title"
+		class="input-bordered border-2 bg-base-200 focus:bg-white w-full rounded-md p-1 pl-2"
+		value={ game.Title }
+		placeholder="Название игры"
+		id="game-page-title-input"
+		hx-post={ fmt.Sprintf("/admin/game/%s/update", game.ID.String()) }
+		hx-target="this"
+		hx-swap="none"
+		hx-trigger="change changed"
+	/>
+	<script type="text/javascript">
+		document.getElementById("game-page-title-input").addEventListener("keydown", function(event) {
+			if (event.keyCode === 13) { // Check if Enter key is pressed
+				this.blur(); // Unfocus the input
+			}
+		});
+   	</script>
+}
+
+templ Invite(inviteUrl string) {
+	<div class="p-6 bg-blue-500 w-full rounded-2xl mb-4">
+		<div class="text-white stat-title mb-2">Ссылка на игру</div>
+		<div class="join w-full">
+			<input id="game-page-game-link" type="text" value={ inviteUrl } class="input join-item w-full select-all" disabled/>
+			<button
+				class="btn join-item bg-amber-500 hover:bg-amber-600 text-white border-0"
+				data-copy-target="game-page-game-link"
+				onclick="copy(this)"
+			>скопировать</button>
+		</div>
+	</div>
+}
+
+templ Settings(game *handlers.Game) {
+	<div class="mb-2">
+		@toggleOption(game, "Частная игра", "is_private", game.Settings.IsPrivate, `Если вкл., то игра будет доступна только по ссылке. Игра не будет отображаться в списке "новых игр" на главной и странице результатов`)
+		@toggleOption(game, "Перемешать вопросы", "shuffle_questions", game.Settings.ShuffleQuestions, "каждый игрок будет видеть вопросы в случайном порядке. Если игрок не ответил на вопрос, он увидит его снова при следующем входе в игру.")
+		@toggleOption(game, "Перемешать ответы в вопросе", "shuffle_answers", game.Settings.ShuffleAnswers, "ответы на каждый вопрос будут перемешиваться для каждого игрока. Это помогает избежать запоминания игроками правильного порядка ответов.")
+		@toggleOption(game, "Показывать правильный ответ в случае неудачи", "show_right_answers", game.Settings.ShowRightAnswers, `при неправильном ответе игрока на экран результатов будет выводиться правильный ответ. Обратите внимание, что кнопка "играть снова" всегда активна, так что игрок может запомнить правильные ответы и пройти викторину без ошибок во второй раз.`)
+		@toggleOption(game, "Игрок должен ввести имя перед игрой", "input_custom_name", game.Settings.InputCustomName, `перед началом игры игрок должен ввести имя/псевдоним. При этом экран не будет показан при повторной игре`)
+	</div>
+}
+
+templ SettingBadge(text string, hint string, toggle ...templ.Component) {
+	<div class="badge badge-lg badge-ghost mr-2 mb-2 p-4 pr-0">
+		<span class="pr-4 flex items-center">
+			<span class="mr-1">{ text }</span>
+			<div class="tooltip tooltip-left" data-tip={ hint }>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path>
+				</svg>
+			</div>
+		</span>
+		if len(toggle) >0 {
+			@toggle[0]
+		}
+	</div>
+}
+
+templ SettingToggle(gameID uuid.UUID, name string, value bool) {
+	<input
+		type="checkbox"
+		name={ name }
+		class="toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500"
+		hx-post={ fmt.Sprintf("/admin/game/%s/update", gameID.String()) }
+		hx-target="this"
+		hx-swap="none"
+		hx-trigger="change"
+		hx-vals={ fmt.Sprintf(`{"%s": %t}`, name, !value) }
+		hx-on::after-request='this.setAttribute(`hx-vals`, `{"${this.name}": ${!this.checked}}`)'
+		if value {
+			checked
+		}
+	/>
+}
+
+templ toggleOption(game *handlers.Game, title string, name string, value bool, hint ...string) {
+	<div class={ fmt.Sprintf("badge badge-lg badge-ghost mr-2 mb-2 p-4 pr-0") }>
+		<div class="form-control">
+			<label class="label cursor-pointer">
+				<span class="label-text pr-2">
+					{ title }
+					if len(hint) > 0 {
+						<div class="tooltip tooltip-left align-middle" data-tip={ hint[0] }>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path>
+							</svg>
+						</div>
+					}
+				</span>
+				if game.Status == "created" {
+					<input
+						type="checkbox"
+						name={ name }
+						class="toggle border-2 checked:[--tglbg:#3b82f6] checked:bg-white checked:border-blue-500"
+						hx-post={ fmt.Sprintf("/admin/game/%s/update", game.ID.String()) }
+						hx-target="this"
+						hx-swap="none"
+						hx-trigger="change"
+						hx-vals={ fmt.Sprintf(`{"%s": %t}`, name, !value) }
+						hx-on::after-request='this.setAttribute(`hx-vals`, `{"${this.name}": ${!this.checked}}`)'
+						if value {
+							checked
+						}
+					/>
+				}
+			</label>
+		</div>
+	</div>
 }

@@ -1,0 +1,1 @@
+delete from question where game_id is null;

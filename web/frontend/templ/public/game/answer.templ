@@ -4,61 +4,59 @@ import "quizzly/pkg/helper"
 import "fmt"
 
 templ Answer(isCorrect bool, rightAnswers ...string) {
-    <div
-        id="game-page-answer-result"
-        class="fixed top-0 left-0 w-full h-full z-20 bg-indigo-950 transition transition-opacity animate-duration-300"
-    >
-        <div class="flex h-screen overflow-y-auto relative">
-            <div class="m-auto">
-                if isCorrect {
-                    <div class="text-center animate-pulse-fade-in animate-duration-300 p-4">
-                        <span class="text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl">Правильный ответ!</span>
-                    </div>
-                    <script type="text/javascript">
+	<div
+		id="game-page-answer-result"
+		class="fixed top-0 left-0 w-full h-full z-20 bg-indigo-950 transition transition-opacity animate-duration-300"
+	>
+		<div class="flex h-screen overflow-y-auto relative">
+			<div class="m-auto">
+				if isCorrect {
+					<div class="text-center animate-pulse-fade-in animate-duration-300 p-4">
+						<span class="text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl">Правильный ответ!</span>
+					</div>
+					<script type="text/javascript">
                         fire();
                     </script>
-                } else {
-                 <div class="w-full">
-                   <div class="animate-pulse-fade-in animate-duration-300">
-                    <div class="animate-tada animate-duration-1500 text-center p-4">
-                        <span class="text-red-500 font-bold text-big-noodle text-6xl sm:text-8xl">Неудача!</span>
-                    </div>
-
-                    if len(rightAnswers) > 0 {
-                    <div class="card max-w-xs sm:max-w-md bg-green-500 text-white rounded-2xl shadow-lg mt-8 mb-2">
-                        <input
-                            type="hidden"
-                            id="game-page-answer-read-estimation"
-                            value={fmt.Sprintf("%d",helper.ReadEstimation(rightAnswers...).Milliseconds())} />
-                         <div class="card-body p-4">
-                             <div class="text-xl text-center font-bold">Правильный ответ</div>
-
-                             for _, rightAnswer := range rightAnswers {
-                             <div class="text-left">
-                                if len(rightAnswers) > 1 {
-                                  -
-                                }
-                                { rightAnswer }
-                             </div>
-                             }
-                         </div>
-                    </div>
-                    }
-
-                    <div id="game-page-skip-answer" class="hidden sticky bottom-2">
-                        <button
-                            type="button"
-                            class="btn bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl"
-                            onclick="hideAnswerResult(300, 300)"
-                            >Продолжить</button>
-                    </div>
-                    </div>
-                 </div>
-                }
-            </div>
-        </div>
-    </div>
-    <script type="text/javascript">
+				} else {
+					<div class="w-full">
+						<div class="animate-pulse-fade-in animate-duration-300">
+							<div class="animate-tada animate-duration-1500 text-center p-4">
+								<span class="text-red-500 font-bold text-big-noodle text-6xl sm:text-8xl">Неудача!</span>
+							</div>
+							if len(rightAnswers) > 0 {
+								<div class="card max-w-xs sm:max-w-md bg-green-500 text-white rounded-2xl shadow-lg mt-8 mb-2">
+									<input
+										type="hidden"
+										id="game-page-answer-read-estimation"
+										value={ fmt.Sprintf("%d", helper.ReadEstimation(rightAnswers...).Milliseconds()) }
+									/>
+									<div class="card-body p-4">
+										<div class="text-xl text-center font-bold">Правильный ответ</div>
+										for _, rightAnswer := range rightAnswers {
+											<div class="text-left">
+												if len(rightAnswers) > 1 {
+													-
+												}
+												{ rightAnswer }
+											</div>
+										}
+									</div>
+								</div>
+								<div id="game-page-skip-answer" class="sticky bottom-2">
+									<button
+										type="button"
+										class="btn bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl"
+										onclick="hideAnswerResult(300, 300)"
+									>Продолжить</button>
+								</div>
+							}
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
         showAnswerResult();
     </script>
 }

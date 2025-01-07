@@ -9,7 +9,6 @@ const (
 	QuestionTypeChoice         QuestionType = "choice"
 	QuestionTypeOneOfChoice    QuestionType = "one_of_choice"   // Может быть выбран любой правильный вариант ответа
 	QuestionTypeMultipleChoice QuestionType = "multiple_choice" // Должны быть выбраны все правильные ответы
-	QuestionTypeFillTheGap     QuestionType = "fill_the_gap"    // Нужно ввести правильный ответ
 )
 
 type (
@@ -18,7 +17,7 @@ type (
 
 	Question struct {
 		ID            uuid.UUID
-		AuthorID      uuid.UUID
+		GameID        uuid.UUID
 		Text          string
 		Type          QuestionType
 		ImageID       *string
@@ -27,9 +26,10 @@ type (
 	}
 
 	AnswerOption struct {
-		ID        AnswerOptionID
-		Answer    string
-		IsCorrect bool
+		ID             AnswerOptionID
+		Answer         string
+		IsCorrect      bool
+		NextQuestionID *uuid.UUID
 	}
 )
 

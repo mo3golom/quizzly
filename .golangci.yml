@@ -7,3 +7,4 @@ issues:
     - vendor
     - bin
     - mod
+  exclude-dirs-use-default: true
