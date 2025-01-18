@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/google/uuid"
 	"quizzly/internal/quizzly/model"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -27,9 +28,9 @@ type (
 	Game struct {
 		ID        uuid.UUID
 		Status    model.GameStatus
-		Title     *string
+		Title     string
 		CreatedAt time.Time
-		Settings  *GameSettings
+		Settings  GameSettings
 	}
 
 	GameSettings struct {

@@ -4,63 +4,65 @@ import "quizzly/web/frontend/handlers"
 import "fmt"
 
 templ GameListItem(game *handlers.Game) {
-       <div>
-       <a href={templ.SafeURL(fmt.Sprintf("/admin/game/%s",game.ID.String()))}>
-       <div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4 outline outline-0 outline-base-200 hover:outline-4 shadow-sm hover:shadow-lg hover:z-10 transition-outline transition-shadow">
-                 <div class="mb-4">
-                 <span class="text-xl font-medium">
-                     if game.Title != nil {
-                        { *game.Title }
-                     } else {
-                        Игра от { game.CreatedAt.Format("02.01.2006") }
-                     }
-                 </span>
-                 <h2>
-                      switch game.Status {
-                           case "created":
-                               <span class="badge bg-blue-500 text-white">{ "Создана" }</span>
-                           case "started":
-                               <span class="badge bg-green-500 text-white">{ "В процессе" }</span>
-                           case "finished":
-                               <span class="badge bg-orange-500 text-white">{ "Завершена" }</span>
-                      }
-                 </h2>
-                 </div>
-                 @gameListItemSettings(game.Settings)
-       </div>
-       </a>
-       </div>
+	<div>
+		<a href={ templ.SafeURL(fmt.Sprintf("/admin/game/%s", game.ID.String())) }>
+			<div class="card card-bordered mb-4 bg-white border-base-200 border-4 p-4 outline outline-0 outline-base-200 hover:outline-4 shadow-sm hover:shadow-lg hover:z-10 transition-outline transition-shadow">
+				<div class="mb-4">
+					<span class="text-xl font-medium">
+						{ game.Title }
+					</span>
+					<h2>
+						switch game.Status {
+							case "created":
+								<span class="badge bg-blue-500 text-white">{ "Создана" }</span>
+							case "started":
+								<span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+							case "finished":
+								<span class="badge bg-orange-500 text-white">{ "Завершена" }</span>
+						}
+					</h2>
+				</div>
+				@gameListItemSettings(game.Settings)
+			</div>
+		</a>
+	</div>
 }
 
+templ gameListItemSettings(settings handlers.GameSettings) {
+	<div>
+		if settings.IsPrivate {
+			<div class="badge badge-xs bg-pink-500 text-white mr-1 p-2">
+				Частная игра
+			</div>
+		}
+		if settings.ShuffleQuestions {
+			<div class="badge badge-xs badge-ghost mr-1 p-2">
+				Вопросы перемешаны
+			</div>
+		}
+		if settings.ShuffleAnswers {
+			<div class="badge badge-xs badge-ghost mr-1 p-2">
+				Ответы перемешаны
+			</div>
+		}
+		if settings.ShowRightAnswers {
+			<div class="badge badge-xs badge-ghost mr-1 p-2">
+				Правильный ответ показывается после неудачи
+			</div>
+		}
+		if settings.InputCustomName {
+			<div class="badge badge-xs badge-ghost mr-1 p-2">
+				Игрок должен ввести имя
+			</div>
+		}
+	</div>
+}
 
-templ gameListItemSettings(settings *handlers.GameSettings) {
-   <div>
-   if settings.IsPrivate {
-            <div class="badge badge-xs bg-pink-500 text-white mr-1 p-2">
-                Частная игра
-            </div>
-   }
-
-   if settings.ShuffleQuestions {
-        <div class="badge badge-xs badge-ghost mr-1 p-2">
-            Вопросы перемешаны
-        </div>
-   }
-   if settings.ShuffleAnswers {
-          <div class="badge badge-xs badge-ghost mr-1 p-2">
-               Ответы перемешаны
-          </div>
-   }
-   if settings.ShowRightAnswers {
-          <div class="badge badge-xs badge-ghost mr-1 p-2">
-              Правильный ответ показывается после неудачи
-          </div>
-   }
-
-   if settings.InputCustomName {
-         <div class="badge badge-xs badge-ghost mr-1 p-2">
-             Игрок должен ввести имя
-         </div>
-   }
-   </div>
+templ ActionAddNewGame() {
+	<a href="/admin/game/new" class="btn btn-sm bg-green-500 hover:bg-green-600 border-0 text-white">
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+		</svg>
+		<span>Создать новую игру</span>
+	</a>
 }

@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/google/uuid"
 )
@@ -108,21 +109,8 @@ func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactiona
 
 func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error {
 	const query = `
-		insert into player_session_item (session_id, question_id) values ($1, $2)
-	`
-
-	_, err := tx.ExecContext(ctx, query, in.SessionID, in.QuestionID)
-	return err
-}
-
-func (r *DefaultRepository) UpdateSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error {
-	const query = `
-		update player_session_item set 
-			answers = $2,
-			is_correct = $3,
-			answered_at = $4,
-			updated_at = now()
-		where id = $1
+		insert into player_session_item (session_id, question_id, answers, is_correct, answered_at) 
+		values ($1, $2, $3, $4, $5)
 	`
 
 	answers, err := json.Marshal(in.Answers)
@@ -130,7 +118,15 @@ func (r *DefaultRepository) UpdateSessionItem(ctx context.Context, tx transactio
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, query, in.ID, answers, in.IsCorrect, in.AnsweredAt)
+	_, err = tx.ExecContext(
+		ctx,
+		query,
+		in.SessionID,
+		in.QuestionID,
+		answers,
+		in.IsCorrect,
+		in.AnsweredAt,
+	)
 	return err
 }
 

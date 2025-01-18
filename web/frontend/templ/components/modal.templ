@@ -1,0 +1,24 @@
+package frontend_components
+
+templ Modal(id string, title string, content templ.Component) {
+	// The modal component using daisyUI
+	<dialog id={ id } class="modal">
+		<div class="modal-box w-11/12 max-w-5xl">
+			// Header
+			<div class="modal-header">
+				<h3 class="font-bold text-lg">{ title }</h3>
+				<form method="dialog">
+					<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+				</form>
+			</div>
+			// Content slot
+			<div class="modal-content py-4">
+				@content
+			</div>
+		</div>
+		// Modal backdrop
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+}

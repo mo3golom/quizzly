@@ -1,0 +1,1 @@
+delete from question_answer_option where question_id = any(select id from question where game_id is null);

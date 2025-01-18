@@ -1,15 +1,15 @@
 package game
 
 import (
-	"github.com/a-h/templ"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/pkg/auth"
-	"quizzly/web/frontend/handlers"
 	frontend "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	"sort"
+
+	"github.com/a-h/templ"
 )
 
 const (
@@ -45,19 +45,8 @@ func (h *GetListHandler) Handle(_ http.ResponseWriter, request *http.Request, _ 
 		frontendAdminGame.ActionAddNewGame(),
 	))
 	for _, game := range games {
-		components = append(components, frontendAdminGame.GameListItem(&handlers.Game{
-			ID:        game.ID,
-			Status:    game.Status,
-			Title:     game.Title,
-			CreatedAt: game.CreatedAt,
-			Settings: &handlers.GameSettings{
-				ShuffleQuestions: game.Settings.ShuffleQuestions,
-				ShuffleAnswers:   game.Settings.ShuffleAnswers,
-				ShowRightAnswers: game.Settings.ShowRightAnswers,
-				InputCustomName:  game.Settings.InputCustomName,
-				IsPrivate:        game.Settings.IsPrivate,
-			},
-		}))
+		game := game
+		components = append(components, frontendAdminGame.GameListItem(convertModelGameToHandlersGame(&game)))
 	}
 
 	return frontend.AdminPageComponent(

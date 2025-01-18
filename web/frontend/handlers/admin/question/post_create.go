@@ -8,10 +8,8 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/auth"
 	"quizzly/pkg/files"
 	"quizzly/pkg/structs/collections/slices"
-	frontend_components "quizzly/web/frontend/templ/components"
 )
 
 const (
@@ -23,43 +21,42 @@ var (
 		string(model.QuestionTypeChoice),
 		string(model.QuestionTypeMultipleChoice),
 		string(model.QuestionTypeOneOfChoice),
-		string(model.QuestionTypeFillTheGap),
 	}
 )
 
 type (
 	NewPostData struct {
-		QuestionText               string   `schema:"question_text"`
-		QuestionType               string   `schema:"question_type"`
-		QuestionMultipleChoiceType *string  `schema:"question_multiple_choice_type"`
-		QuestionCorrectAnswer      []bool   `schema:"question_correct_answer"`
-		QuestionAnswerOptionText   []string `schema:"question_answer_option_text"`
+		QuestionText               string    `schema:"question_text"`
+		QuestionType               string    `schema:"question_type"`
+		QuestionMultipleChoiceType *string   `schema:"question_multiple_choice_type"`
+		QuestionCorrectAnswer      []bool    `schema:"question_correct_answer"`
+		QuestionAnswerOptionText   []string  `schema:"question_answer_option_text"`
+		GameID                     uuid.UUID `schema:"game_id"`
 	}
 
 	PostCreateHandler struct {
-		uc     contracts.QuestionUsecase
-		images files.Manager
+		uc      contracts.GameUsecase
+		images  files.Manager
+		service *service
 	}
 )
 
 func NewPostCreateHandler(
-	uc contracts.QuestionUsecase,
+	uc contracts.GameUsecase,
 	images files.Manager,
 ) *PostCreateHandler {
 	return &PostCreateHandler{
-		uc:     uc,
-		images: images,
+		uc:      uc,
+		images:  images,
+		service: &service{uc: uc},
 	}
 }
 
 func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, in NewPostData) (templ.Component, error) {
-	authContext := request.Context().(auth.Context)
 	converted, err := convert(&in)
 	if err != nil {
 		return nil, err
 	}
-
-	converted.AuthorID = authContext.UserID()
 
 	image, err := findQuestionImage(request)
 	if err != nil {
@@ -73,12 +70,12 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		converted.ImageID = &image.Name
 	}
 
-	err = h.uc.Create(request.Context(), converted)
+	err = h.uc.CreateQuestion(request.Context(), converted)
 	if err != nil {
 		return nil, err
 	}
 
-	return frontend_components.Redirect("/admin/question/list"), nil
+	return h.service.list(request.Context(), in.GameID, true)
 }
 
 func convert(in *NewPostData) (*model.Question, error) {
@@ -105,6 +102,7 @@ func convert(in *NewPostData) (*model.Question, error) {
 
 	return &model.Question{
 		ID:            uuid.New(),
+		GameID:        in.GameID,
 		Text:          in.QuestionText,
 		Type:          questionType,
 		AnswerOptions: answerOptions,

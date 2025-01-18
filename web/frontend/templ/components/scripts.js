@@ -1,4 +1,4 @@
-function fallbackCopyTextToClipboard(text, successMessage)  {
+function fallbackCopyTextToClipboard(text, successMessage) {
     var textArea = document.createElement("textarea");
     textArea.value = text;
 
@@ -31,9 +31,9 @@ function copyTextToClipboard(text, successMessage) {
         fallbackCopyTextToClipboard(text, successMessage);
         return;
     }
-    navigator.clipboard.writeText(text).then(function() {
+    navigator.clipboard.writeText(text).then(function () {
         addToast(successMessage, 'success')
-    }, function(err) {
+    }, function (err) {
         addToast(err.message, 'error')
         console.error('Async: Could not copy text: ', err);
     });
@@ -43,15 +43,15 @@ function addToast(message, messageType) {
     let globalMessages = document.getElementById("global-messages")
     let id = uuidv4()
     globalMessages.innerHTML += `
-                    <div id="`+id+`" class="alert alert-`+ messageType +` text-white flex">
-                        <span>`+ message +`</span>
+                    <div id="`+ id + `" class="alert alert-` + messageType + ` text-white flex">
+                        <span>`+ message + `</span>
                         <button class="btn btn-ghost btn-xs btn-square" onclick="this.parentElement.remove()">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>`
-    setTimeout(function() {
+    setTimeout(function () {
         document.getElementById(id).remove()
     }, 5000)
 }

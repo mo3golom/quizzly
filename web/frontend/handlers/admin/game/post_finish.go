@@ -5,8 +5,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
-	"quizzly/web/frontend/handlers"
-	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
+	"quizzly/web/frontend/services/link"
 )
 
 type (
@@ -16,11 +15,22 @@ type (
 
 	PostFinishHandler struct {
 		uc contracts.GameUsecase
+
+		service *service
 	}
 )
 
-func NewPostFinishHandler(uc contracts.GameUsecase) *PostFinishHandler {
-	return &PostFinishHandler{uc: uc}
+func NewPostFinishHandler(
+	uc contracts.GameUsecase,
+	linkService link.Service,
+) *PostFinishHandler {
+	return &PostFinishHandler{
+		uc: uc,
+		service: &service{
+			uc:          uc,
+			linkService: linkService,
+		},
+	}
 }
 
 func (h *PostFinishHandler) Handle(_ http.ResponseWriter, request *http.Request, in PostFinishData) (templ.Component, error) {
@@ -29,17 +39,5 @@ func (h *PostFinishHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		return nil, err
 	}
 
-	game, err := h.uc.Get(request.Context(), in.GameID)
-	if err != nil {
-		return nil, err
-	}
-
-	return frontendAdminGame.Header(
-		&handlers.Game{
-			ID:        game.ID,
-			Status:    game.Status,
-			Title:     game.Title,
-			CreatedAt: game.CreatedAt,
-		},
-	), nil
+	return h.service.getGamePage(request, in.GameID)
 }

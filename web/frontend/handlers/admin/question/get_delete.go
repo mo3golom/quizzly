@@ -1,57 +1,36 @@
 package question
 
 import (
-	"errors"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
-	"quizzly/web/frontend/handlers"
-	frontendAdminQuestion "quizzly/web/frontend/templ/admin/question"
 )
 
 type (
 	GetDeleteData struct {
-		ID uuid.UUID `schema:"id"`
+		ID     uuid.UUID `schema:"id"`
+		GameID uuid.UUID `schema:"game_id"`
 	}
 
 	GetDeleteHandler struct {
-		uc contracts.QuestionUsecase
+		uc      contracts.GameUsecase
+		service *service
 	}
 )
 
-func NewPostDeleteHandler(uc contracts.QuestionUsecase) *GetDeleteHandler {
+func NewPostDeleteHandler(uc contracts.GameUsecase) *GetDeleteHandler {
 	return &GetDeleteHandler{
-		uc: uc,
+		uc:      uc,
+		service: &service{uc: uc},
 	}
 }
 
 func (h *GetDeleteHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetDeleteData) (templ.Component, error) {
-	questions, err := h.uc.GetByIDs(request.Context(), []uuid.UUID{in.ID})
-	if err != nil {
-		return nil, err
-	}
-	if len(questions) == 0 {
-		return nil, errors.New("question not found")
-	}
-
-	err = h.uc.Delete(request.Context(), in.ID)
+	err := h.uc.DeleteQuestion(request.Context(), in.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	question := questions[0]
-	return frontendAdminQuestion.QuestionListItem(
-		handlers.Question{
-			ID:      question.ID,
-			ImageID: question.ImageID,
-			Text:    question.Text,
-			Type:    question.Type,
-		},
-		nil,
-		frontendAdminQuestion.Options{
-			WithActions:         true,
-			WithDisabledOverlay: true,
-		},
-	), nil
+	return h.service.list(request.Context(), in.GameID, true)
 }

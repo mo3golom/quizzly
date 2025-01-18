@@ -3,16 +3,16 @@ package session
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/internal/quizzly/repositories/question"
-	"quizzly/internal/quizzly/repositories/session"
+	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
 	"quizzly/pkg/transactional"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswersIn) (*contracts.AcceptAnswersOut, error) {
@@ -30,46 +30,32 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 			return contracts.ErrNotActiveSessionNotFound
 		}
 
-		specificPlayerSessionItems, err := u.sessions.GetSessionBySpecWithTx(ctx, tx, &session.ItemSpec{
-			PlayerID:   in.PlayerID,
-			GameID:     in.GameID,
-			QuestionID: &in.QuestionID,
-		})
-		if err != nil {
-			return err
-		}
-		if len(specificPlayerSessionItems) == 0 {
-			return errors.New("player session is empty")
-		}
-
-		specificPlayerSessionItem := specificPlayerSessionItems[0]
-		if specificPlayerSessionItem.AnsweredAt != nil {
-			return errors.New("question is already answered")
-		}
-
-		specificQuestions, err := u.questions.GetBySpec(ctx, &question.Spec{
+		specificQuestions, err := u.games.GetQuestionsBySpec(ctx, &game.QuestionsSpec{
 			IDs: []uuid.UUID{in.QuestionID},
 		})
 		if err != nil {
 			return err
 		}
-		if len(specificQuestions.Result) == 0 {
+		if len(specificQuestions) == 0 {
 			return errors.New("question not found")
 		}
 
-		result, err = u.acceptAnswers(&specificQuestions.Result[0], in.Answers)
-		result.RightAnswers = specificQuestions.Result[0].GetCorrectAnswers()
+		result, err = u.acceptAnswers(&specificQuestions[0], in.Answers)
+		result.RightAnswers = specificQuestions[0].GetCorrectAnswers()
 		if err != nil {
 			return err
 		}
 
-		specificPlayerSessionItem.IsCorrect = structs.Pointer(result.IsCorrect)
-		specificPlayerSessionItem.Answers = in.Answers
-		specificPlayerSessionItem.AnsweredAt = structs.Pointer(time.Now())
-		return u.sessions.UpdateSessionItem(
+		return u.sessions.InsertSessionItem(
 			ctx,
 			tx,
-			&specificPlayerSessionItem,
+			&model.SessionItem{
+				SessionID:  specificSession.ID,
+				QuestionID: in.QuestionID,
+				IsCorrect:  structs.Pointer(result.IsCorrect),
+				Answers:    in.Answers,
+				AnsweredAt: structs.Pointer(time.Now()),
+			},
 		)
 	})
 }
@@ -77,10 +63,6 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 func (u *Usecase) acceptAnswers(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) == 0 {
 		return nil, errors.New("answers are empty")
-	}
-
-	if acceptor, ok := u.textAcceptors[question.Type]; ok {
-		return acceptor.Accept(question, answers)
 	}
 
 	if acceptor, ok := u.optionIDAcceptors[question.Type]; ok {

@@ -8,5 +8,6 @@ var (
 	ErrSessionNotFound          = errors.New("player's session not found")
 	ErrSessionNotFinished       = errors.New("player's session not finished")
 	ErrGameNotFound             = errors.New("game not found")
+	ErrEmptyQuestions           = errors.New("empty questions")
 	ErrEmptyAnswerOptions       = errors.New("empty answer options")
 )

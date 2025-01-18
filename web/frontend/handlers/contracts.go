@@ -80,7 +80,9 @@ func parseIn[T any](r *http.Request) (T, error) {
 			return inStruct, fmt.Errorf("decode request body error: %v", err)
 		}
 	case http.MethodGet, http.MethodDelete:
-		err := schema.NewDecoder().Decode(&inStruct, r.URL.Query())
+		decoder := schema.NewDecoder()
+		decoder.IgnoreUnknownKeys(true)
+		err := decoder.Decode(&inStruct, r.URL.Query())
 		if err != nil {
 			return inStruct, fmt.Errorf("decode url query error: %v", err)
 		}

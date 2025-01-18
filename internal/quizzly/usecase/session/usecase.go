@@ -3,59 +3,44 @@ package session
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/player"
-	"quizzly/internal/quizzly/repositories/question"
 	"quizzly/internal/quizzly/repositories/session"
 	"quizzly/pkg/transactional"
+
+	"github.com/google/uuid"
 )
 
 type (
-	unansweredQuestion struct {
-		ID    uuid.UUID
-		IsNew bool
-	}
-
 	AnswerOptionIDAcceptor interface {
 		Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error)
 	}
 
-	AnswerTextAcceptor interface {
-		Accept(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error)
-	}
-
 	Usecase struct {
-		sessions  session.Repository
-		games     game.Repository
-		questions question.Repository
-		players   player.Repository
-		template  transactional.Template
+		sessions session.Repository
+		games    game.Repository
+		players  player.Repository
+		template transactional.Template
 
 		optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor
-		textAcceptors     map[model.QuestionType]AnswerTextAcceptor
 	}
 )
 
 func NewUsecase(
 	sessions session.Repository,
 	games game.Repository,
-	questions question.Repository,
 	players player.Repository,
 	template transactional.Template,
 	optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor,
-	textAcceptors map[model.QuestionType]AnswerTextAcceptor,
 ) contracts.SessionUsecase {
 	return &Usecase{
 		sessions:          sessions,
 		games:             games,
-		questions:         questions,
 		players:           players,
 		template:          template,
 		optionIDAcceptors: optionIDAcceptors,
-		textAcceptors:     textAcceptors,
 	}
 }
 
@@ -207,15 +192,22 @@ func (u *Usecase) GetExtendedSessions(ctx context.Context, gameID uuid.UUID, pag
 }
 
 func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID uuid.UUID) (*model.Game, error) {
-	specificGame, err := u.games.GetWithTx(ctx, tx, gameID)
+	specificGames, err := u.games.GetBySpecWithTx(ctx, tx, &game.Spec{
+		IDs: []uuid.UUID{gameID},
+	})
 	if err != nil {
 		return nil, err
 	}
+	if len(specificGames) == 0 {
+		return nil, contracts.ErrGameNotFound
+	}
+
+	specificGame := specificGames[0]
 	if specificGame.Status != model.GameStatusStarted {
 		return nil, errors.New("game isn't started")
 	}
 
-	return specificGame, nil
+	return &specificGame, nil
 }
 
 func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID uuid.UUID, gameID uuid.UUID) (*model.Session, error) {

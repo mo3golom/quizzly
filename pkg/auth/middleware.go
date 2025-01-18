@@ -1,9 +1,10 @@
 package auth
 
 import (
+	"net/http"
+
 	"github.com/google/uuid"
 	"golang.org/x/net/context"
-	"net/http"
 )
 
 type authMiddleware struct {
@@ -18,6 +19,11 @@ func (s *authMiddleware) Trace(delegate func(http.ResponseWriter, *http.Request)
 		enrichContextFn := func(r *http.Request) context.Context {
 			token, err := s.cookieService.getToken(r)
 			if err != nil || token == "" {
+				return r.Context()
+			}
+
+			err = s.tokenService.verifyToken(token)
+			if err != nil {
 				return r.Context()
 			}
 

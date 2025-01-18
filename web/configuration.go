@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/slok/go-http-metrics/middleware"
-	middlewarestd "github.com/slok/go-http-metrics/middleware/std"
 	"net/http"
 	"os"
 	"quizzly/internal/quizzly"
@@ -26,6 +23,10 @@ import (
 	playerService "quizzly/web/frontend/services/player"
 	sessionService "quizzly/web/frontend/services/session"
 	"time"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/slok/go-http-metrics/middleware"
+	middlewarestd "github.com/slok/go-http-metrics/middleware/std"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
@@ -104,23 +105,28 @@ func adminRoutes(
 
 	mux.HandleFunc("GET /admin/question/new", "/admin/question/new", security.Auth(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))
 	mux.HandleFunc("POST /admin/question", "/admin/question", security.Auth(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
-		quizzlyConfig.Question.MustGet(),
+		quizzlyConfig.Game.MustGet(),
 		filesManager,
 	), log)))
 	mux.HandleFunc("DELETE /admin/question", "/admin/question", security.Auth(handlers.Templ[question.GetDeleteData](question.NewPostDeleteHandler(
-		quizzlyConfig.Question.MustGet(),
-	), log)))
-	mux.HandleFunc("GET /admin/question/list", "/admin/question/list", security.Auth(handlers.Templ[question.GetListData](question.NewGetHandler(quizzlyConfig.Question.MustGet()), log)))
-
-	mux.HandleFunc("GET /admin/game/new", "/admin/game/new", security.Auth(handlers.Templ[struct{}](game.NewGetFormHandler(), log)))
-	mux.HandleFunc("POST /admin/game", "/admin/game", security.Auth(handlers.Templ[game.PostCreateData](game.NewPostCreateHandler(quizzlyConfig.Game.MustGet()), log)))
-	mux.HandleFunc("GET /admin/game/{game_id}", "/admin/game/:game_id", security.Auth(handlers.Templ[game.GetAdminPageData](game.NewGetPageHandler(
 		quizzlyConfig.Game.MustGet(),
-		config.sessions.MustGet(),
+	), log)))
+	mux.HandleFunc("GET /admin/question/list", "/admin/question/list", security.Auth(handlers.Templ[question.GetListData](question.NewGetHandler(quizzlyConfig.Game.MustGet()), log)))
+
+	mux.HandleFunc("GET /admin/game/new", "/admin/game/new", security.Auth(handlers.Templ[struct{}](game.NewGetCreateHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("GET /admin/game/{game_id}", "/admin/game/:game_id", security.Auth(handlers.Templ[game.GetGamePageData](game.NewGetPageHandler(
+		quizzlyConfig.Game.MustGet(),
 		config.link.MustGet(),
 	), log)))
-	mux.HandleFunc("POST /admin/game/start", "/admin/game/start", security.Auth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(quizzlyConfig.Game.MustGet()), log)))
-	mux.HandleFunc("POST /admin/game/finish", "/admin/game/finish", security.Auth(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("POST /admin/game/{game_id}/update", "/admin/game/:game_id/update", security.Auth(handlers.Templ[game.PostUpdateData](game.NewPostUpdateHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("POST /admin/game/start", "/admin/game/start", security.Auth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(
+		quizzlyConfig.Game.MustGet(),
+		config.link.MustGet(),
+	), log)))
+	mux.HandleFunc("POST /admin/game/finish", "/admin/game/finish", security.Auth(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(
+		quizzlyConfig.Game.MustGet(),
+		config.link.MustGet(),
+	), log)))
 
 	mux.HandleFunc("GET /admin/game/list", "/admin/game/list", security.Auth(handlers.Templ[struct{}](game.NewGetListHandler(quizzlyConfig.Game.MustGet()), log)))
 	mux.HandleFunc("GET /admin/game/session/list", "/admin/game/session/list", security.Auth(handlers.Templ[game.GetSessionListData](game.NewGetSessionListHandler(config.sessions.MustGet()), log)))
@@ -296,7 +302,7 @@ func (s *ServerInstance) startHTTP(ctx context.Context) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			s.log.Error("panic occurred", errors.New(fmt.Sprintf("%v", err)))
+			s.log.Error("panic occurred", fmt.Errorf("%W", err))
 		}
 	}()
 
@@ -315,11 +321,11 @@ func (s *ServerInstance) Stop(ctx context.Context) {
 	s.log.Info("Shutting down serverHTTP...")
 
 	// Create a context with a timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	// Shutdown the serverHTTP
-	if err := s.serverHTTP.Shutdown(ctx); err != nil {
+	if err := s.serverHTTP.Shutdown(ctxWithTimeout); err != nil {
 		s.log.Error("serverHTTP shutdown error", err)
 	}
 	s.log.Info("Server gracefully stopped")
