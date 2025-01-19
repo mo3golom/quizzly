@@ -10,6 +10,9 @@ on:
     types: [closed]
     branches:
       - main
+  push:
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
