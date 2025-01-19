@@ -90,7 +90,7 @@ func QuestionListItem(order int, question handlers.Question, answerOptions []tem
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm flex-grow\"><div class=\"grid gap-4 grid-cols-4 content-start\"><div class=\"grid-col col-span-3 p-4\"><div class=\"justify-start flex gap-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"card card-bordered mb-4 bg-white border-base-200 border-4 relative shadow-sm flex-grow w-full\"><div class=\"grid gap-4 grid-cols-4 content-start\"><div class=\"grid-col col-span-3 p-4\"><div class=\"justify-start flex gap-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
