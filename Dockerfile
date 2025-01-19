@@ -20,5 +20,6 @@ COPY --from=builder "$APP_HOME"/app $APP_HOME
 COPY --from=builder "$APP_HOME"/web/frontend/public "$APP_HOME"/web/frontend/public
 RUN ls -ra
 
-EXPOSE 8010
+EXPOSE 3000
+EXPOSE 3333
 CMD ["./app"]
