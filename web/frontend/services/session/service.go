@@ -2,8 +2,6 @@ package session
 
 import (
 	"fmt"
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -14,6 +12,9 @@ import (
 	frontend_admin_game "quizzly/web/frontend/templ/admin/game"
 	"sort"
 	"time"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 type (
@@ -71,12 +72,9 @@ func (s *DefaultService) List(request *http.Request, spec *Spec, page int64, lim
 	})
 	return &ListOut{
 		Result: slices.SafeMap(specificSessions.Result, func(session model.ExtendedSession) templ.Component {
-			sessionStartedAt := findSessionStart(session.Items)
-			sessionLastQuestionAnsweredAt := findSessionLastAnswerTime(session.Items)
 			moscowLocation, _ := time.LoadLocation("Europe/Moscow")
-			if sessionStartedAt != nil {
-				sessionStartedAt = structs.Pointer(sessionStartedAt.In(moscowLocation))
-			}
+			sessionStartedAt := session.CreatedAt.In(moscowLocation)
+			sessionLastQuestionAnsweredAt := findSessionLastAnswerTime(session.Items)
 			if sessionLastQuestionAnsweredAt != nil {
 				sessionLastQuestionAnsweredAt = structs.Pointer(sessionLastQuestionAnsweredAt.In(moscowLocation))
 			}
@@ -97,22 +95,6 @@ func (s *DefaultService) List(request *http.Request, spec *Spec, page int64, lim
 		}),
 		TotalCount: specificSessions.TotalCount,
 	}, nil
-}
-
-func findSessionStart(in []model.SessionItem) *time.Time {
-	var minimum *time.Time
-	for _, item := range in {
-		if minimum == nil {
-			minimum = &item.CreatedAt
-			continue
-		}
-
-		if item.CreatedAt.Before(*minimum) {
-			minimum = &item.CreatedAt
-		}
-	}
-
-	return minimum
 }
 
 func findSessionLastAnswerTime(in []model.SessionItem) *time.Time {

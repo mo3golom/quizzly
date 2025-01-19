@@ -52,10 +52,11 @@ type (
 	SessionStatus string
 
 	Session struct {
-		ID       int64
-		PlayerID uuid.UUID
-		GameID   uuid.UUID
-		Status   SessionStatus
+		ID        int64
+		PlayerID  uuid.UUID
+		GameID    uuid.UUID
+		Status    SessionStatus
+		CreatedAt time.Time
 	}
 
 	ExtendedSession struct {
