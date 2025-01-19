@@ -119,3 +119,21 @@ func (q *QuestionMap) Empty() bool {
 func (q *QuestionMap) Len() int {
 	return len(q.items)
 }
+
+func (q *QuestionMap) Keys() []uuid.UUID {
+	result := make([]uuid.UUID, 0, len(q.items))
+	for key := range q.items {
+		result = append(result, key)
+	}
+
+	return result
+}
+
+func (q *QuestionMap) Values() []Question {
+	result := make([]Question, 0, len(q.items))
+	for _, item := range q.items {
+		result = append(result, item.question)
+	}
+
+	return result
+}

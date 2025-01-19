@@ -1,11 +1,13 @@
 package game
 
 import (
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/web/frontend/services/session"
+	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 	frontendComponents "quizzly/web/frontend/templ/components"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 const (
@@ -48,6 +50,7 @@ func (h *GetSessionListHandler) Handle(_ http.ResponseWriter, request *http.Requ
 	}
 
 	return frontendComponents.Composition(
+		frontendAdminGame.SessionListStatistics(sessionList.TotalCount),
 		frontendComponents.Table(
 			[]string{
 				"Имя",
