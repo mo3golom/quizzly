@@ -11,7 +11,7 @@ import (
 	"quizzly/pkg/files"
 	"quizzly/pkg/logger"
 	"quizzly/pkg/structs"
-	"quizzly/pkg/variables"
+	variablesRepo "quizzly/pkg/variables"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/handlers/admin/game"
 	"quizzly/web/frontend/handlers/admin/login"
@@ -35,9 +35,8 @@ import (
 )
 
 const (
-	publicPath  = "web/frontend/public"
-	serverAddr  = ":3000"
-	metricsAddr = ":3333"
+	publicPath = "web/frontend/public"
+	serverAddr = ":3000"
 )
 
 const (
@@ -197,7 +196,7 @@ func publicRoutes(
 
 func NewServer(
 	log logger.Logger,
-	variables variables.Repository,
+	variables variablesRepo.Repository,
 	quizzlyConfig *quizzly.Configuration,
 	simpleAuth auth.SimpleAuth,
 	filesManager files.Manager,
@@ -253,6 +252,20 @@ func NewServer(
 	// Serve S3 and other files
 	mux.HandleFunc("GET /files/images/{image_name}", files2.NewGetImageHandler(filesManager, log).Handle())
 
+	// Serve metrics with basic auth
+	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+		providedUser, providedPassword, ok := r.BasicAuth()
+		user := variables.GetString(variablesRepo.MetricsUser)
+		password := variables.GetString(variablesRepo.MetricsPassword)
+
+		if !ok || providedUser != user || providedPassword != password {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		promhttp.Handler().ServeHTTP(w, r)
+	})
+
 	adminRoutes(muxExtended, config, log, quizzlyConfig, simpleAuth, filesManager)
 	publicRoutes(muxExtended, log, config, quizzlyConfig, simpleAuth)
 
@@ -284,15 +297,6 @@ func (s *ServerInstance) Start(ctx context.Context) {
 }
 
 func (s *ServerInstance) startHTTP(ctx context.Context) {
-	// Serve metrics.
-	// Serve our metrics.
-	go func() {
-		fmt.Println("metrics listening at", metricsAddr)
-		if err := http.ListenAndServe(metricsAddr, promhttp.Handler()); err != nil {
-			s.log.Error("error while serving metrics", err)
-		}
-	}()
-
 	go func() {
 		fmt.Println("Server listening on port ", s.serverHTTP.Addr)
 		if err := s.serverHTTP.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

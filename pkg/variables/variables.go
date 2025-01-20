@@ -25,6 +25,9 @@ var (
 	S3SecretKey = Environment[string]("S3_SECRET_KEY", "")
 	S3Bucket    = Environment[string]("S3_BUCKET", "")
 	S3UseSSL    = Environment[bool]("S3_USE_SSL", false)
+
+	MetricsUser     = Environment[string]("METRICS_USER", "")
+	MetricsPassword = Environment[string]("METRICS_PASSWORD", "")
 )
 
 type (
