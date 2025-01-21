@@ -25,7 +25,7 @@ templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Com
 			<button
 				id="play-page-submit-button"
 				type="submit"
-				class="btn drop-shadow-lg sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"
+				class="btn drop-shadow-lg font-normal sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"
 				disabled
 			>Ответить</button>
 		</div>
@@ -84,19 +84,17 @@ templ AnswerChoiceDescription(questionType model.QuestionType) {
 }
 
 templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption) {
-	<div class={ fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1", len(in)) }>
+	<div class={ fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1 h-full", len(in)) }>
 		for _, answerOption := range in {
-			<label>
+			<label class="h-full">
 				<input
 					type={ structs.Or(questionType == "choice", "radio", "checkbox") }
-					class="peer appearance-none"
+					class="peer hidden"
 					name="answer"
 					value={ fmt.Sprintf("%d", answerOption.ID) }
 				/>
-				<div class={ fmt.Sprintf("card cursor-pointer justify-self-stretch transition transition-all rounded-xl duration-200 outline outline-0 peer-checked:outline-4 peer-checked:outline-green-500 %s", answerOption.Color) }>
-					<div class="card-body flex p-4 pt-6 pb-6 text-xl text-white rounded-xl transition transition-all duration-100">
-						<div class="m-auto">{ answerOption.Text }</div>
-					</div>
+				<div class={ fmt.Sprintf("cursor-pointer h-full p-4 text-white text-xl justify-self-stretch transition transition-all rounded-xl duration-200 outline outline-0 peer-checked:outline-4 peer-checked:outline-green-500 %s", answerOption.Color) }>
+					{ answerOption.Text }
 				</div>
 			</label>
 		}

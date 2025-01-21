@@ -32,7 +32,15 @@ function initPlayPageQuestionForm() {
 
 function beforeRequestPlayPageQuestionForm(event) {
     let overlay = document.getElementById("game-page-overlay");
+
+    // Remove hidden and set initial opacity-0
     overlay.classList.remove("hidden");
+    overlay.classList.add("opacity-0");
+
+    // Force browser reflow to ensure transition works
+    overlay.offsetHeight;
+
+    // Add opacity-100 to trigger the transition
     overlay.classList.add("opacity-100");
     overlay.classList.remove("opacity-0");
 
