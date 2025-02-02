@@ -5,6 +5,27 @@ import "quizzly/pkg/structs"
 import "github.com/google/uuid"
 import "fmt"
 
+var (
+	answerOptionColors = [][]string{
+		{
+			"bg-orange-500",
+			"bg-orange-600",
+		},
+		{
+			"bg-green-500",
+			"bg-green-600",
+		},
+		{
+			"bg-rose-500",
+			"bg-rose-600",
+		},
+		{
+			"bg-teal-500",
+			"bg-teal-600",
+		},
+	}
+)
+
 templ Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ.Component, answerBlock templ.Component) {
 	<form
 		hx-post="/admin/question"
@@ -17,7 +38,7 @@ templ Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock temp
 	>
 		<input type="hidden" name="question_type" value={ string(questionType) }/>
 		<input type="hidden" name="game_id" value={ gameID.String() }/>
-		<div class={ "card text-primary-content rounded-2xl bg-blue-500" }>
+		<div class={ "card text-primary-content rounded-2xl bg-accent" }>
 			<div class="card-body p-4">
 				<div class="grid grid-cols-4 gap-4">
 					@questionBlock
@@ -28,7 +49,7 @@ templ Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock temp
 			</div>
 		</div>
 		<div class="mt-4 text-right">
-			<button type="submit" class={ "btn text-white min-w-60 rounded-2xl hover:bg-amber-600 border-0 bg-amber-500" }>
+			<button type="submit" class={ "btn btn-warning min-w-60 rounded-2xl" }>
 				Добавить
 			</button>
 		</div>
@@ -61,9 +82,9 @@ templ Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock temp
 }
 
 templ QuestionImageInput() {
-	<div class="self-start p-2 sm:p-4 bg-blue-600 rounded-lg w-full sm:w-auto h-full">
-		<label class="form-control w-full sm:max-w-xs cursor-pointer">
-			<div class="relative w-full h-24 sm:h-32 bg-white rounded-lg overflow-hidden">
+	<div class="self-start rounded-lg w-full sm:w-auto h-full">
+		<label class="form-control w-full h-full sm:max-w-xs cursor-pointer">
+			<div class="relative w-full h-36 sm:h-44 bg-white rounded-lg overflow-hidden">
 				<div id="image-placeholder" class="absolute inset-0 flex items-center justify-center text-gray-500 p-4 text-center text-sm sm:text-base">
 					Выбрать изображение
 				</div>
@@ -95,13 +116,13 @@ templ QuestionTextInput() {
 	</div>
 }
 
-templ AnswerChoiceInput(id uuid.UUID, color string, show bool) {
-	<div id={ fmt.Sprintf("answer-choice-input-%s", id.String()) } class={ fmt.Sprintf("card rounded-xl justify-self-stretch bg-%s-500 %s", color, structs.Or(show, "", "hidden")) }>
+templ AnswerChoiceInput(i int, id uuid.UUID, show bool) {
+	<div id={ fmt.Sprintf("answer-choice-input-%s", id.String()) } class={ fmt.Sprintf("card rounded-xl justify-self-stretch %s %s", structs.Or(i < len(answerOptionColors), answerOptionColors[i][0], "bg-stone-500"), structs.Or(show, "", "hidden")) }>
 		<div class="card-body p-2">
 			<div class="grid grid-cols-2 gap-4 items-start">
 				<div class="justify-self-start">
 					<button
-						class="btn btn-sm btn-ghost text-white"
+						class="btn btn-sm btn-ghost rounded-2xl text-white"
 						data-id={ id.String() }
 						onclick="showChoiceAddButton(this)"
 						type="button"
@@ -124,7 +145,7 @@ templ AnswerChoiceInput(id uuid.UUID, color string, show bool) {
 								value="1"
 								name="question_correct_answer"
 								type="radio"
-								class="radio radio-success radio-lg border-4 [--chkfg:white]"
+								class="radio radio-accent radio-lg border-4"
 								required
 							/>
 						</label>
@@ -134,7 +155,7 @@ templ AnswerChoiceInput(id uuid.UUID, color string, show bool) {
 			<textarea
 				id={ fmt.Sprintf("answer-choice-input-textarea-%s", id.String()) }
 				name="question_answer_option_text"
-				class={ fmt.Sprintf("textarea min-h-32 text-white focus:text-black focus:bg-white bg-%s-600 placeholder:text-gray-300", color) }
+				class={ fmt.Sprintf("textarea min-h-32 text-white focus:text-black focus:bg-white %s placeholder:text-gray-300", structs.Or(i < len(answerOptionColors), answerOptionColors[i][1], "bg-stone-600")) }
 				placeholder="Вариант ответа"
 			></textarea>
 		</div>
@@ -144,7 +165,7 @@ templ AnswerChoiceInput(id uuid.UUID, color string, show bool) {
 		class={ fmt.Sprintf("self-center justify-self-center %s", structs.Or(!show, "", "hidden")) }
 	>
 		<button
-			class={ fmt.Sprintf("btn border-0 text-lg text-white hover:bg-%s-600 bg-%s-500 ", color, color) }
+			class={ fmt.Sprintf("btn rounded-2xl border-0 text-lg text-white hover:%s %s", structs.Or(i < len(answerOptionColors), answerOptionColors[i][1], "bg-stone-600"), structs.Or(i < len(answerOptionColors), answerOptionColors[i][0], "bg-stone-500")) }
 			data-id={ id.String() }
 			onclick="showChoiceInput(this)"
 			type="button"

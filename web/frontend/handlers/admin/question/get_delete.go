@@ -1,10 +1,11 @@
 package question
 
 import (
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 type (
@@ -32,5 +33,5 @@ func (h *GetDeleteHandler) Handle(_ http.ResponseWriter, request *http.Request, 
 		return nil, err
 	}
 
-	return h.service.list(request.Context(), in.GameID, true)
+	return h.service.list(request.Context(), in.GameID, true, true)
 }

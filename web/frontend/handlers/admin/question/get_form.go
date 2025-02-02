@@ -31,10 +31,10 @@ func (h *GetFormHandler) Handle(_ http.ResponseWriter, _ *http.Request, in GetFo
 			frontendAdminQuestion.QuestionTextInput(),
 		),
 		frontendComponents.Composition(
-			frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "orange", true),
-			frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "pink", true),
-			frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "amber", false),
-			frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "red", false),
+			frontendAdminQuestion.AnswerChoiceInput(0, uuid.New(), true),
+			frontendAdminQuestion.AnswerChoiceInput(1, uuid.New(), true),
+			frontendAdminQuestion.AnswerChoiceInput(2, uuid.New(), false),
+			frontendAdminQuestion.AnswerChoiceInput(3, uuid.New(), false),
 		),
 	), nil
 }

@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"quizzly/pkg/structs"
-	"quizzly/pkg/transactional"
 	"time"
 )
 
@@ -13,7 +13,7 @@ const (
 )
 
 type DefaultCleaner struct {
-	template   transactional.Template
+	trm        trm.Manager
 	repository *defaultRepository
 }
 
@@ -26,7 +26,7 @@ func (c *DefaultCleaner) DetermineInterval(_ context.Context) (*time.Duration, e
 }
 
 func (c *DefaultCleaner) Perform(ctx context.Context) error {
-	return c.template.Execute(ctx, func(tx transactional.Tx) error {
-		return c.repository.clearExpiredLoginCodes(ctx, tx)
+	return c.trm.Do(ctx, func(ctx context.Context) error {
+		return c.repository.clearExpiredLoginCodes(ctx)
 	})
 }

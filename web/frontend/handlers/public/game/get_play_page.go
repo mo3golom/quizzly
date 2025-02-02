@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -13,9 +11,11 @@ import (
 	"quizzly/web/frontend/services/link"
 	"quizzly/web/frontend/services/page"
 	"quizzly/web/frontend/services/player"
-	frontend "quizzly/web/frontend/templ"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 type (
@@ -112,13 +112,11 @@ func (h *GetPlayPageHandler) Handle(writer http.ResponseWriter, request *http.Re
 		return frontendComponents.Redirect(h.linkService.GameResultsLink(game.ID, currentPlayer.ID)), nil
 	}
 
-	specificQuestionColor := handlers.QuestionTypePublicColors
 	answerOptions := make([]handlers.AnswerOption, 0, len(session.CurrentQuestion.AnswerOptions))
-	for i, answerOption := range session.CurrentQuestion.AnswerOptions {
+	for _, answerOption := range session.CurrentQuestion.AnswerOptions {
 		answerOptions = append(answerOptions, handlers.AnswerOption{
-			ID:    int64(answerOption.ID),
-			Text:  answerOption.Answer,
-			Color: frontend.ColorsMap[specificQuestionColor.AnswerOptionColors[i]][frontend.BgWithHoverColor],
+			ID:   int64(answerOption.ID),
+			Text: answerOption.Answer,
 		})
 	}
 

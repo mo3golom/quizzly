@@ -34,7 +34,7 @@ func NamePage(gameTitle *string, gameID uuid.UUID) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 = []any{"card text-primary-content rounded-2xl drop-shadow-lg bg-blue-500 drop-shadow-lg mb-2 mt-2"}
+		var templ_7745c5c3_Var2 = []any{"card text-white rounded-2xl bg-accent mb-2 mt-2"}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -61,7 +61,7 @@ func NamePage(gameTitle *string, gameID uuid.UUID) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"text-white mb-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6 float-start\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z\"></path></svg> <span class=\"ml-1\">Введите имя для начала игры</span></div><div class=\"join w-full\"><label class=\"input input-bordered flex items-center gap-2 w-full min-w-px rounded-xl join-item\"><input name=\"name\" type=\"text\" class=\"grow text-black\" placeholder=\"Имя игрока\" maxlength=\"25\" required></label> <button class=\"btn join-item btn bg-amber-500 hover:bg-amber-600 rounded-xl border-0 text-white\">Играть</button></div></form></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"mb-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6 float-start\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z\"></path></svg> <span class=\"ml-1\">Введите имя для начала игры</span></div><div class=\"join rounded-2xl w-full\"><label class=\"input input-bordered flex items-center gap-2 w-full min-w-px join-item\"><input name=\"name\" type=\"text\" class=\"grow text-black\" placeholder=\"Имя игрока\" maxlength=\"25\" required></label> <button class=\"btn btn-warning text-main-font text-xl join-item\">Играть</button></div></form></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

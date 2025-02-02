@@ -2,10 +2,8 @@ package session
 
 import (
 	"context"
-	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/transactional"
-
 	"github.com/google/uuid"
+	"quizzly/internal/quizzly/model"
 )
 
 type (
@@ -36,13 +34,13 @@ type (
 	}
 
 	Repository interface {
-		Insert(ctx context.Context, tx transactional.Tx, in *model.Session) error
-		Update(ctx context.Context, tx transactional.Tx, in *model.Session) error
-		GetBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *Spec) (*model.Session, error)
+		Insert(ctx context.Context, in *model.Session) error
+		Update(ctx context.Context, in *model.Session) error
+		GetBySpec(ctx context.Context, spec *Spec) (*model.Session, error)
 
-		InsertSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error
-		DeleteSessionItemsBySessionID(ctx context.Context, tx transactional.Tx, sessionID int64) error
-		GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error)
+		InsertSessionItem(ctx context.Context, in *model.SessionItem) error
+		DeleteSessionItemsBySessionID(ctx context.Context, sessionID int64) error
+		GetSessionBySpec(ctx context.Context, spec *ItemSpec) ([]model.SessionItem, error)
 		GetExtendedSessionsBySpec(ctx context.Context, spec *GetExtendedSessionSpec) (*GetExtendedSessionsBySpecOut, error)
 	}
 )

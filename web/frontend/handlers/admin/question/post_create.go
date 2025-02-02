@@ -3,13 +3,14 @@ package question
 import (
 	"bytes"
 	"errors"
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/files"
 	"quizzly/pkg/structs/collections/slices"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 const (
@@ -75,7 +76,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		return nil, err
 	}
 
-	return h.service.list(request.Context(), in.GameID, true)
+	return h.service.list(request.Context(), in.GameID, true, true)
 }
 
 func convert(in *NewPostData) (*model.Question, error) {

@@ -7,18 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	QuestionTypePublicColors = QuestionColor{
-		Color: "blue",
-		AnswerOptionColors: []string{
-			"orange",
-			"pink",
-			"amber",
-			"red",
-		},
-	}
-)
-
 type (
 	QuestionColor struct {
 		Color              string
@@ -80,13 +68,11 @@ type (
 		Text          string
 		Type          model.QuestionType
 		AnswerOptions []AnswerOption
-		Color         string
 	}
 
 	AnswerOption struct {
-		ID    int64
-		Text  string
-		Color string
+		ID   int64
+		Text string
 	}
 
 	AnswerResult struct {

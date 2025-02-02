@@ -1,36 +1,8 @@
 package frontend_admin_game
 
-import "quizzly/web/frontend/handlers"
-import "fmt"
-
-templ Form(game *handlers.Game) {
-	<form
-		hx-post={ fmt.Sprintf("/admin/game/%s/update", game.ID.String()) }
-		hx-target="this"
-		hx-swap="outerHTML"
-		hx-trigger="submit"
-		id="play-page-question-form"
-	>
-		<div class="mb-4">
-			<div class="flex items-center gap-4">
-				<div class="grow"></div>
-				<div class="flex gap-2 shrink-0">
-					<button
-						class="btn btn-sm bg-blue-500 hover:bg-blue-600 border-0 text-white"
-						type="submit"
-					>
-						<span>Сохранить</span>
-					</button>
-				</div>
-			</div>
-		</div>
-		<div class="mb-4"></div>
-	</form>
-}
-
 templ ActionAddQuestion() {
 	<button
-		class="btn bg-blue-500 hover:bg-blue-600 border-0 text-white mb-4"
+		class="btn btn-primary rounded-2xl mb-4"
 		onclick="addQuestionModal.showModal()"
 		type="button"
 	>

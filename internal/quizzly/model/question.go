@@ -26,10 +26,9 @@ type (
 	}
 
 	AnswerOption struct {
-		ID             AnswerOptionID
-		Answer         string
-		IsCorrect      bool
-		NextQuestionID *uuid.UUID
+		ID        AnswerOptionID
+		Answer    string
+		IsCorrect bool
 	}
 )
 

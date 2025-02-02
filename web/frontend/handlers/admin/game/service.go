@@ -1,8 +1,6 @@
 package game
 
 import (
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -10,6 +8,9 @@ import (
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 	frontendAdminQuestion "quizzly/web/frontend/templ/admin/question"
 	frontendComponents "quizzly/web/frontend/templ/components"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 const (
@@ -73,14 +74,14 @@ func (s *service) getGamePage(request *http.Request, gameID uuid.UUID) (templ.Co
 	}
 	handlersGame := convertModelGameToHandlersGame(game)
 
-	titleComponent := frontendAdminGame.Title(handlersGame)
-	questionsComponent := frontendAdminQuestion.QuestionListContainer(game.ID)
+	titleComponent := frontendAdminGame.Title(game.Title)
+	questionsComponent := frontendAdminQuestion.QuestionListContainer(game.ID, game.Status == model.GameStatusCreated)
 
 	if game.Status == model.GameStatusCreated {
-		titleComponent = frontendAdminGame.TitleInput(handlersGame)
+		titleComponent = frontendAdminGame.TitleInput(game.ID, game.Title)
 		questionsComponent = frontendComponents.Composition(
 			frontendAdminGame.ActionAddQuestion(),
-			frontendAdminQuestion.QuestionListContainer(game.ID),
+			questionsComponent,
 			frontendComponents.Modal(
 				"addQuestionModal",
 				"Добавить вопрос",
@@ -92,10 +93,10 @@ func (s *service) getGamePage(request *http.Request, gameID uuid.UUID) (templ.Co
 						frontendAdminQuestion.QuestionTextInput(),
 					),
 					frontendComponents.Composition(
-						frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "orange", true),
-						frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "pink", true),
-						frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "amber", false),
-						frontendAdminQuestion.AnswerChoiceInput(uuid.New(), "red", false),
+						frontendAdminQuestion.AnswerChoiceInput(0, uuid.New(), true),
+						frontendAdminQuestion.AnswerChoiceInput(1, uuid.New(), true),
+						frontendAdminQuestion.AnswerChoiceInput(2, uuid.New(), false),
+						frontendAdminQuestion.AnswerChoiceInput(3, uuid.New(), false),
 					),
 				),
 			),

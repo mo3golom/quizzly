@@ -5,32 +5,32 @@ import "strconv"
 import "fmt"
 
 templ PaginationComposition(buttons ...templ.Component) {
-    <div class="mx-auto max-w-max">
-        if len(buttons) == 1 {
-            @buttons[0]
-        } else {
-            <div class="join">
-            for _, button := range buttons {
-                @button
-            }
-            </div>
-        }
-    </div>
+	<div class="mx-auto max-w-max p-4">
+		if len(buttons) == 1 {
+			@buttons[0]
+		} else {
+			<div class="join">
+				for _, button := range buttons {
+					@button
+				}
+			</div>
+		}
+	</div>
 }
 
 templ PageButton(number int, isActive bool) {
-    <button
-        class={fmt.Sprintf("join-item btn %s", structs.Or(isActive, "btn-active", ""))}
-        type={structs.Or(isActive,"button","submit")}
-        name="page_number"
-        value={ strconv.Itoa(number) }
-    >
-    { strconv.Itoa(number) }
-    </button>
+	<button
+		class={ fmt.Sprintf("join-item btn btn-secondary %s", structs.Or(isActive, "btn-active", "")) }
+		type={ structs.Or(isActive, "button", "submit") }
+		name="page_number"
+		value={ strconv.Itoa(number) }
+	>
+		{ strconv.Itoa(number) }
+	</button>
 }
 
 templ Dots() {
-    <button class={"join-item btn btn-disabled"}>
-       ...
-    </button>
+	<button class={ "join-item btn btn-secondary btn-disabled" }>
+		...
+	</button>
 }

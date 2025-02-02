@@ -37,14 +37,14 @@ func DividerVerticalLight(dividerText string, components ...templ.Component) tem
 				return templ_7745c5c3_Err
 			}
 			if i < len(components)-1 {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"divider divider-light text-white text-big-noodle text-2xl\">")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-primary-content text-main-font text-3xl m-auto\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(dividerText)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/components/divider.templ`, Line: 9, Col: 95}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/components/divider.templ`, Line: 8, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {

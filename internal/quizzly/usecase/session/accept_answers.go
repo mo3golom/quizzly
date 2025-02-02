@@ -8,7 +8,6 @@ import (
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/pkg/transactional"
 	"strconv"
 	"time"
 
@@ -17,12 +16,12 @@ import (
 
 func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswersIn) (*contracts.AcceptAnswersOut, error) {
 	var result *contracts.AcceptAnswersOut
-	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, in.GameID); err != nil {
+	return result, u.trm.Do(ctx, func(ctx context.Context) error {
+		if _, err := u.getActiveGame(ctx, in.GameID); err != nil {
 			return err
 		}
 
-		specificSession, err := u.getSession(ctx, tx, in.PlayerID, in.GameID)
+		specificSession, err := u.getSession(ctx, in.PlayerID, in.GameID)
 		if err != nil {
 			return err
 		}
@@ -48,7 +47,6 @@ func (u *Usecase) AcceptAnswers(ctx context.Context, in *contracts.AcceptAnswers
 
 		return u.sessions.InsertSessionItem(
 			ctx,
-			tx,
 			&model.SessionItem{
 				SessionID:  specificSession.ID,
 				QuestionID: in.QuestionID,

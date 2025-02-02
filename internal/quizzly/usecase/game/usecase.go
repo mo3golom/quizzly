@@ -2,62 +2,57 @@ package game
 
 import (
 	"context"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/google/uuid"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/session"
 	"quizzly/pkg/structs"
-	"quizzly/pkg/transactional"
 )
 
 type Usecase struct {
 	games    game.Repository
 	sessions session.Repository
-	template transactional.Template
+	trm      trm.Manager
 }
 
 func NewUsecase(
 	games game.Repository,
 	sessions session.Repository,
-	template transactional.Template,
+	trm trm.Manager,
 ) contracts.GameUsecase {
 	return &Usecase{
 		games:    games,
 		sessions: sessions,
-		template: template,
+		trm:      trm,
 	}
 }
 
 func (u *Usecase) Create(ctx context.Context, in *contracts.CreateGameIn) (uuid.UUID, error) {
 	id := uuid.New()
 
-	return id, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.games.Upsert(
-			ctx,
-			tx,
-			&model.Game{
-				ID:       id,
-				AuthorID: in.AuthorID,
-				Status:   model.GameStatusCreated,
-				Type:     model.GameTypeAsync,
-				Title:    in.Title,
-				Settings: in.Settings,
-			},
-		)
-	})
+	return id, u.games.Upsert(
+		ctx,
+		&model.Game{
+			ID:       id,
+			AuthorID: in.AuthorID,
+			Status:   model.GameStatusCreated,
+			Type:     model.GameTypeAsync,
+			Title:    in.Title,
+			Settings: in.Settings,
+		},
+	)
 
 }
 
 func (u *Usecase) Update(ctx context.Context, in *model.Game) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.games.Upsert(ctx, tx, in)
-	})
+	return u.games.Upsert(ctx, in)
 }
 
 func (u *Usecase) Start(ctx context.Context, id uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificGames, err := u.games.GetBySpecWithTx(ctx, tx, &game.Spec{
+	return u.trm.Do(ctx, func(ctx context.Context) error {
+		specificGames, err := u.games.GetBySpec(ctx, &game.Spec{
 			IDs: []uuid.UUID{id},
 		})
 		if err != nil {
@@ -78,13 +73,13 @@ func (u *Usecase) Start(ctx context.Context, id uuid.UUID) error {
 		}
 
 		specificGame.Status = model.GameStatusStarted
-		return u.games.Upsert(ctx, tx, &specificGame)
+		return u.games.Upsert(ctx, &specificGame)
 	})
 }
 
 func (u *Usecase) Finish(ctx context.Context, id uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificGames, err := u.games.GetBySpecWithTx(ctx, tx, &game.Spec{
+	return u.trm.Do(ctx, func(ctx context.Context) error {
+		specificGames, err := u.games.GetBySpec(ctx, &game.Spec{
 			IDs: []uuid.UUID{id},
 		})
 		if err != nil {
@@ -96,7 +91,7 @@ func (u *Usecase) Finish(ctx context.Context, id uuid.UUID) error {
 
 		specificGame := specificGames[0]
 		specificGame.Status = model.GameStatusFinished
-		return u.games.Upsert(ctx, tx, &specificGame)
+		return u.games.Upsert(ctx, &specificGame)
 	})
 }
 
@@ -137,65 +132,24 @@ func (u *Usecase) CreateQuestion(ctx context.Context, in *model.Question) error 
 		in.ID = uuid.New()
 	}
 
-	err := u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.games.InsertQuestion(ctx, tx, in)
-	})
-	if err != nil {
-		return err
-	}
-
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		questions, err := u.games.GetQuestionsBySpecWithTx(ctx, tx, &game.QuestionsSpec{
-			GameID: &in.GameID,
-			Order: &game.Order{
-				Field:     "created_at",
-				Direction: "desc",
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		if len(questions) <= 1 {
-			return nil
-		}
-
-		previousQuestion := &questions[1] // get previous question
-		for i := range previousQuestion.AnswerOptions {
-			if previousQuestion.AnswerOptions[i].NextQuestionID != nil {
-				continue
-			}
-
-			previousQuestion.AnswerOptions[i].NextQuestionID = &in.ID
-		}
-
-		return u.games.UpdateQuestion(ctx, tx, previousQuestion)
-	})
+	return u.games.InsertQuestion(ctx, in)
 }
 
 func (u *Usecase) UpdateQuestion(ctx context.Context, in *model.Question) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.games.UpdateQuestion(ctx, tx, in)
-	})
+	return u.games.UpdateQuestion(ctx, in)
 }
 
 func (u *Usecase) DeleteQuestion(ctx context.Context, id uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.games.DeleteQuestion(ctx, tx, id)
-	})
+	return u.games.DeleteQuestion(ctx, id)
 }
 
-func (u *Usecase) GetQuestions(ctx context.Context, gameID uuid.UUID) (*model.QuestionMap, error) {
+func (u *Usecase) GetQuestions(ctx context.Context, gameID uuid.UUID) ([]model.Question, error) {
 	result, err := u.games.GetQuestionsBySpec(ctx, &game.QuestionsSpec{
 		GameID: &gameID,
-		Order: &game.Order{
-			Field:     "created_at",
-			Direction: "asc",
-		},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return model.NewQuestionMap(result), nil
+	return result, nil
 }

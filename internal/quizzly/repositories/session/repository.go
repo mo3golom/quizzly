@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/pkg/transactional"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -55,24 +55,29 @@ type (
 	}
 
 	DefaultRepository struct {
-		db *sqlx.DB
+		sqlx *sqlx.DB
+		tx   *trmsqlx.CtxGetter
 	}
 )
 
-func NewRepository(db *sqlx.DB) Repository {
-	return &DefaultRepository{db: db}
+func NewRepository(sqlx *sqlx.DB, tx *trmsqlx.CtxGetter) Repository {
+	return &DefaultRepository{sqlx: sqlx, tx: tx}
 }
 
-func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Session) error {
+func (r *DefaultRepository) db(ctx context.Context) trmsqlx.Tr {
+	return r.tx.DefaultTrOrDB(ctx, r.sqlx)
+}
+
+func (r *DefaultRepository) Insert(ctx context.Context, in *model.Session) error {
 	const query = `
 		insert into player_session (game_id, player_id, status) values ($1, $2, $3)
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.GameID, in.PlayerID, in.Status)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.GameID, in.PlayerID, in.Status)
 	return err
 }
 
-func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in *model.Session) error {
+func (r *DefaultRepository) Update(ctx context.Context, in *model.Session) error {
 	const query = `
 		update player_session set 
 			status = $2,
@@ -80,11 +85,11 @@ func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in 
 		where id = $1
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Status)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.ID, in.Status)
 	return err
 }
 
-func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *Spec) (*model.Session, error) {
+func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) (*model.Session, error) {
 	const query = `
 		select id, game_id, player_id, status, created_at
 		from player_session 
@@ -93,7 +98,7 @@ func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactiona
 	`
 
 	var result sqlxSession
-	if err := tx.GetContext(ctx, &result, query, spec.PlayerID, spec.GameID); err != nil {
+	if err := r.db(ctx).GetContext(ctx, &result, query, spec.PlayerID, spec.GameID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, contracts.ErrSessionNotFound
 		}
@@ -110,7 +115,7 @@ func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactiona
 	}, nil
 }
 
-func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactional.Tx, in *model.SessionItem) error {
+func (r *DefaultRepository) InsertSessionItem(ctx context.Context, in *model.SessionItem) error {
 	const query = `
 		insert into player_session_item (session_id, question_id, answers, is_correct, answered_at) 
 		values ($1, $2, $3, $4, $5)
@@ -121,7 +126,7 @@ func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactio
 		return err
 	}
 
-	_, err = tx.ExecContext(
+	_, err = r.db(ctx).ExecContext(
 		ctx,
 		query,
 		in.SessionID,
@@ -133,16 +138,16 @@ func (r *DefaultRepository) InsertSessionItem(ctx context.Context, tx transactio
 	return err
 }
 
-func (r *DefaultRepository) DeleteSessionItemsBySessionID(ctx context.Context, tx transactional.Tx, sessionID int64) error {
+func (r *DefaultRepository) DeleteSessionItemsBySessionID(ctx context.Context, sessionID int64) error {
 	const query = `
 		delete from player_session_item where session_id = $1
 	`
 
-	_, err := tx.ExecContext(ctx, query, sessionID)
+	_, err := r.db(ctx).ExecContext(ctx, query, sessionID)
 	return err
 }
 
-func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *ItemSpec) ([]model.SessionItem, error) {
+func (r *DefaultRepository) GetSessionBySpec(ctx context.Context, spec *ItemSpec) ([]model.SessionItem, error) {
 	const query = `
 		select psi.id, psi.session_id, psi.question_id, psi.answers, psi.is_correct, psi.answered_at, psi.created_at
 		from player_session_item as psi
@@ -153,7 +158,7 @@ func (r *DefaultRepository) GetSessionBySpecWithTx(ctx context.Context, tx trans
 	`
 
 	var result []sqlxSessionItem
-	if err := tx.SelectContext(ctx, &result, query, spec.PlayerID, spec.GameID, spec.QuestionID); err != nil {
+	if err := r.db(ctx).SelectContext(ctx, &result, query, spec.PlayerID, spec.GameID, spec.QuestionID); err != nil {
 		return nil, err
 	}
 
@@ -194,7 +199,7 @@ func (r *DefaultRepository) getExtendedSessionsBySpec(ctx context.Context, spec 
 	}
 
 	var result []sqlxSessionExtended
-	if err := r.db.SelectContext(ctx, &result, query, spec.GameID, limit, offset); err != nil {
+	if err := r.db(ctx).SelectContext(ctx, &result, query, spec.GameID, limit, offset); err != nil {
 		return nil, err
 	}
 
@@ -242,7 +247,7 @@ func (r *DefaultRepository) getBySpecTotalCount(ctx context.Context, spec *GetEx
 	query := buildBaseGetExtendedSessionsBySpecQuery("count(distinct(ps.id))")
 
 	var result int64
-	if err := r.db.GetContext(
+	if err := r.db(ctx).GetContext(
 		ctx,
 		&result,
 		query,

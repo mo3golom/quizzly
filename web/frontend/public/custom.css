@@ -1,10 +1,10 @@
 @font-face {
-    font-family: "bigNoodleFont";
-    src: url(/files/public/bignoodletoooblique.ttf);
+    font-family: "mainFont";
+    src: url(/files/public/pribambas.ttf);
 }
 
-.text-big-noodle {
-    font-family: "bigNoodleFont", sans-serif;
+.text-main-font {
+    font-family: "mainFont", sans-serif;
 }
 
 .bg-base-disabled {

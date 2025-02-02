@@ -8,6 +8,15 @@ import "quizzly/internal/quizzly/model"
 import "quizzly/web/frontend/templ/components"
 import "quizzly/pkg/structs"
 
+var (
+	answerOptionColors = []string{
+		"bg-orange-500 hover:bg-orange-600",
+		"bg-green-500 hover:bg-green-600",
+		"bg-rose-500 hover:bg-rose-600",
+		"bg-teal-500 hover:bg-teal-600",
+	}
+)
+
 templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Component) {
 	<form
 		hx-post={ fmt.Sprintf("/game/%s", gameID.String()) }
@@ -21,11 +30,11 @@ templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Com
 		<input name="id" type="hidden" value={ gameID.String() }/>
 		<input name="player-id" type="hidden" value={ playerID.String() }/>
 		@frontend_components.Composition(components...)
-		<div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-indigo-950 sm:bg-transparent bottom-0 rounded-t-2xl left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
+		<div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-secondary sm:bg-transparent bottom-0 left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
 			<button
 				id="play-page-submit-button"
 				type="submit"
-				class="btn drop-shadow-lg font-normal sm:drop-shadow-none bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl text-xl"
+				class="btn btn-warning rounded-2xl text-main-font text-xl sm:text-2xl w-full"
 				disabled
 			>Ответить</button>
 		</div>
@@ -36,7 +45,7 @@ templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Com
 }
 
 templ Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Component) {
-	<div class={ "card text-primary-content rounded-2xl drop-shadow-lg mb-2 mt-2 bg-blue-500" }>
+	<div class={ "card text-accent-content mb-2 mt-2 bg-accent" }>
 		<div class="card-body p-4">
 			<input name="question-id" type="hidden" value={ id.String() }/>
 			@questionBlock
@@ -70,7 +79,7 @@ templ AnswerChoiceDescription(questionType model.QuestionType) {
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 float-start">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
 		</svg>
-		<span>
+		<span class="ml-1">
 			switch questionType {
 				case "choice":
 					Выберите только один правильный ответ
@@ -85,7 +94,7 @@ templ AnswerChoiceDescription(questionType model.QuestionType) {
 
 templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption) {
 	<div class={ fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1 h-full", len(in)) }>
-		for _, answerOption := range in {
+		for i, answerOption := range in {
 			<label class="h-full">
 				<input
 					type={ structs.Or(questionType == "choice", "radio", "checkbox") }
@@ -93,7 +102,7 @@ templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerO
 					name="answer"
 					value={ fmt.Sprintf("%d", answerOption.ID) }
 				/>
-				<div class={ fmt.Sprintf("cursor-pointer h-full p-4 text-white text-xl justify-self-stretch transition transition-all rounded-xl duration-200 outline outline-0 peer-checked:outline-4 peer-checked:outline-green-500 %s", answerOption.Color) }>
+				<div class={ fmt.Sprintf("cursor-pointer h-full p-4 text-white text-xl justify-self-stretch transition transition-all rounded-xl duration-200 outline outline-0 outline-amber-400 peer-checked:outline-4 %s", structs.Or(i < len(answerOptionColors), answerOptionColors[i], "bg-stone-500 hover:bg-stone-600")) }>
 					{ answerOption.Text }
 				</div>
 			</label>
@@ -104,10 +113,16 @@ templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerO
 templ Progress(progress *handlers.SessionProgress) {
 	<div class="self-center justify-self-start">
 		<progress
-			class="progress progress-warning h-4 rounded-2xl w-20 sm:w-32 bg-amber-800 drop-shadow-lg"
+			class="progress progress-secondary h-4 rounded-2xl w-20 sm:w-32"
 			value={ strconv.Itoa(progress.Answered) }
 			max={ strconv.Itoa(progress.Total) }
 		></progress>
-		<span class="ml-1 align-bottom font-bold text-white text-big-noodle text-xl">{ strconv.Itoa(progress.Answered) } / { strconv.Itoa(progress.Total) }</span>
+		<span class="ml-1 align-bottom font-bold text-primary-content text-main-font text-xl">{ strconv.Itoa(progress.Answered) } / { strconv.Itoa(progress.Total) }</span>
+	</div>
+}
+
+templ Player(name string) {
+	<div class="font-bold text-primary-content text-main-font text-2xl justify-self-end">
+		{ name }
 	</div>
 }

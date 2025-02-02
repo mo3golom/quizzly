@@ -3,14 +3,13 @@ package session
 import (
 	"context"
 	"errors"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
+	"github.com/google/uuid"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/internal/quizzly/repositories/player"
 	"quizzly/internal/quizzly/repositories/session"
-	"quizzly/pkg/transactional"
-
-	"github.com/google/uuid"
 )
 
 type (
@@ -22,7 +21,7 @@ type (
 		sessions session.Repository
 		games    game.Repository
 		players  player.Repository
-		template transactional.Template
+		trm      trm.Manager
 
 		optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor
 	}
@@ -32,21 +31,21 @@ func NewUsecase(
 	sessions session.Repository,
 	games game.Repository,
 	players player.Repository,
-	template transactional.Template,
+	trm trm.Manager,
 	optionIDAcceptors map[model.QuestionType]AnswerOptionIDAcceptor,
 ) contracts.SessionUsecase {
 	return &Usecase{
 		sessions:          sessions,
 		games:             games,
 		players:           players,
-		template:          template,
+		trm:               trm,
 		optionIDAcceptors: optionIDAcceptors,
 	}
 }
 
 func (u *Usecase) Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
+	return u.trm.Do(ctx, func(ctx context.Context) error {
+		if _, err := u.getActiveGame(ctx, gameID); err != nil {
 			return err
 		}
 
@@ -55,7 +54,7 @@ func (u *Usecase) Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUI
 			return err
 		}
 		if len(specificPlayers) == 0 {
-			err = u.players.Insert(ctx, tx, &model.Player{
+			err = u.players.Insert(ctx, &model.Player{
 				ID:   playerID,
 				Name: "unknown",
 			})
@@ -66,7 +65,6 @@ func (u *Usecase) Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUI
 
 		return u.sessions.Insert(
 			ctx,
-			tx,
 			&model.Session{
 				PlayerID: playerID,
 				GameID:   gameID,
@@ -77,12 +75,12 @@ func (u *Usecase) Start(ctx context.Context, gameID uuid.UUID, playerID uuid.UUI
 }
 
 func (u *Usecase) Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
+	return u.trm.Do(ctx, func(ctx context.Context) error {
+		if _, err := u.getActiveGame(ctx, gameID); err != nil {
 			return err
 		}
 
-		specificPlayerGame, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+		specificPlayerGame, err := u.sessions.GetBySpec(ctx, &session.Spec{
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
@@ -94,17 +92,17 @@ func (u *Usecase) Finish(ctx context.Context, gameID uuid.UUID, playerID uuid.UU
 		}
 
 		specificPlayerGame.Status = model.SessionStatusFinished
-		return u.sessions.Update(ctx, tx, specificPlayerGame)
+		return u.sessions.Update(ctx, specificPlayerGame)
 	})
 }
 
 func (u *Usecase) Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		if _, err := u.getActiveGame(ctx, tx, gameID); err != nil {
+	return u.trm.Do(ctx, func(ctx context.Context) error {
+		if _, err := u.getActiveGame(ctx, gameID); err != nil {
 			return err
 		}
 
-		specificPlayerGame, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+		specificPlayerGame, err := u.sessions.GetBySpec(ctx, &session.Spec{
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
@@ -116,20 +114,20 @@ func (u *Usecase) Restart(ctx context.Context, gameID uuid.UUID, playerID uuid.U
 			return err
 		}
 
-		err = u.sessions.DeleteSessionItemsBySessionID(ctx, tx, specificPlayerGame.ID)
+		err = u.sessions.DeleteSessionItemsBySessionID(ctx, specificPlayerGame.ID)
 		if err != nil {
 			return err
 		}
 
 		specificPlayerGame.Status = model.SessionStatusStarted
-		return u.sessions.Update(ctx, tx, specificPlayerGame)
+		return u.sessions.Update(ctx, specificPlayerGame)
 	})
 }
 
 func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID uuid.UUID) (*model.SessionStatistics, error) {
 	var result *model.SessionStatistics
-	return result, u.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificPlayerGame, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+	return result, u.trm.Do(ctx, func(ctx context.Context) error {
+		specificPlayerGame, err := u.sessions.GetBySpec(ctx, &session.Spec{
 			PlayerID: playerID,
 			GameID:   gameID,
 		})
@@ -140,9 +138,8 @@ func (u *Usecase) GetStatistics(ctx context.Context, gameID uuid.UUID, playerID 
 			return contracts.ErrSessionNotFinished
 		}
 
-		sessionItems, err := u.sessions.GetSessionBySpecWithTx(
+		sessionItems, err := u.sessions.GetSessionBySpec(
 			ctx,
-			tx,
 			&session.ItemSpec{
 				PlayerID: playerID,
 				GameID:   gameID,
@@ -191,8 +188,8 @@ func (u *Usecase) GetExtendedSessions(ctx context.Context, gameID uuid.UUID, pag
 	}, nil
 }
 
-func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID uuid.UUID) (*model.Game, error) {
-	specificGames, err := u.games.GetBySpecWithTx(ctx, tx, &game.Spec{
+func (u *Usecase) getActiveGame(ctx context.Context, gameID uuid.UUID) (*model.Game, error) {
+	specificGames, err := u.games.GetBySpec(ctx, &game.Spec{
 		IDs: []uuid.UUID{gameID},
 	})
 	if err != nil {
@@ -210,8 +207,8 @@ func (u *Usecase) getActiveGame(ctx context.Context, tx transactional.Tx, gameID
 	return &specificGame, nil
 }
 
-func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID uuid.UUID, gameID uuid.UUID) (*model.Session, error) {
-	specificSession, err := u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+func (u *Usecase) getSession(ctx context.Context, playerID uuid.UUID, gameID uuid.UUID) (*model.Session, error) {
+	specificSession, err := u.sessions.GetBySpec(ctx, &session.Spec{
 		PlayerID: playerID,
 		GameID:   gameID,
 	})
@@ -221,7 +218,7 @@ func (u *Usecase) getSession(ctx context.Context, tx transactional.Tx, playerID 
 			return nil, err
 		}
 
-		return u.sessions.GetBySpecWithTx(ctx, tx, &session.Spec{
+		return u.sessions.GetBySpec(ctx, &session.Spec{
 			PlayerID: playerID,
 			GameID:   gameID,
 		})

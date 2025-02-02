@@ -14,13 +14,15 @@ templ SessionListContainer(gameID uuid.UUID) {
 		hx-trigger="load, submit"
 	>
 		<input type="hidden" name="game_id" value={ gameID.String() }/>
-		<div id="session-list-container"></div>
+		<div id="session-list-container">
+			<span class="loading loading-spinner loading-lg"></span>
+		</div>
 	</form>
 }
 
 templ SessionListItem(item handlers.SessionItemStatistics) {
 	<tr>
-		<td class="font-bold text-big-noodle text-xl">{ item.PlayerName }</td>
+		<td class="font-bold text-main-font text-xl">{ item.PlayerName }</td>
 		<td>
 			<progress
 				class="progress h-4 rounded-2xl max-w-16"
@@ -40,16 +42,16 @@ templ SessionListItem(item handlers.SessionItemStatistics) {
 		<td>
 			switch item.SessionStatus {
 				case model.SessionStatusStarted:
-					<span class="badge bg-green-500 text-white">{ "В процессе" }</span>
+					<span class="badge badge-success">{ "В процессе" }</span>
 				case model.SessionStatusFinished:
-					<span class="badge bg-orange-500 text-white">{ "Завершено" }</span>
+					<span class="badge badge-warning">{ "Завершено" }</span>
 			}
 		</td>
 	</tr>
 }
 
 templ SessionListStatistics(total int64) {
-	<div class="stats shadow">
+	<div class="stats">
 		<div class="stat">
 			<div class="stat-title">Всего участников</div>
 			<div class="stat-value">{ fmt.Sprintf("%d",total) }</div>

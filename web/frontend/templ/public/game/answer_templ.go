@@ -26,22 +26,22 @@ func Answer(isCorrect bool, rightAnswers ...string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"fixed top-0 left-0 w-full h-full z-20 bg-indigo-950 transition transition-opacity animate-duration-300\"><div class=\"flex h-screen overflow-y-auto relative\"><div class=\"m-auto\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"game-page-answer-result\" class=\"fixed top-0 left-0 w-full h-full z-20 bg-primary transition transition-opacity animate-duration-300\"><div class=\"flex h-screen overflow-y-auto relative\"><div class=\"m-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isCorrect {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-center animate-pulse-fade-in animate-duration-300 p-4\"><span class=\"text-green-500 font-bold text-big-noodle text-5xl sm:text-8xl\">Правильный ответ!</span></div><script type=\"text/javascript\">\n                        fire();\n                    </script>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-center animate-pulse-fade-in animate-duration-300 p-4\"><span class=\"text-success font-bold text-main-font text-5xl sm:text-8xl\">Правильный ответ!</span></div><script type=\"text/javascript\">\n                        fire();\n                    </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full\"><div class=\"animate-pulse-fade-in animate-duration-300\"><div class=\"animate-tada animate-duration-1500 text-center p-4\"><span class=\"text-red-500 font-bold text-big-noodle text-6xl sm:text-8xl\">Неудача!</span></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full\"><div class=\"animate-pulse-fade-in animate-duration-300\"><div class=\"animate-tada animate-duration-1500 text-center p-4\"><span class=\"text-red-500 font-bold text-main-font text-6xl sm:text-8xl\">Неудача!</span></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(rightAnswers) > 0 {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"card max-w-xs sm:max-w-md bg-green-500 text-white rounded-2xl shadow-lg mt-8 mb-2\"><input type=\"hidden\" id=\"game-page-answer-read-estimation\" value=\"")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"card max-w-xs sm:max-w-md bg-success text-white rounded-2xl mt-8 mb-2\"><input type=\"hidden\" id=\"game-page-answer-read-estimation\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -83,7 +83,7 @@ func Answer(isCorrect bool, rightAnswers ...string) templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div id=\"game-page-skip-answer\" class=\"sticky bottom-2\"><button type=\"button\" class=\"btn bg-amber-500 hover:bg-amber-600 border-0 text-white w-full rounded-2xl\" onclick=\"hideAnswerResult(300, 300)\">Продолжить</button></div>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div id=\"game-page-skip-answer\" class=\"sticky bottom-2\"><button type=\"button\" class=\"btn btn-warning text-main-font text-xl w-full rounded-2xl\" onclick=\"hideAnswerResult(300, 300)\">Продолжить</button></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -1,10 +1,11 @@
 package question
 
 import (
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
+
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 )
 
 type (
@@ -12,6 +13,7 @@ type (
 		GameID uuid.UUID `schema:"game_id"`
 
 		InContainer bool `schema:"in_container"`
+		Editable    bool `schema:"editable"`
 	}
 
 	GetHandler struct {
@@ -26,5 +28,5 @@ func NewGetHandler(uc contracts.GameUsecase) *GetHandler {
 }
 
 func (h *GetHandler) Handle(_ http.ResponseWriter, request *http.Request, in GetListData) (templ.Component, error) {
-	return h.service.list(request.Context(), in.GameID, in.InContainer)
+	return h.service.list(request.Context(), in.GameID, in.InContainer, in.Editable)
 }

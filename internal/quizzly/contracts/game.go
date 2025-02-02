@@ -28,6 +28,6 @@ type (
 		CreateQuestion(ctx context.Context, in *model.Question) error
 		UpdateQuestion(ctx context.Context, in *model.Question) error
 		DeleteQuestion(ctx context.Context, id uuid.UUID) error
-		GetQuestions(ctx context.Context, gameID uuid.UUID) (*model.QuestionMap, error)
+		GetQuestions(ctx context.Context, gameID uuid.UUID) ([]model.Question, error)
 	}
 )

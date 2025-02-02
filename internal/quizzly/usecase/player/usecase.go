@@ -5,7 +5,6 @@ import (
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/player"
-	"quizzly/pkg/transactional"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -16,17 +15,14 @@ const (
 )
 
 type Usecase struct {
-	players  player.Repository
-	template transactional.Template
+	players player.Repository
 }
 
 func NewUsecase(
 	players player.Repository,
-	template transactional.Template,
 ) contracts.PLayerUsecase {
 	return &Usecase{
-		players:  players,
-		template: template,
+		players: players,
 	}
 }
 
@@ -39,15 +35,11 @@ func (u *Usecase) Create(ctx context.Context, in *model.Player) error {
 		in.Name = in.Name[:maxNameLength]
 	}
 
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.players.Insert(ctx, tx, in)
-	})
+	return u.players.Insert(ctx, in)
 }
 
 func (u *Usecase) Update(ctx context.Context, in *model.Player) error {
-	return u.template.Execute(ctx, func(tx transactional.Tx) error {
-		return u.players.Update(ctx, tx, in)
-	})
+	return u.players.Update(ctx, in)
 }
 
 func (u *Usecase) Get(ctx context.Context, ids []uuid.UUID) ([]model.Player, error) {

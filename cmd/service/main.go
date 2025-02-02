@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
+	txmanager "github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/joho/godotenv"
 	"os"
 	"quizzly/cmd"
@@ -9,7 +11,7 @@ import (
 	"quizzly/pkg/auth"
 	"quizzly/pkg/files"
 	jobs2 "quizzly/pkg/jobs"
-	"quizzly/pkg/transactional"
+
 	variables2 "quizzly/pkg/variables"
 	"quizzly/web"
 )
@@ -25,7 +27,7 @@ func main() {
 	}
 
 	db := cmd.MustInitDB(ctx)
-	template := transactional.NewTemplate(db)
+	trm := txmanager.Must(trmsqlx.NewDefaultFactory(db))
 	variables, err := variables2.NewConfiguration()
 	if err != nil {
 		panic(err)
@@ -41,7 +43,7 @@ func main() {
 	filesConfig := files.NewConfiguration(variables.Repository.MustGet())
 	simpleAuth := auth.NewSimpleAuth(
 		db,
-		template,
+		trm,
 		&auth.Config{
 			SecretKey:      variablesRepo.GetString(variables2.AuthSecretKey),
 			CookieBlockKey: variablesRepo.GetString(variables2.AuthCookieBlockKey),
@@ -60,7 +62,7 @@ func main() {
 
 	quizzlyConfig := quizzly.NewConfiguration(
 		db,
-		template,
+		trm,
 	)
 
 	server := web.NewServer(

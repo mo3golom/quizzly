@@ -15,6 +15,27 @@ import "quizzly/pkg/structs"
 import "github.com/google/uuid"
 import "fmt"
 
+var (
+	answerOptionColors = [][]string{
+		{
+			"bg-orange-500",
+			"bg-orange-600",
+		},
+		{
+			"bg-green-500",
+			"bg-green-600",
+		},
+		{
+			"bg-rose-500",
+			"bg-rose-600",
+		},
+		{
+			"bg-teal-500",
+			"bg-teal-600",
+		},
+	}
+)
+
 func Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ.Component, answerBlock templ.Component) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -35,7 +56,7 @@ func Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(string(questionType))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 18, Col: 72}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 39, Col: 72}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -48,7 +69,7 @@ func Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(gameID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 19, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 40, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +79,7 @@ func Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 = []any{"card text-primary-content rounded-2xl bg-blue-500"}
+		var templ_7745c5c3_Var4 = []any{"card text-primary-content rounded-2xl bg-accent"}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -96,7 +117,7 @@ func Form(gameID uuid.UUID, questionType model.QuestionType, questionBlock templ
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 = []any{"btn text-white min-w-60 rounded-2xl hover:bg-amber-600 border-0 bg-amber-500"}
+		var templ_7745c5c3_Var6 = []any{"btn btn-warning min-w-60 rounded-2xl"}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var6...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -138,7 +159,7 @@ func QuestionImageInput() templ.Component {
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"self-start p-2 sm:p-4 bg-blue-600 rounded-lg w-full sm:w-auto h-full\"><label class=\"form-control w-full sm:max-w-xs cursor-pointer\"><div class=\"relative w-full h-24 sm:h-32 bg-white rounded-lg overflow-hidden\"><div id=\"image-placeholder\" class=\"absolute inset-0 flex items-center justify-center text-gray-500 p-4 text-center text-sm sm:text-base\">Выбрать изображение</div><img id=\"image-preview\" class=\"hidden w-full h-full object-contain\" alt=\"Preview\"> <input type=\"file\" name=\"question_image\" class=\"hidden\" accept=\"image/png, image/jpeg\" onchange=\"previewImage(this)\"></div></label></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"self-start rounded-lg w-full sm:w-auto h-full\"><label class=\"form-control w-full h-full sm:max-w-xs cursor-pointer\"><div class=\"relative w-full h-36 sm:h-44 bg-white rounded-lg overflow-hidden\"><div id=\"image-placeholder\" class=\"absolute inset-0 flex items-center justify-center text-gray-500 p-4 text-center text-sm sm:text-base\">Выбрать изображение</div><img id=\"image-preview\" class=\"hidden w-full h-full object-contain\" alt=\"Preview\"> <input type=\"file\" name=\"question_image\" class=\"hidden\" accept=\"image/png, image/jpeg\" onchange=\"previewImage(this)\"></div></label></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -173,7 +194,7 @@ func QuestionTextInput() templ.Component {
 	})
 }
 
-func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
+func AnswerChoiceInput(i int, id uuid.UUID, show bool) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -186,7 +207,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var templ_7745c5c3_Var11 = []any{fmt.Sprintf("card rounded-xl justify-self-stretch bg-%s-500 %s", color, structs.Or(show, "", "hidden"))}
+		var templ_7745c5c3_Var11 = []any{fmt.Sprintf("card rounded-xl justify-self-stretch %s %s", structs.Or(i < len(answerOptionColors), answerOptionColors[i][0], "bg-stone-500"), structs.Or(show, "", "hidden"))}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var11...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -198,7 +219,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("answer-choice-input-%s", id.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 99, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 120, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -217,14 +238,14 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-2\"><div class=\"grid grid-cols-2 gap-4 items-start\"><div class=\"justify-self-start\"><button class=\"btn btn-sm btn-ghost text-white\" data-id=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"card-body p-2\"><div class=\"grid grid-cols-2 gap-4 items-start\"><div class=\"justify-self-start\"><button class=\"btn btn-sm btn-ghost rounded-2xl text-white\" data-id=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(id.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 105, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 126, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -237,17 +258,17 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("answer-choice-input-checkbox-%s", id.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 123, Col: 72}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 144, Col: 72}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" value=\"1\" name=\"question_correct_answer\" type=\"radio\" class=\"radio radio-success radio-lg border-4 [--chkfg:white]\" required></label></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" value=\"1\" name=\"question_correct_answer\" type=\"radio\" class=\"radio radio-accent radio-lg border-4\" required></label></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var16 = []any{fmt.Sprintf("textarea min-h-32 text-white focus:text-black focus:bg-white bg-%s-600 placeholder:text-gray-300", color)}
+		var templ_7745c5c3_Var16 = []any{fmt.Sprintf("textarea min-h-32 text-white focus:text-black focus:bg-white %s placeholder:text-gray-300", structs.Or(i < len(answerOptionColors), answerOptionColors[i][1], "bg-stone-600"))}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var16...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -259,7 +280,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("answer-choice-input-textarea-%s", id.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 135, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 156, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -294,7 +315,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("answer-choice-add-button-%s", id.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 143, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 164, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -317,7 +338,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var22 = []any{fmt.Sprintf("btn border-0 text-lg text-white hover:bg-%s-600 bg-%s-500 ", color, color)}
+		var templ_7745c5c3_Var22 = []any{fmt.Sprintf("btn rounded-2xl border-0 text-lg text-white hover:%s %s", structs.Or(i < len(answerOptionColors), answerOptionColors[i][1], "bg-stone-600"), structs.Or(i < len(answerOptionColors), answerOptionColors[i][0], "bg-stone-500"))}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var22...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -342,7 +363,7 @@ func AnswerChoiceInput(id uuid.UUID, color string, show bool) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(id.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 148, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/question/form.templ`, Line: 169, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {

@@ -1,6 +1,7 @@
 package quizzly
 
 import (
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories"
@@ -9,7 +10,6 @@ import (
 	"quizzly/internal/quizzly/usecase/session"
 	"quizzly/internal/quizzly/usecase/session/acceptor"
 	"quizzly/pkg/structs"
-	"quizzly/pkg/transactional"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -24,16 +24,15 @@ type (
 
 func NewConfiguration(
 	db *sqlx.DB,
-	template transactional.Template,
+	trm trm.Manager,
 ) *Configuration {
 	repos := repositories.NewConfiguration(db)
-
 	return &Configuration{
 		Game: structs.NewSingleton(func() (contracts.GameUsecase, error) {
 			return game.NewUsecase(
 				repos.Game.MustGet(),
 				repos.Session.MustGet(),
-				template,
+				trm,
 			), nil
 		}),
 		Session: structs.NewSingleton(func() (contracts.SessionUsecase, error) {
@@ -41,7 +40,7 @@ func NewConfiguration(
 				repos.Session.MustGet(),
 				repos.Game.MustGet(),
 				repos.Player.MustGet(),
-				template,
+				trm,
 				map[model.QuestionType]session.AnswerOptionIDAcceptor{
 					model.QuestionTypeChoice:         acceptor.NewSingleChoiceAcceptor(),
 					model.QuestionTypeOneOfChoice:    acceptor.NewOneOfChoiceAcceptor(),
@@ -52,7 +51,6 @@ func NewConfiguration(
 		Player: structs.NewSingleton(func() (contracts.PLayerUsecase, error) {
 			return player.NewUsecase(
 				repos.Player.MustGet(),
-				template,
 			), nil
 		}),
 	}

@@ -98,8 +98,8 @@ func adminRoutes(
 ) {
 	security := simpleAuth.Middleware("/admin/login")
 
-	mux.HandleFunc("GET /admin/login", "/admin/login", handlers.Templ[struct{}](login.NewGetLoginPageHandler(), log))
-	mux.HandleFunc("POST /admin/login", "/admin/login", handlers.Templ[login.PostLoginPageData](login.NewPostLoginPageHandler(simpleAuth), log))
+	//mux.HandleFunc("GET /admin/login", "/admin/login", handlers.Templ[struct{}](login.NewGetLoginPageHandler(), log))
+	//mux.HandleFunc("POST /admin/login", "/admin/login", handlers.Templ[login.PostLoginPageData](login.NewPostLoginPageHandler(simpleAuth), log))
 	mux.HandleFunc("GET /admin/logout", "/admin/logout", handlers.Templ[struct{}](login.NewGetLogoutPageHandler(simpleAuth), log))
 
 	mux.HandleFunc("GET /admin/question/new", "/admin/question/new", security.Auth(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))

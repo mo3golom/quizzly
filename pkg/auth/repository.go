@@ -4,8 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"quizzly/pkg/transactional"
-
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -22,11 +21,16 @@ type (
 	}
 
 	defaultRepository struct {
-		db *sqlx.DB
+		sqlx *sqlx.DB
+		tx   *trmsqlx.CtxGetter
 	}
 )
 
-func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional.Tx, email Email) (*user, error) {
+func (r *defaultRepository) db(ctx context.Context) trmsqlx.Tr {
+	return r.tx.DefaultTrOrDB(ctx, r.sqlx)
+}
+
+func (r *defaultRepository) getUserByEmail(ctx context.Context, email Email) (*user, error) {
 	const query = ` 
 		select id, email from "user"
 		where email = $1
@@ -34,7 +38,7 @@ func (r *defaultRepository) getUserByEmail(ctx context.Context, tx transactional
 	`
 
 	var result sqlxUser
-	err := tx.GetContext(ctx, &result, query, email)
+	err := r.db(ctx).GetContext(ctx, &result, query, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errUserNotFound
 	}
@@ -56,7 +60,7 @@ func (r *defaultRepository) getUserByID(ctx context.Context, id uuid.UUID) (*use
 	`
 
 	var result sqlxUser
-	err := r.db.GetContext(ctx, &result, query, id)
+	err := r.db(ctx).GetContext(ctx, &result, query, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errUserNotFound
 	}
@@ -70,17 +74,17 @@ func (r *defaultRepository) getUserByID(ctx context.Context, id uuid.UUID) (*use
 	}, nil
 }
 
-func (r *defaultRepository) insertUser(ctx context.Context, tx transactional.Tx, in *user) error {
+func (r *defaultRepository) insertUser(ctx context.Context, in *user) error {
 	const query = ` 
 		insert into "user" (id, email) values ($1, $2) 
 	    on conflict (email) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.id, in.email)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.id, in.email)
 	return err
 }
 
-func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactional.Tx, in *upsertLoginCodeIn) error {
+func (r *defaultRepository) upsertLoginCode(ctx context.Context, in *upsertLoginCodeIn) error {
 	const query = ` 
 		insert into user_auth_login_code (user_id, code, expires_at) values ($1, $2, $3) 
 	    on conflict (user_id) do update set
@@ -89,11 +93,11 @@ func (r *defaultRepository) upsertLoginCode(ctx context.Context, tx transactiona
 			updated_at = now()
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.userID, in.code, in.expiresAt)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.userID, in.code, in.expiresAt)
 	return err
 }
 
-func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.Tx, in *getLoginCodeIn) (*loginCodeExtended, error) {
+func (r *defaultRepository) getLoginCode(ctx context.Context, in *getLoginCodeIn) (*loginCodeExtended, error) {
 	const query = ` 
 		select user_id, code from user_auth_login_code
 		where user_id=$1 and code=$2 and expires_at > now()
@@ -104,7 +108,7 @@ func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.T
 		UserID uuid.UUID `db:"user_id"`
 		Code   LoginCode `db:"code"`
 	}
-	err := tx.GetContext(ctx, &result, query, in.userID, in.code)
+	err := r.db(ctx).GetContext(ctx, &result, query, in.userID, in.code)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errLoginCodeNotFound
 	}
@@ -118,12 +122,12 @@ func (r *defaultRepository) getLoginCode(ctx context.Context, tx transactional.T
 	}, nil
 }
 
-func (r *defaultRepository) clearExpiredLoginCodes(ctx context.Context, tx transactional.Tx) error {
+func (r *defaultRepository) clearExpiredLoginCodes(ctx context.Context) error {
 	const query = ` 
 		delete from user_auth_login_code
 		where expires_at < now()
 	`
 
-	_, err := tx.ExecContext(ctx, query)
+	_, err := r.db(ctx).ExecContext(ctx, query)
 	return err
 }

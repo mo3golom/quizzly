@@ -4,13 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/pkg/transactional"
-
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 )
 
 type (
@@ -22,26 +21,29 @@ type (
 	}
 
 	DefaultRepository struct {
-		db *sqlx.DB
+		sqlx *sqlx.DB
+		tx   *trmsqlx.CtxGetter
 	}
 )
 
-func NewRepository(db *sqlx.DB) Repository {
-	return &DefaultRepository{
-		db: db,
-	}
+func NewRepository(sqlx *sqlx.DB, tx *trmsqlx.CtxGetter) Repository {
+	return &DefaultRepository{sqlx: sqlx, tx: tx}
 }
 
-func (r *DefaultRepository) Insert(ctx context.Context, tx transactional.Tx, in *model.Player) error {
+func (r *DefaultRepository) db(ctx context.Context) trmsqlx.Tr {
+	return r.tx.DefaultTrOrDB(ctx, r.sqlx)
+}
+
+func (r *DefaultRepository) Insert(ctx context.Context, in *model.Player) error {
 	const query = ` 
 		insert into player (id, user_id, name, name_user_entered) values ($1, $2, $3, $4) on conflict (id) do nothing
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
 	return err
 }
 
-func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in *model.Player) error {
+func (r *DefaultRepository) Update(ctx context.Context, in *model.Player) error {
 	const query = ` 
 		update player set 
 		 user_id = $2, 
@@ -50,7 +52,7 @@ func (r *DefaultRepository) Update(ctx context.Context, tx transactional.Tx, in 
 	    where id = $1
 	`
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.ID, in.UserID, in.Name, in.NameUserEntered)
 	return err
 }
 
@@ -62,7 +64,7 @@ func (r *DefaultRepository) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]mo
 	`
 
 	var result []sqlxPlayer
-	if err := r.db.SelectContext(ctx, &result, query, pq.Array(ids)); err != nil {
+	if err := r.db(ctx).SelectContext(ctx, &result, query, pq.Array(ids)); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -88,7 +90,7 @@ func (r *DefaultRepository) GetByUserIDs(ctx context.Context, userIDs []uuid.UUI
 	`
 
 	var result []sqlxPlayer
-	if err := r.db.SelectContext(ctx, &result, query, pq.Array(userIDs)); err != nil {
+	if err := r.db(ctx).SelectContext(ctx, &result, query, pq.Array(userIDs)); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

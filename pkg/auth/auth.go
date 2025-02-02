@@ -3,11 +3,12 @@ package auth
 import (
 	"context"
 	"errors"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/jmoiron/sqlx"
 	"net/http"
-	"quizzly/pkg/transactional"
 	"time"
 
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +18,7 @@ const (
 )
 
 type DefaultSimpleAuth struct {
-	template      transactional.Template
+	trm           trm.Manager
 	repository    *defaultRepository
 	generator     *defaultGenerator
 	encryptor     *defaultEncryptor
@@ -28,19 +29,22 @@ type DefaultSimpleAuth struct {
 }
 
 func NewSimpleAuth(
-	db *sqlx.DB,
-	template transactional.Template,
+	sqlx *sqlx.DB,
+	trm trm.Manager,
 	config *Config,
 ) SimpleAuth {
+	trmsqlxGetter := trmsqlx.DefaultCtxGetter
+
 	encryptor := &defaultEncryptor{
 		secretKey: config.SecretKey,
 	}
 	repository := &defaultRepository{
-		db: db,
+		sqlx: sqlx,
+		tx:   trmsqlxGetter,
 	}
 
 	return &DefaultSimpleAuth{
-		template:   template,
+		trm:        trm,
 		repository: repository,
 		generator:  &defaultGenerator{},
 		encryptor:  encryptor,
@@ -50,7 +54,7 @@ func NewSimpleAuth(
 		tokenService:  newTokenService(config.SecretKey),
 		cookieService: newCookieService(config.SecretKey, config.CookieBlockKey),
 		cleaner: &DefaultCleaner{
-			template:   template,
+			trm:        trm,
 			repository: repository,
 		},
 	}
@@ -65,8 +69,8 @@ func (a *DefaultSimpleAuth) SendLoginCode(ctx context.Context, email Email) erro
 	}
 	encryptedEmail := Email(encryptedData)
 
-	err = a.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificUser, err := a.repository.getUserByEmail(ctx, tx, encryptedEmail)
+	err = a.trm.Do(ctx, func(ctx context.Context) error {
+		specificUser, err := a.repository.getUserByEmail(ctx, encryptedEmail)
 		if err != nil && !errors.Is(err, errUserNotFound) {
 			return err
 		}
@@ -75,13 +79,13 @@ func (a *DefaultSimpleAuth) SendLoginCode(ctx context.Context, email Email) erro
 				id:    uuid.New(),
 				email: encryptedEmail,
 			}
-			err := a.repository.insertUser(ctx, tx, specificUser)
+			err := a.repository.insertUser(ctx, specificUser)
 			if err != nil {
 				return err
 			}
 		}
 
-		err = a.repository.upsertLoginCode(ctx, tx, &upsertLoginCodeIn{
+		err = a.repository.upsertLoginCode(ctx, &upsertLoginCodeIn{
 			userID:    specificUser.id,
 			code:      code,
 			expiresAt: time.Now().Add(loginCodeDefaultTTL),
@@ -112,8 +116,8 @@ func (a *DefaultSimpleAuth) Login(
 	encryptedEmail := Email(encryptedData)
 
 	var token string
-	err = a.template.Execute(ctx, func(tx transactional.Tx) error {
-		specificUser, err := a.repository.getUserByEmail(ctx, tx, encryptedEmail)
+	err = a.trm.Do(ctx, func(ctx context.Context) error {
+		specificUser, err := a.repository.getUserByEmail(ctx, encryptedEmail)
 		if errors.Is(err, errUserNotFound) {
 			return ErrLoginFailed
 		}
@@ -121,7 +125,7 @@ func (a *DefaultSimpleAuth) Login(
 			return err
 		}
 
-		specificCode, err := a.repository.getLoginCode(ctx, tx, &getLoginCodeIn{
+		specificCode, err := a.repository.getLoginCode(ctx, &getLoginCodeIn{
 			code:   code,
 			userID: specificUser.id,
 		})

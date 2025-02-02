@@ -1,10 +1,10 @@
 package frontend_components
 
 templ Header(title string, actions ...templ.Component) {
-    <div class="flex items-center mb-4">
-        <h1 class="basis-1/2 font-bold text-2xl">{title}</h1>
-        <div class="basis-1/2 justify-self-end text-right">
-           @Composition(actions...)
-        </div>
-    </div>
+	<div class="flex items-center mb-4">
+		<h1 class="basis-1/2 font-bold text-base-content text-2xl">{ title }</h1>
+		<div class="basis-1/2 justify-self-end text-right">
+			@Composition(actions...)
+		</div>
+	</div>
 }

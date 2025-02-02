@@ -6,7 +6,6 @@ import (
 	"github.com/lib/pq"
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/structs/collections/slices"
-	"quizzly/pkg/transactional"
 	"time"
 )
 
@@ -26,7 +25,7 @@ type (
 	}
 )
 
-func (r *DefaultRepository) Upsert(ctx context.Context, tx transactional.Tx, in *model.Game) error {
+func (r *DefaultRepository) Upsert(ctx context.Context, in *model.Game) error {
 	const query = `
 		insert into game (id, status, "type", author_id, title) values ($1, $2, $3, $4, $5)
 		on conflict (id) do update set
@@ -39,7 +38,7 @@ func (r *DefaultRepository) Upsert(ctx context.Context, tx transactional.Tx, in 
 		title = in.Title
 	}
 
-	_, err := tx.ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID, title)
+	_, err := r.db(ctx).ExecContext(ctx, query, in.ID, in.Status, in.Type, in.AuthorID, title)
 	if err != nil {
 		return err
 	}
@@ -61,7 +60,7 @@ func (r *DefaultRepository) Upsert(ctx context.Context, tx transactional.Tx, in 
 			input_custom_name = excluded.input_custom_name
 	`
 
-	_, err = tx.ExecContext(
+	_, err = r.db(ctx).ExecContext(
 		ctx,
 		settingsQuery,
 		in.ID,
@@ -75,14 +74,6 @@ func (r *DefaultRepository) Upsert(ctx context.Context, tx transactional.Tx, in 
 }
 
 func (r *DefaultRepository) GetBySpec(ctx context.Context, spec *Spec) ([]model.Game, error) {
-	return r.getGames(ctx, r.db, spec)
-}
-
-func (r *DefaultRepository) GetBySpecWithTx(ctx context.Context, tx transactional.Tx, spec *Spec) ([]model.Game, error) {
-	return r.getGames(ctx, tx, spec)
-}
-
-func (r *DefaultRepository) getGames(ctx context.Context, db transactional.Tx, spec *Spec) ([]model.Game, error) {
 	const query = `
 		select 
 			g.id, 
@@ -112,7 +103,7 @@ func (r *DefaultRepository) getGames(ctx context.Context, db transactional.Tx, s
 	}
 
 	var result []sqlxGame
-	if err := db.SelectContext(
+	if err := r.db(ctx).SelectContext(
 		ctx,
 		&result,
 		query,
