@@ -87,7 +87,7 @@ func QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"play-page-submit\" class=\"fixed w-full sm:static p-4 sm:p-0 bg-secondary sm:bg-transparent bottom-0 left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200\"><button id=\"play-page-submit-button\" type=\"submit\" class=\"btn btn-warning rounded-2xl text-main-font text-xl sm:text-2xl w-full\" disabled>Ответить</button></div><script type=\"text/javascript\">\n\t\t\tinitPlayPageQuestionForm()\n\t\t</script></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"play-page-submit\" class=\"w-full pt-4 pb-4 bg-primary sticky z-10 bottom-0 left-0 opacity-0 animate-duration-200\"><button id=\"play-page-submit-button\" type=\"submit\" class=\"btn btn-warning rounded-2xl text-main-font text-xl sm:text-2xl w-full\" disabled>Ответить</button></div><script type=\"text/javascript\">\n\t\t\tinitPlayPageQuestionForm()\n\t\t</script></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -111,7 +111,7 @@ func Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Com
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		var templ_7745c5c3_Var6 = []any{"card text-accent-content mb-2 mt-2 bg-accent"}
+		var templ_7745c5c3_Var6 = []any{"card text-accent-content mt-2 bg-accent"}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var6...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

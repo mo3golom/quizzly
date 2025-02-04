@@ -7,18 +7,19 @@ import (
 	"net/http"
 	"os"
 	"quizzly/internal/quizzly"
-	"quizzly/pkg/auth"
+	"quizzly/pkg/cookie"
 	"quizzly/pkg/files"
 	"quizzly/pkg/logger"
 	"quizzly/pkg/structs"
+	"quizzly/pkg/supabase"
 	variablesRepo "quizzly/pkg/variables"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/handlers/admin/game"
-	"quizzly/web/frontend/handlers/admin/login"
 	"quizzly/web/frontend/handlers/admin/question"
 	"quizzly/web/frontend/handlers/admin/static/faq"
 	files2 "quizzly/web/frontend/handlers/files"
 	gamePublic "quizzly/web/frontend/handlers/public/game"
+	"quizzly/web/frontend/handlers/public/login"
 	"quizzly/web/frontend/services/link"
 	playerService "quizzly/web/frontend/services/player"
 	sessionService "quizzly/web/frontend/services/session"
@@ -93,44 +94,40 @@ func adminRoutes(
 	config *configuration,
 	log logger.Logger,
 	quizzlyConfig *quizzly.Configuration,
-	simpleAuth auth.SimpleAuth,
+	authClient supabase.Auth,
 	filesManager files.Manager,
 ) {
-	security := simpleAuth.Middleware("/admin/login")
+	security := authClient.MiddlewareAuth
 
-	//mux.HandleFunc("GET /admin/login", "/admin/login", handlers.Templ[struct{}](login.NewGetLoginPageHandler(), log))
-	//mux.HandleFunc("POST /admin/login", "/admin/login", handlers.Templ[login.PostLoginPageData](login.NewPostLoginPageHandler(simpleAuth), log))
-	mux.HandleFunc("GET /admin/logout", "/admin/logout", handlers.Templ[struct{}](login.NewGetLogoutPageHandler(simpleAuth), log))
-
-	mux.HandleFunc("GET /admin/question/new", "/admin/question/new", security.Auth(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))
-	mux.HandleFunc("POST /admin/question", "/admin/question", security.Auth(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
+	mux.HandleFunc("GET /admin/question/new", "/admin/question/new", security(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))
+	mux.HandleFunc("POST /admin/question", "/admin/question", security(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
 		quizzlyConfig.Game.MustGet(),
 		filesManager,
 	), log)))
-	mux.HandleFunc("DELETE /admin/question", "/admin/question", security.Auth(handlers.Templ[question.GetDeleteData](question.NewPostDeleteHandler(
+	mux.HandleFunc("DELETE /admin/question", "/admin/question", security(handlers.Templ[question.GetDeleteData](question.NewPostDeleteHandler(
 		quizzlyConfig.Game.MustGet(),
 	), log)))
-	mux.HandleFunc("GET /admin/question/list", "/admin/question/list", security.Auth(handlers.Templ[question.GetListData](question.NewGetHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("GET /admin/question/list", "/admin/question/list", security(handlers.Templ[question.GetListData](question.NewGetHandler(quizzlyConfig.Game.MustGet()), log)))
 
-	mux.HandleFunc("GET /admin/game/new", "/admin/game/new", security.Auth(handlers.Templ[struct{}](game.NewGetCreateHandler(quizzlyConfig.Game.MustGet()), log)))
-	mux.HandleFunc("GET /admin/game/{game_id}", "/admin/game/:game_id", security.Auth(handlers.Templ[game.GetGamePageData](game.NewGetPageHandler(
+	mux.HandleFunc("GET /admin/game/new", "/admin/game/new", security(handlers.Templ[struct{}](game.NewGetCreateHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("GET /admin/game/{game_id}", "/admin/game/:game_id", security(handlers.Templ[game.GetGamePageData](game.NewGetPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		config.link.MustGet(),
 	), log)))
-	mux.HandleFunc("POST /admin/game/{game_id}/update", "/admin/game/:game_id/update", security.Auth(handlers.Templ[game.PostUpdateData](game.NewPostUpdateHandler(quizzlyConfig.Game.MustGet()), log)))
-	mux.HandleFunc("POST /admin/game/start", "/admin/game/start", security.Auth(handlers.Templ[game.PostStartData](game.NewPostStartHandler(
+	mux.HandleFunc("POST /admin/game/{game_id}/update", "/admin/game/:game_id/update", security(handlers.Templ[game.PostUpdateData](game.NewPostUpdateHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("POST /admin/game/start", "/admin/game/start", security(handlers.Templ[game.PostStartData](game.NewPostStartHandler(
 		quizzlyConfig.Game.MustGet(),
 		config.link.MustGet(),
 	), log)))
-	mux.HandleFunc("POST /admin/game/finish", "/admin/game/finish", security.Auth(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(
+	mux.HandleFunc("POST /admin/game/finish", "/admin/game/finish", security(handlers.Templ[game.PostFinishData](game.NewPostFinishHandler(
 		quizzlyConfig.Game.MustGet(),
 		config.link.MustGet(),
 	), log)))
 
-	mux.HandleFunc("GET /admin/game/list", "/admin/game/list", security.Auth(handlers.Templ[struct{}](game.NewGetListHandler(quizzlyConfig.Game.MustGet()), log)))
-	mux.HandleFunc("GET /admin/game/session/list", "/admin/game/session/list", security.Auth(handlers.Templ[game.GetSessionListData](game.NewGetSessionListHandler(config.sessions.MustGet()), log)))
+	mux.HandleFunc("GET /admin/game/list", "/admin/game/list", security(handlers.Templ[struct{}](game.NewGetListHandler(quizzlyConfig.Game.MustGet()), log)))
+	mux.HandleFunc("GET /admin/game/session/list", "/admin/game/session/list", security(handlers.Templ[game.GetSessionListData](game.NewGetSessionListHandler(config.sessions.MustGet()), log)))
 
-	mux.HandleFunc("GET /admin/faq", "/admin/faq", security.Auth(handlers.Templ[struct{}](faq.NewStaticFAQHandler(), log)))
+	mux.HandleFunc("GET /admin/faq", "/admin/faq", security(handlers.Templ[struct{}](faq.NewStaticFAQHandler(), log)))
 }
 
 func publicRoutes(
@@ -138,9 +135,12 @@ func publicRoutes(
 	log logger.Logger,
 	config *configuration,
 	quizzlyConfig *quizzly.Configuration,
-	simpleAuth auth.SimpleAuth,
+	authClient supabase.Auth,
 ) {
-	security := simpleAuth.Middleware()
+	security := authClient.MiddlewareTrace
+
+	mux.HandleFunc("GET /login", "/login", security(handlers.Templ[login.GetLoginPageData](login.NewGetLoginPageHandler(authClient), log)))
+	mux.HandleFunc("GET /logout", "/logout", security(handlers.Templ[struct{}](login.NewGetLogoutPageHandler(authClient), log)))
 
 	gamePlayPageHandler := gamePublic.NewGetPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
@@ -167,13 +167,13 @@ func publicRoutes(
 		config.player.MustGet(),
 	)
 
-	mux.HandleFunc("GET /", "/", security.Trace(handlers.Templ[gamePublic.GetStartPageData](gamePublic.NewGetStartPageHandler(
+	mux.HandleFunc("GET /", "/", security(handlers.Templ[gamePublic.GetStartPageData](gamePublic.NewGetStartPageHandler(
 		quizzlyConfig.Game.MustGet(),
 	), log)))
 
-	mux.HandleFunc("GET /game/{game_id}", "/game/:game_id", security.Trace(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
+	mux.HandleFunc("GET /game/{game_id}", "/game/:game_id", security(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/play", "/game/:game_id (old)", security.Trace(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
+	mux.HandleFunc("GET /game/play", "/game/:game_id (old)", security(handlers.Templ[gamePublic.GetPlayPageData](gamePlayPageHandler, log)))
 
 	mux.HandleFunc("POST /game/{game_id}", "/game/:game_id", handlers.Templ[gamePublic.PostPlayPageData](gamePublic.NewPostPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
@@ -183,22 +183,23 @@ func publicRoutes(
 		config.link.MustGet(),
 	), log))
 
-	mux.HandleFunc("GET /game/{game_id}/restart", "/game/:game_id/restart", security.Trace(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
+	mux.HandleFunc("GET /game/{game_id}/restart", "/game/:game_id/restart", security(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/restart", "/game/:game_id/restart (old)", security.Trace(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
+	mux.HandleFunc("GET /game/restart", "/game/:game_id/restart (old)", security(handlers.Templ[gamePublic.GetRestartPageData](gameRestartPageHandler, log)))
 
-	mux.HandleFunc("GET /game/{game_id}/results/{player_id}", "/game/:game_id/results/:player_id", security.Trace(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
+	mux.HandleFunc("GET /game/{game_id}/results/{player_id}", "/game/:game_id/results/:player_id", security(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
 	// backwards compatibility
-	mux.HandleFunc("GET /game/results", "/game/:game_id/results/:player_id (old)", security.Trace(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
+	mux.HandleFunc("GET /game/results", "/game/:game_id/results/:player_id (old)", security(handlers.Templ[gamePublic.GetPlayResultsPageData](gameResultsPagehandler, log)))
 
-	mux.HandleFunc("POST /game/{game_id}/player/{player_id}/rename", "/game/:game_id/player/:player_id/rename", security.Trace(handlers.Templ[gamePublic.PostRenamePlayerData](gameRenamePlayerHandler, log)))
+	mux.HandleFunc("POST /game/{game_id}/player/{player_id}/rename", "/game/:game_id/player/:player_id/rename", security(handlers.Templ[gamePublic.PostRenamePlayerData](gameRenamePlayerHandler, log)))
 }
 
 func NewServer(
 	log logger.Logger,
 	variables variablesRepo.Repository,
 	quizzlyConfig *quizzly.Configuration,
-	simpleAuth auth.SimpleAuth,
+	authClient supabase.Auth,
+	cookieService cookie.Service,
 	filesManager files.Manager,
 	serverType serverType,
 ) *ServerInstance {
@@ -212,6 +213,7 @@ func NewServer(
 		player: structs.NewSingleton(func() (playerService.Service, error) {
 			return playerService.NewService(
 				quizzlyConfig.Player.MustGet(),
+				cookieService,
 				log,
 			), nil
 		}),
@@ -266,8 +268,8 @@ func NewServer(
 		promhttp.Handler().ServeHTTP(w, r)
 	})
 
-	adminRoutes(muxExtended, config, log, quizzlyConfig, simpleAuth, filesManager)
-	publicRoutes(muxExtended, log, config, quizzlyConfig, simpleAuth)
+	adminRoutes(muxExtended, config, log, quizzlyConfig, authClient, filesManager)
+	publicRoutes(muxExtended, log, config, quizzlyConfig, authClient)
 
 	server := &http.Server{
 		Addr:         settings.Port,

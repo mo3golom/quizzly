@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/auth"
+	"quizzly/pkg/supabase"
 	frontend_components "quizzly/web/frontend/templ/components"
 )
 
@@ -23,7 +23,7 @@ func NewGetCreateHandler(uc contracts.GameUsecase) *GetCreateHandler {
 }
 
 func (h *GetCreateHandler) Handle(_ http.ResponseWriter, request *http.Request, _ struct{}) (templ.Component, error) {
-	authContext := request.Context().(auth.Context)
+	authContext := request.Context().(supabase.AuthContext)
 	gameID, err := h.uc.Create(
 		request.Context(),
 		&contracts.CreateGameIn{

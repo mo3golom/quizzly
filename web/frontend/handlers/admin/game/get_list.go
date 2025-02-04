@@ -3,7 +3,7 @@ package game
 import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
-	"quizzly/pkg/auth"
+	"quizzly/pkg/supabase"
 	frontend "quizzly/web/frontend/templ"
 	frontendAdminGame "quizzly/web/frontend/templ/admin/game"
 	frontendComponents "quizzly/web/frontend/templ/components"
@@ -29,7 +29,7 @@ func NewGetListHandler(uc contracts.GameUsecase) *GetListHandler {
 }
 
 func (h *GetListHandler) Handle(_ http.ResponseWriter, request *http.Request, _ struct{}) (templ.Component, error) {
-	authContext := request.Context().(auth.Context)
+	authContext := request.Context().(supabase.AuthContext)
 	games, err := h.uc.GetByAuthor(request.Context(), authContext.UserID())
 	if err != nil {
 		return nil, err

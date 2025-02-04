@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"github.com/a-h/templ"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -10,6 +9,8 @@ import (
 	"quizzly/web/frontend/services/page"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
+
+	"github.com/a-h/templ"
 )
 
 type (

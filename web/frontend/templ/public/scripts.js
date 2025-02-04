@@ -20,11 +20,11 @@ function initPlayPageQuestionForm() {
             if (hasChecked) {
                 submitBtn.disabled = false
                 submit.classList.remove("hidden", "opacity-0")
-                submit.classList.add("animate-fade-in-up", "sm:animate-fade-in")
+                submit.classList.add("animate-fade-in-up")
             } else {
                 submitBtn.disabled = true
                 submit.classList.add("hidden", "opacity-0")
-                submit.classList.remove("animate-fade-in-up", "sm:animate-fade-in")
+                submit.classList.remove("animate-fade-in-up")
             }
         });
     }

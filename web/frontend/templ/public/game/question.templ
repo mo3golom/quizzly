@@ -30,7 +30,7 @@ templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Com
 		<input name="id" type="hidden" value={ gameID.String() }/>
 		<input name="player-id" type="hidden" value={ playerID.String() }/>
 		@frontend_components.Composition(components...)
-		<div id="play-page-submit" class="fixed w-full sm:static p-4 sm:p-0 bg-secondary sm:bg-transparent bottom-0 left-0 hidden opacity-0 sm:block animate-duration-200 sm:animate-duration-200">
+		<div id="play-page-submit" class="w-full pt-4 pb-4 bg-primary sticky z-10 bottom-0 left-0 opacity-0 animate-duration-200">
 			<button
 				id="play-page-submit-button"
 				type="submit"
@@ -45,7 +45,7 @@ templ QuestionForm(gameID uuid.UUID, playerID uuid.UUID, components ...templ.Com
 }
 
 templ Question(id uuid.UUID, questionBlock templ.Component, answerBlock templ.Component) {
-	<div class={ "card text-accent-content mb-2 mt-2 bg-accent" }>
+	<div class={ "card text-accent-content mt-2 bg-accent" }>
 		<div class="card-body p-4">
 			<input name="question-id" type="hidden" value={ id.String() }/>
 			@questionBlock

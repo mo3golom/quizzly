@@ -73,7 +73,7 @@ templ PublicGame(title string, gameID uuid.UUID) {
 }
 
 templ CreateGame() {
-	<a href={ templ.SafeURL("/admin/game/new") }>
+	<a href={ templ.SafeURL("/login") }>
 		<div class="btn btn-lg btn-warning text-main-font text-2xl w-full rounded-2xl mt-2">
 			Создайте свой квиз!
 		</div>

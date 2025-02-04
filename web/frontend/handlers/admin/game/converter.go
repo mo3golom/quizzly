@@ -7,7 +7,7 @@ import (
 )
 
 func convertModelGameToHandlersGame(game *model.Game) *handlers.Game {
-	title := fmt.Sprintf("Игра от %s", game.CreatedAt.Format("02.01.2006"))
+	title := fmt.Sprintf("Игра без названия от %s", game.CreatedAt.Format("02.01.2006"))
 	if game.Title != nil {
 		title = *game.Title
 	}

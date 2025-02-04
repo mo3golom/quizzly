@@ -4,13 +4,13 @@ import (
 	"context"
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
-	"quizzly/pkg/auth"
+	"quizzly/pkg/supabase"
 	frontend "quizzly/web/frontend/templ"
 )
 
 func PublicIndexPage(ctx context.Context, title string, body templ.Component, openGraph ...frontend.OpenGraph) templ.Component {
 	showAdminLink := false
-	if authCtx, ok := ctx.(auth.Context); ok && authCtx.UserID() != uuid.Nil {
+	if authCtx, ok := ctx.(supabase.AuthContext); ok && authCtx.UserID() != uuid.Nil {
 		showAdminLink = true
 	}
 
