@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/a-h/templ"
+	"github.com/google/uuid"
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
@@ -13,9 +15,6 @@ import (
 	"quizzly/web/frontend/services/player"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
-
-	"github.com/a-h/templ"
-	"github.com/google/uuid"
 )
 
 type (

@@ -153,7 +153,7 @@ templ AdminPageComponent(title string, body templ.Component) {
 						<div class="mt-4">
 							<ul class="menu text-primary-content rounded-box">
 								<li>
-									<a href="/admin/logout" class="p-2">
+									<a href="/logout" class="p-2">
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"></path>
 										</svg>
@@ -183,13 +183,19 @@ templ PublicPageComponent(title string, body templ.Component, showAdminLink bool
 	<html lang="ru" class="bg-primary">
 		@headerComponent(HeaderConfig{Title: title, AdditionalScripts: "scripts.public.min.js", Robots: "index, follow"}, openGraph...)
 		<body class="bg-primary">
-			<div class="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-				<div class="mb-auto">
-					<div class="p-4">
-						@body
+			<div class="flex flex-col min-h-[100dvh] max-w-screen-xl mx-auto">
+				<div class="flex-grow">
+					<div class="h-full p-4">
+						<div class="max-w-screen-lg mx-auto">
+							<div class="flex min-h-[75vh]">
+								<div class="m-auto min-w-[50vw] lg:min-w-[512px]">
+									@body
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div>
+				<div class="flex-shrink-0">
 					<div class="flex items-center gap-4 p-4 pb-0">
 						<div class="text-bold text-left text-main-font text-primary-content flex-col">
 							<a href="/" class="w-full">
@@ -204,8 +210,8 @@ templ PublicPageComponent(title string, body templ.Component, showAdminLink bool
 							>Панель управления</a>
 						}
 					</div>
+					@footerComponent()
 				</div>
-				@footerComponent()
 				@frontend_components.GlobalMessages()
 			</div>
 		</body>

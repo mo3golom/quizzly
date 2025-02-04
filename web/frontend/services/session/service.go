@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/auth"
 	"quizzly/pkg/structs"
 	"quizzly/pkg/structs/collections/slices"
+	"quizzly/pkg/supabase"
 	"quizzly/web/frontend/handlers"
 	frontend_admin_game "quizzly/web/frontend/templ/admin/game"
 	"sort"
@@ -36,7 +36,7 @@ func NewService(
 
 func (s *DefaultService) List(request *http.Request, spec *Spec, page int64, limit int64) (*ListOut, error) {
 	var currentPlayer *model.Player
-	if authCtx, ok := request.Context().(auth.Context); ok && authCtx.UserID() != uuid.Nil {
+	if authCtx, ok := request.Context().(supabase.AuthContext); ok && authCtx.UserID() != uuid.Nil {
 		players, err := s.players.GetByUsers(request.Context(), []uuid.UUID{authCtx.UserID()})
 		if err != nil {
 			return nil, err

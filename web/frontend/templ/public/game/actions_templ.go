@@ -92,7 +92,7 @@ func ActionShareResult(additionalText string) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"justify-self-end relative\"><button type=\"button\" class=\"btn btn-accent rounded-2xl text-main-font text-xl\" data-additional-text=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"justify-self-end relative\"><button type=\"button\" class=\"btn bg-teal-500 hover:bg-teal-600 border-0 text-accent-content rounded-2xl text-main-font text-xl\" data-additional-text=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

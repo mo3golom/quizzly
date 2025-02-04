@@ -28,6 +28,9 @@ var (
 
 	MetricsUser     = Environment[string]("METRICS_USER", "")
 	MetricsPassword = Environment[string]("METRICS_PASSWORD", "")
+
+	SupabaseReference = Environment[string]("SUPABASE_REFERENCE", "")
+	SupabaseAnonKey   = Environment[string]("SUPABASE_ANON_KEY", "")
 )
 
 type (

@@ -9,31 +9,34 @@ import (
 	"net/http"
 	"quizzly/internal/quizzly/contracts"
 	"quizzly/internal/quizzly/model"
-	"quizzly/pkg/auth"
+	"quizzly/pkg/cookie"
 	"quizzly/pkg/logger"
 	"quizzly/pkg/structs"
+	"quizzly/pkg/supabase"
 	"time"
 )
 
 const (
-	cookiePlayerID = "player-id"
+	cookiePlayerID = "player-game"
 )
 
 type DefaultService struct {
 	playerUC contracts.PLayerUsecase
+	cookie   cookie.Service
 	log      logger.Logger
 }
 
-func NewService(playerUC contracts.PLayerUsecase, log logger.Logger) *DefaultService {
+func NewService(playerUC contracts.PLayerUsecase, cookieService cookie.Service, log logger.Logger) *DefaultService {
 	return &DefaultService{
 		playerUC: playerUC,
+		cookie:   cookieService,
 		log:      log,
 	}
 }
 
 func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Request, gameID uuid.UUID, customName ...string) (*model.Player, error) {
 	var userID *uuid.UUID
-	if authCtx, ok := request.Context().(auth.Context); ok && authCtx.UserID() != uuid.Nil {
+	if authCtx, ok := request.Context().(supabase.AuthContext); ok && authCtx.UserID() != uuid.Nil {
 		userID = structs.Pointer(authCtx.UserID())
 	}
 
@@ -47,8 +50,7 @@ func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Req
 		s.log.Error("error getting player id", err)
 	}
 	if player != nil {
-		setPlayerID(writer, player.ID, gameID)
-		return player, nil
+		return player, s.setPlayerID(writer, player.ID, gameID)
 	}
 
 	player, err = s.newPlayer(request.Context(), userID, name)
@@ -56,8 +58,7 @@ func (s *DefaultService) GetPlayer(writer http.ResponseWriter, request *http.Req
 		return nil, err
 	}
 
-	setPlayerID(writer, player.ID, gameID)
-	return player, nil
+	return player, s.setPlayerID(writer, player.ID, gameID)
 }
 
 func (s *DefaultService) findPLayerID(request *http.Request, userID *uuid.UUID, gameID uuid.UUID, customName string) (*model.Player, error) {
@@ -152,7 +153,7 @@ func (s *DefaultService) findByUserID(ctx context.Context, userID *uuid.UUID) (*
 }
 
 func (s *DefaultService) findFromCookie(request *http.Request, gameID uuid.UUID) (*model.Player, error) {
-	cookie, err := request.Cookie(cookieName(gameID))
+	value, err := s.cookie.Get(request, cookieName(gameID))
 	if errors.Is(err, http.ErrNoCookie) {
 		return nil, nil
 	}
@@ -160,7 +161,7 @@ func (s *DefaultService) findFromCookie(request *http.Request, gameID uuid.UUID)
 		return nil, err
 	}
 
-	playerID, err := uuid.Parse(cookie.Value)
+	playerID, err := uuid.Parse(value)
 	if err != nil {
 		return nil, err
 	}
@@ -177,18 +178,8 @@ func (s *DefaultService) findFromCookie(request *http.Request, gameID uuid.UUID)
 	return &players[0], nil
 }
 
-func setPlayerID(writer http.ResponseWriter, id uuid.UUID, gameID uuid.UUID) {
-	cookie := http.Cookie{
-		Name:     cookieName(gameID),
-		Value:    id.String(),
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		MaxAge:   86400,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	http.SetCookie(writer, &cookie)
+func (s *DefaultService) setPlayerID(writer http.ResponseWriter, id uuid.UUID, gameID uuid.UUID) error {
+	return s.cookie.Set(writer, cookieName(gameID), id.String(), 24*time.Hour)
 }
 
 func cookieName(gameID uuid.UUID) string {

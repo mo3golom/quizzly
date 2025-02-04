@@ -34,6 +34,7 @@ templ Header(game *handlers.Game, title templ.Component, settings templ.Componen
 						case "finished":
 							<span class="badge badge-warning">{ "Завершена" }</span>
 					}
+					<span class="ml-2 text-base-content opacity-25">Создана { game.CreatedAt.Format("02.01.2006") }</span>
 				</h2>
 			</div>
 			<div class="flex gap-2 shrink-0">
@@ -78,6 +79,8 @@ templ Header(game *handlers.Game, title templ.Component, settings templ.Componen
 templ Title(title *string) {
 	if title != nil {
 		{ *title }
+	} else {
+		Игра без названия
 	}
 }
 
