@@ -9,6 +9,7 @@ const (
 	QuestionTypeChoice         QuestionType = "choice"
 	QuestionTypeOneOfChoice    QuestionType = "one_of_choice"   // Может быть выбран любой правильный вариант ответа
 	QuestionTypeMultipleChoice QuestionType = "multiple_choice" // Должны быть выбраны все правильные ответы
+	QuestionTypeFillTheGap     QuestionType = "fill_the_gap"    // Нужно ввести правильный ответ
 )
 
 type (

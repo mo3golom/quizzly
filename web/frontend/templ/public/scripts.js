@@ -15,16 +15,34 @@ function initPlayPageQuestionForm() {
     if (form != null) {
         const submitBtn = document.getElementById('play-page-submit-button');
         const submit = document.getElementById('play-page-submit');
+        const textInput = form.querySelector('input[type="text"]');
+
+        if (textInput) {
+            textInput.addEventListener('input', function () {
+                if (textInput.value.trim().length > 0) {
+                    submitBtn.disabled = false;
+                    submit.classList.remove("hidden", "opacity-0");
+                    submit.classList.add("animate-fade-in-up");
+                } else {
+                    submitBtn.disabled = true;
+                    submit.classList.add("hidden", "opacity-0");
+                    submit.classList.remove("animate-fade-in-up");
+                }
+            });
+        }
+
         form.addEventListener('change', function () {
             const hasChecked = form.querySelector('input[type="checkbox"]:checked, input[type="radio"]:checked');
-            if (hasChecked) {
-                submitBtn.disabled = false
-                submit.classList.remove("hidden", "opacity-0")
-                submit.classList.add("animate-fade-in-up")
+            const hasValidText = textInput ? textInput.value.trim().length > 0 : false;
+
+            if (hasChecked || hasValidText) {
+                submitBtn.disabled = false;
+                submit.classList.remove("hidden", "opacity-0");
+                submit.classList.add("animate-fade-in-up");
             } else {
-                submitBtn.disabled = true
-                submit.classList.add("hidden", "opacity-0")
-                submit.classList.remove("animate-fade-in-up")
+                submitBtn.disabled = true;
+                submit.classList.add("hidden", "opacity-0");
+                submit.classList.remove("animate-fade-in-up");
             }
         });
     }

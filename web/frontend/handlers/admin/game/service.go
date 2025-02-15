@@ -80,24 +80,25 @@ func (s *service) getGamePage(request *http.Request, gameID uuid.UUID) (templ.Co
 	if game.Status == model.GameStatusCreated {
 		titleComponent = frontendAdminGame.TitleInput(game.ID, game.Title)
 		questionsComponent = frontendComponents.Composition(
-			frontendAdminGame.ActionAddQuestion(),
+			frontendComponents.CompositionMB4(frontendAdminGame.ActionAddQuestion()),
 			questionsComponent,
 			frontendComponents.Modal(
 				"addQuestionModal",
 				"Добавить вопрос",
-				frontendAdminQuestion.Form(
-					game.ID,
-					model.QuestionTypeChoice,
-					frontendComponents.Composition(
-						frontendAdminQuestion.QuestionImageInput(),
-						frontendAdminQuestion.QuestionTextInput(),
-					),
-					frontendComponents.Composition(
-						frontendAdminQuestion.AnswerChoiceInput(0, uuid.New(), true),
-						frontendAdminQuestion.AnswerChoiceInput(1, uuid.New(), true),
-						frontendAdminQuestion.AnswerChoiceInput(2, uuid.New(), false),
-						frontendAdminQuestion.AnswerChoiceInput(3, uuid.New(), false),
-					),
+				frontendComponents.Tabs(
+					uuid.New(),
+					frontendComponents.Tab{
+						Name:    "Один ответ",
+						Content: singleChoiceQuestionForm(game.ID),
+					},
+					frontendComponents.Tab{
+						Name:    "Несколько ответов",
+						Content: multipleChoiceQuestionForm(game.ID),
+					},
+					frontendComponents.Tab{
+						Name:    "Ввод слова",
+						Content: fillTheGapQuestionForm(game.ID),
+					},
 				),
 			),
 		)
@@ -129,14 +130,16 @@ func (s *service) getGamePage(request *http.Request, gameID uuid.UUID) (templ.Co
 		frontendAdminGame.Header(
 			handlersGame,
 			titleComponent,
-			frontendComponents.Composition(settingsComponents...),
 		),
 		frontendAdminGame.Invite(s.linkService.GameLink(game.ID, request)),
 		frontendComponents.Tabs(
 			uuid.New(),
 			frontendComponents.Tab{
-				Name:    "Вопросы",
-				Content: questionsComponent,
+				Name: "Игра",
+				Content: frontendComponents.Composition(
+					frontendComponents.CompositionMB4(settingsComponents...),
+					questionsComponent,
+				),
 			},
 			frontendComponents.Tab{
 				Name:    "Участники",
@@ -144,4 +147,53 @@ func (s *service) getGamePage(request *http.Request, gameID uuid.UUID) (templ.Co
 			},
 		),
 	), nil
+}
+
+func singleChoiceQuestionForm(gameID uuid.UUID) templ.Component {
+	return frontendAdminQuestion.Form(
+		gameID,
+		model.QuestionTypeChoice,
+		frontendComponents.Composition(
+			frontendAdminQuestion.QuestionImageInput(),
+			frontendAdminQuestion.QuestionTextInput(),
+		),
+		frontendComponents.Composition(
+			frontendAdminQuestion.AnswerChoiceInput(0, uuid.New(), true),
+			frontendAdminQuestion.AnswerChoiceInput(1, uuid.New(), true),
+			frontendAdminQuestion.AnswerChoiceInput(2, uuid.New(), false),
+			frontendAdminQuestion.AnswerChoiceInput(3, uuid.New(), false),
+		),
+	)
+}
+
+func multipleChoiceQuestionForm(gameID uuid.UUID) templ.Component {
+	return frontendAdminQuestion.Form(
+		gameID,
+		model.QuestionTypeMultipleChoice,
+		frontendComponents.Composition(
+			frontendAdminQuestion.QuestionImageInput(),
+			frontendAdminQuestion.QuestionTextInput(),
+			frontendAdminQuestion.QuestionMultipleChoiceOption(),
+		),
+		frontendComponents.Composition(
+			frontendAdminQuestion.AnswerChoiceInput(0, uuid.New(), true, true),
+			frontendAdminQuestion.AnswerChoiceInput(1, uuid.New(), true, true),
+			frontendAdminQuestion.AnswerChoiceInput(2, uuid.New(), false, true),
+			frontendAdminQuestion.AnswerChoiceInput(3, uuid.New(), false, true),
+		),
+	)
+}
+
+func fillTheGapQuestionForm(gameID uuid.UUID) templ.Component {
+	return frontendAdminQuestion.Form(
+		gameID,
+		model.QuestionTypeFillTheGap,
+		frontendComponents.Composition(
+			frontendAdminQuestion.QuestionImageInput(),
+			frontendAdminQuestion.QuestionTextInput(),
+		),
+		frontendComponents.Composition(
+			frontendAdminQuestion.AnswerTextInput(),
+		),
+	)
 }

@@ -79,7 +79,7 @@ func AdminPageQuestionsList(list templ.Component) templ.Component {
 	})
 }
 
-func Header(game *handlers.Game, title templ.Component, settings templ.Component) templ.Component {
+func Header(game *handlers.Game, title templ.Component) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -202,15 +202,7 @@ func Header(game *handlers.Game, title templ.Component, settings templ.Component
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"mt-4\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = settings.Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -238,7 +230,7 @@ func Title(title *string) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(*title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 81, Col: 10}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 78, Col: 10}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -282,7 +274,7 @@ func TitleInput(gameID uuid.UUID, title *string) templ.Component {
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(*title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 92, Col: 17}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 89, Col: 17}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -300,7 +292,7 @@ func TitleInput(gameID uuid.UUID, title *string) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/admin/game/%s/update", gameID.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 96, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 93, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -337,7 +329,7 @@ func Invite(inviteUrl string) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(inviteUrl)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 115, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 112, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -374,7 +366,7 @@ func SettingBadge(text string, hint string, toggle ...templ.Component) templ.Com
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 128, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 125, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -387,7 +379,7 @@ func SettingBadge(text string, hint string, toggle ...templ.Component) templ.Com
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(hint)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 129, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 126, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
@@ -434,7 +426,7 @@ func SettingToggle(gameID uuid.UUID, name string, value bool) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 144, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 141, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -447,7 +439,7 @@ func SettingToggle(gameID uuid.UUID, name string, value bool) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/admin/game/%s/update", gameID.String()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 146, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 143, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -460,7 +452,7 @@ func SettingToggle(gameID uuid.UUID, name string, value bool) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"%s": %t}`, name, !value))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 150, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templ/admin/game/page.templ`, Line: 147, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {

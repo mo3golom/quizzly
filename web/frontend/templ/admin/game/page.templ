@@ -17,7 +17,7 @@ templ AdminPageQuestionsList(list templ.Component) {
 	</div>
 }
 
-templ Header(game *handlers.Game, title templ.Component, settings templ.Component) {
+templ Header(game *handlers.Game, title templ.Component) {
 	<div class="mb-4">
 		<input id="game-id" name="game-id" type="hidden" value={ game.ID.String() }/>
 		<div class="flex items-start gap-4">
@@ -69,9 +69,6 @@ templ Header(game *handlers.Game, title templ.Component, settings templ.Componen
 					</button>
 				}
 			</div>
-		</div>
-		<div class="mt-4">
-			@settings
 		</div>
 	</div>
 }

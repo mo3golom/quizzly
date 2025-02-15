@@ -23,7 +23,7 @@ func Accordion(title string, component templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"collapse collapse-arrow border-base-content border-4 mb-4\"><input type=\"checkbox\"><div class=\"collapse-title text-xl font-medium\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"collapse collapse-arrow border-base-200 border-4 mb-4\"><input type=\"checkbox\"><div class=\"collapse-title text-xl font-medium\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

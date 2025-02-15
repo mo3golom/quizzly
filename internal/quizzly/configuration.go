@@ -45,6 +45,7 @@ func NewConfiguration(
 					model.QuestionTypeChoice:         acceptor.NewSingleChoiceAcceptor(),
 					model.QuestionTypeOneOfChoice:    acceptor.NewOneOfChoiceAcceptor(),
 					model.QuestionTypeMultipleChoice: acceptor.NewMultipleChoiceAcceptor(),
+					model.QuestionTypeFillTheGap:     acceptor.NewFillTheGapAcceptor(),
 				},
 			), nil
 		}),

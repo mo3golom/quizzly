@@ -8,6 +8,7 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/pkg/files"
 	"quizzly/pkg/structs/collections/slices"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
@@ -22,6 +23,7 @@ var (
 		string(model.QuestionTypeChoice),
 		string(model.QuestionTypeMultipleChoice),
 		string(model.QuestionTypeOneOfChoice),
+		string(model.QuestionTypeFillTheGap),
 	}
 )
 
@@ -64,6 +66,7 @@ func (h *PostCreateHandler) Handle(_ http.ResponseWriter, request *http.Request,
 		return nil, err
 	}
 	if image != nil {
+		image.Name = strings.ReplaceAll(strings.TrimSpace(image.Name), " ", "_")
 		err = h.images.Upload(request.Context(), image)
 		if err != nil {
 			return nil, err

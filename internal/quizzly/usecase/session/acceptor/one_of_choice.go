@@ -12,11 +12,11 @@ func NewOneOfChoiceAcceptor() *OneOfChoiceAcceptor {
 	return &OneOfChoiceAcceptor{}
 }
 
-func (a *OneOfChoiceAcceptor) Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
+func (a *OneOfChoiceAcceptor) Accept(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
 	correctAnswers := question.GetCorrectAnswers()
-	correctAnswersMap := make(map[model.AnswerOptionID]struct{}, len(correctAnswers))
+	correctAnswersMap := make(map[string]struct{}, len(correctAnswers))
 	for _, answer := range correctAnswers {
-		correctAnswersMap[answer.ID] = struct{}{}
+		correctAnswersMap[strconv.FormatInt(int64(answer.ID), 10)] = struct{}{}
 	}
 
 	result := &contracts.AcceptAnswersOut{
@@ -31,7 +31,7 @@ func (a *OneOfChoiceAcceptor) Accept(question *model.Question, answers []model.A
 		}
 
 		result.Details = append(result.Details, contracts.AnswerResult{
-			Answer:    strconv.Itoa(int(answer)),
+			Answer:    answer,
 			IsCorrect: ok,
 		})
 	}

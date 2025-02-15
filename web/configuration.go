@@ -99,7 +99,6 @@ func adminRoutes(
 ) {
 	security := authClient.MiddlewareAuth
 
-	mux.HandleFunc("GET /admin/question/new", "/admin/question/new", security(handlers.Templ[question.GetFormData](question.NewGetFormHandler(), log)))
 	mux.HandleFunc("POST /admin/question", "/admin/question", security(handlers.Templ[question.NewPostData](question.NewPostCreateHandler(
 		quizzlyConfig.Game.MustGet(),
 		filesManager,
@@ -145,7 +144,6 @@ func publicRoutes(
 	gamePlayPageHandler := gamePublic.NewGetPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
-		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
 		config.link.MustGet(),
 	)
@@ -178,7 +176,6 @@ func publicRoutes(
 	mux.HandleFunc("POST /game/{game_id}", "/game/:game_id", handlers.Templ[gamePublic.PostPlayPageData](gamePublic.NewPostPlayPageHandler(
 		quizzlyConfig.Game.MustGet(),
 		quizzlyConfig.Session.MustGet(),
-		quizzlyConfig.Player.MustGet(),
 		config.player.MustGet(),
 		config.link.MustGet(),
 	), log))

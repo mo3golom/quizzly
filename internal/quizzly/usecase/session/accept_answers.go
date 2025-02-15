@@ -7,8 +7,6 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/internal/quizzly/repositories/game"
 	"quizzly/pkg/structs"
-	"quizzly/pkg/structs/collections/slices"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -64,15 +62,7 @@ func (u *Usecase) acceptAnswers(question *model.Question, answers []string) (*co
 	}
 
 	if acceptor, ok := u.optionIDAcceptors[question.Type]; ok {
-		convertedAnswers, err := slices.Map(answers, func(i string) (model.AnswerOptionID, error) {
-			id, err := strconv.Atoi(i)
-			return model.AnswerOptionID(id), err
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return acceptor.Accept(question, convertedAnswers)
+		return acceptor.Accept(question, answers)
 	}
 
 	return nil, errors.New("question type is not supported")

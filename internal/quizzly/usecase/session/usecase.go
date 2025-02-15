@@ -14,7 +14,7 @@ import (
 
 type (
 	AnswerOptionIDAcceptor interface {
-		Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error)
+		Accept(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error)
 	}
 
 	Usecase struct {

@@ -13,15 +13,15 @@ func NewSingleChoiceAcceptor() *SingleChoiceAcceptor {
 	return &SingleChoiceAcceptor{}
 }
 
-func (a *SingleChoiceAcceptor) Accept(question *model.Question, answers []model.AnswerOptionID) (*contracts.AcceptAnswersOut, error) {
+func (a *SingleChoiceAcceptor) Accept(question *model.Question, answers []string) (*contracts.AcceptAnswersOut, error) {
 	if len(answers) > 1 {
 		return nil, errors.New("simple choice can't have multiple answers")
 	}
 
 	correctAnswers := question.GetCorrectAnswers()
-	correctAnswersMap := make(map[model.AnswerOptionID]struct{}, len(correctAnswers))
+	correctAnswersMap := make(map[string]struct{}, len(correctAnswers))
 	for _, answer := range correctAnswers {
-		correctAnswersMap[answer.ID] = struct{}{}
+		correctAnswersMap[strconv.FormatInt(int64(answer.ID), 10)] = struct{}{}
 	}
 
 	_, ok := correctAnswersMap[answers[0]]
@@ -29,7 +29,7 @@ func (a *SingleChoiceAcceptor) Accept(question *model.Question, answers []model.
 		IsCorrect: ok,
 		Details: []contracts.AnswerResult{
 			{
-				Answer:    strconv.Itoa(int(answers[0])),
+				Answer:    answers[0],
 				IsCorrect: ok,
 			},
 		},

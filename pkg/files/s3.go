@@ -62,7 +62,7 @@ func (m *S3Manager) Upload(ctx context.Context, in *UploadFile) error {
 		ctx,
 		&s3.PutObjectInput{
 			Bucket:        &m.bucketName,
-			Body:          bytes.NewReader(buffer.Bytes()), // Use NewReader to create a seekable reader
+			Body:          bytes.NewReader(buffer.Bytes()),
 			Key:           &in.Name,
 			ContentType:   structs.Pointer("application/octet-stream"),
 			ContentLength: &in.Size,

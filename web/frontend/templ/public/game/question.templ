@@ -87,17 +87,19 @@ templ AnswerChoiceDescription(questionType model.QuestionType) {
 					Выберите любой из правильных ответов
 				case "multiple_choice":
 					Выберите все правильные ответы
+				case "fill_the_gap":
+					Введите правильный ответ
 			}
 		</span>
 	</div>
 }
 
-templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption) {
+templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerOption, isMultiple ...bool) {
 	<div class={ fmt.Sprintf("grid gap-4 sm:grid-cols-%d grid-cols-1 h-full", len(in)) }>
 		for i, answerOption := range in {
 			<label class="h-full">
 				<input
-					type={ structs.Or(questionType == "choice", "radio", "checkbox") }
+					type={ structs.Or(len(isMultiple) > 0 && isMultiple[0], "checkbox", "radio") }
 					class="peer hidden"
 					name="answer"
 					value={ fmt.Sprintf("%d", answerOption.ID) }
@@ -107,6 +109,23 @@ templ AnswerChoiceOptions(questionType model.QuestionType, in []handlers.AnswerO
 				</div>
 			</label>
 		}
+	</div>
+}
+
+templ AnswerTextInput() {
+	<div class="col-span-4 card justify-self-stretch bg-orange-500 rounded-xl">
+		<div class="card-body p-4">
+			<label>
+				<input
+					name="answer"
+					type="text"
+					placeholder="Правильный ответ"
+					class="input input-md w-full text-white focus:text-black bg-orange-600 focus:bg-white placeholder:text-gray-300"
+					required
+					autocomplete="off"
+				/>
+			</label>
+		</div>
 	</div>
 }
 

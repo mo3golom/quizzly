@@ -1,16 +1,23 @@
 package frontend_components
 
 templ Composition(components ...templ.Component) {
-     for _, component := range components {
-        @component
-     }
+	for _, component := range components {
+		@component
+	}
 }
 
-
 templ CompositionMD(components ...templ.Component) {
-     <div class="max-w-max sm:max-w-md mx-auto">
-     for _, component := range components {
-        @component
-     }
-     </div>
+	<div class="max-w-max sm:max-w-md mx-auto">
+		for _, component := range components {
+			@component
+		}
+	</div>
+}
+
+templ CompositionMB4(components ...templ.Component) {
+	<div class="mb-4">
+		for _, component := range components {
+			@component
+		}
+	</div>
 }
