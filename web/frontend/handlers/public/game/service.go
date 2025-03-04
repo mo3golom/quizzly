@@ -9,7 +9,6 @@ import (
 	"quizzly/internal/quizzly/model"
 	"quizzly/web/frontend/handlers"
 	"quizzly/web/frontend/services/link"
-	"quizzly/web/frontend/services/page"
 	frontendComponents "quizzly/web/frontend/templ/components"
 	frontendPublicGame "quizzly/web/frontend/templ/public/game"
 )
@@ -37,12 +36,8 @@ func (s *service) GetCurrentState(ctx context.Context, in *getCurrentStateIn, co
 	}
 
 	if in.game.Settings.InputCustomName && !in.player.NameUserEntered && in.customName == nil {
-		return page.PublicIndexPage(
-			ctx,
-			gameTitle(in.game),
-			frontendPublicGame.Page(
-				frontendPublicGame.NamePage(in.game.Title, in.game.ID),
-			),
+		return frontendPublicGame.Page(
+			frontendPublicGame.NamePage(in.game.Title, in.game.ID),
 		), nil
 	}
 
